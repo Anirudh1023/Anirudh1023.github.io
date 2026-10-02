@@ -221,9 +221,11 @@ export default function Home() {
               {displayWork.map(work => (
                 <div 
                   key={work.id}
+                  onClick={() => work.article?.sections?.length > 0 ? setActiveModalId(work.id) : null}
                   style={{
                     padding: "16px",
                     borderRadius: 16,
+                    cursor: work.article?.sections?.length > 0 ? "pointer" : "default",
                     transition: "background 0.2s",
                     marginLeft: -16,
                     marginRight: -16
@@ -241,11 +243,18 @@ export default function Home() {
                   <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.5, margin: "0 0 12px 0" }}>
                     {renderFormattedText(work.teaser)}
                   </p>
-                  {work.link && (
-                    <a href={work.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" }}>
-                      Read Paper PDF <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(45deg)" }} />
-                    </a>
-                  )}
+                  <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+                    {work.article?.sections?.length > 0 && (
+                      <div style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        Read Notes <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(90deg)" }} />
+                      </div>
+                    )}
+                    {work.link && (
+                      <a href={work.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
+                        Read Paper PDF <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(45deg)" }} />
+                      </a>
+                    )}
+                  </div>
                 </div>
               ))}
 
@@ -253,9 +262,11 @@ export default function Home() {
               {displayOther.map((work: any) => (
                 <div 
                   key={work.id}
+                  onClick={() => work.article?.sections?.length > 0 ? setActiveModalId(work.id) : null}
                   style={{
                     padding: "16px",
                     borderRadius: 16,
+                    cursor: work.article?.sections?.length > 0 ? "pointer" : "default",
                     transition: "background 0.2s",
                     marginLeft: -16,
                     marginRight: -16
@@ -270,9 +281,14 @@ export default function Home() {
                     <Badge>Project</Badge>
                     <span style={{ fontSize: "0.75rem", color: KO.textMute, fontWeight: 500 }}>· {work.metadata}</span>
                   </div>
-                  <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.5, margin: 0 }}>
+                  <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.5, margin: work.article?.sections?.length > 0 ? "0 0 12px 0" : 0 }}>
                     {renderFormattedText(work.teaser)}
                   </p>
+                  {work.article?.sections?.length > 0 && (
+                    <div style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      Read Notes <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(90deg)" }} />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

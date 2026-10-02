@@ -4,15 +4,20 @@ export const siteContent = {
     heroEyebrow: "SAMSUNG RESEARCH INDIA · ON-DEVICE AI",
     heroHeadline: "EFFICIENT FOUNDATION MODELS UNDER REAL HARDWARE CONSTRAINTS.",
     heroParagraphs: [
-      "👋 I'm a Machine Learning Engineer at [Samsung Research India](https://research.samsung.com/sri) in Bengaluru. My current work on the On-Device AI team revolves around making large foundation models run efficiently under strict constraints, with projects ranging from on-device LLM fine-tuning without backpropagation to hybrid speculative decoding across devices. I've also worked on the SnapLite runtime, unifying the CPU, GPU, and NPU deployment paths for over 200 production vision and speech models.",
-      "Previously, I spent two years doing Honours research at the Speech Processing Lab at [IIIT Hyderabad](https://www.iiit.ac.in/) with Prof. Anil Kumar Vuppala. There, I explored task-dependent speech representations and built systems for whispered-to-normal speech conversion. I also led a team to build Waveform-Wizard, curated the first Indian-English stuttered-speech corpus, and spent time at Docturnal working on voice-based tuberculosis screening.",
-      "I'm deeply interested in algorithm-system co-design—figuring out how scheduling, memory movement, and accelerator primitives can be designed together. If you find me a good fit for your team, want to chat about ML systems, or just want to say hello – please freely reach out via the links below!"
+      "👋 I'm a Machine Learning Engineer at Samsung Research India, working on the On-Device AI team. My current work revolves around making large foundation models run efficiently on mobile chips (CPUs, GPUs, NPUs) under strict memory, latency, and thermal constraints. This includes projects ranging from on-device LLM fine-tuning without backpropagation to hybrid speculative decoding across devices.",
+      "Previously, I spent two years doing Honours research at the Speech Processing Lab at IIIT Hyderabad with Prof. Anil Kumar Vuppala, where I explored task-dependent speech representations and built systems for whispered-to-normal speech conversion. I also worked on computational tools for speech analysis and helped build the first Indian-English stuttered-speech corpus.",
+      "Before that, I interned at Samsung Research, where I unified the CPU, GPU, and NPU deployment paths for over 200 production vision and speech models into a single runtime. I also spent time at Docturnal working on voice-based tuberculosis screening.",
+      "I am deeply interested in algorithm-system co-design: figuring out how scheduling, memory movement, and accelerator primitives can be designed together. If you want to chat about ML systems, or just want to say hello – please reach out!"
     ],
     links: {
       email: "mailto:anirudhnarayana7@gmail.com",
       github: "https://github.com/Anirudh1023",
       cv: "/resume.pdf",
       linkedin: "https://www.linkedin.com/in/anirudh-bocha/"
+    },
+    about: {
+      p1: "I am an ML systems researcher / engineer working on efficient foundation models under real device constraints. I currently work on the On-Device AI team at Samsung Research India. Before that, my research at IIIT Hyderabad focused on speech representations and task-dependent model depth.",
+      p2: "My current work explores forward-only adaptation, heterogeneous execution, and computation reuse for foundation models. I am interested in algorithm–system co-design: situations where the model, optimizer, runtime and accelerator have to be designed together."
     }
   },
 
@@ -20,12 +25,13 @@ export const siteContent = {
     {
       id: "zo",
       number: "01",
-      category: "CURRENT RESEARCH",
+      category: "CURRENT RESEARCH · SAMSUNG",
       title: "ON-DEVICE SUBSPACE-RESTRICTED ZEROTH-ORDER FINE-TUNING",
       articleTitle: "NECESSITY, NOT CONVENIENCE: SUBSPACE-RESTRICTED ZEROTH-ORDER FINE-TUNING OF REAL WEIGHTS ON MOBILE NPUs",
       metadata: [
         "Qwen3-0.6B",
         "Qualcomm Hexagon NPU",
+        "SST-2",
         "Lead author",
         "Preparing for MLSys 2027"
       ],
@@ -171,13 +177,15 @@ export const siteContent = {
     {
       id: "hybrid",
       number: "02",
-      category: "CURRENT RESEARCH",
-      title: "CROSS-VOCABULARY SPECULATIVE DECODING",
+      category: "CURRENT RESEARCH · SAMSUNG",
+      title: "CROSS-VOCABULARY SPECULATIVE DECODING AS BOTH ACCELERATOR AND HANDOFF MECHANISM",
       articleTitle: "CROSS-VOCABULARY SPECULATIVE DECODING AS BOTH ACCELERATOR AND HANDOFF MECHANISM",
       metadata: [
         "Cloud GPU",
+        "2× T4 / A6000",
         "1.394× wall-clock speedup",
-        "2.797× server compute reduction"
+        "2.797× server compute reduction",
+        "Real mobile hardware: not yet evaluated"
       ],
       heroQuestion: "How can computation already performed by a small device model remain useful when control moves to a larger model?",
       homepageSummary: "A small model can handle many requests locally while a larger model provides additional capability when needed. The usual escalation strategy discards the small model's work and makes the larger model process the conversation again. I instead use speculative decoding as the handoff itself: the small model's draft is translated into the large model's vocabulary, then verified by the large model in a batched forward pass. The verification step simultaneously accelerates generation and lets the larger model pick up the computation.",
@@ -288,32 +296,23 @@ export const siteContent = {
           }
         ]
       }
-    },
+    }
+  ],
+
+  selectedWork: [
     {
       id: "nntrainer",
       number: "03",
-      category: "CURRENT WORK",
-      title: "NNTRAINER (CAUSAL-LLM TRAINING & CPU+NPU PIPELINE)",
-      articleTitle: "NNTRAINER",
-      metadata: [
-        "SAMSUNG RESEARCH"
-      ],
-      heroQuestion: "How does execution scheduling and memory design impact on-device training efficiency?",
-      homepageSummary: "I worked on on-device parameter-efficient fine-tuning for foundation models, extending NNTrainer toward causal-LLM training and multi-batch execution across heterogeneous backends. By combining quantization-aware training, activation checkpointing, selective recomputation, and a completely redesigned asynchronous CPU–NPU execution pipeline, I reduced a 3 GB model's training footprint below 1 GB while accelerating prefill by roughly 5×.",
-      metrics: [
-        { value: "3 GB → <1 GB", label: "MEMORY PIPELINE REDUCTION" },
-        { value: "5×", label: "PREFILL ACCELERATION" }
-      ],
+      title: "NNTRAINER",
+      metadata: "SAMSUNG RESEARCH",
+      teaser: "Quantized on-device adaptation under memory and thermal limits",
+      result: "3 GB → <1 GB pipeline",
       article: {
         intro: "I worked on on-device parameter-efficient fine-tuning for foundation models, extending NNTrainer toward causal-LLM training and multi-batch execution across heterogeneous backends.",
         sections: [
           {
             type: "paragraph",
-            content: "The challenge was making Qwen3-class LoRA fine-tuning feasible under real on-device constraints. I enabled causal-LLM and multi-batch training while keeping the deployed base model in Q4_0 and LoRA weights in FP32. Quantization-aware training made the adaptation learn deployment-time quantization error, while weight and activation checkpointing, selective recomputation, and memory-mapped storage reduced a 3 GB model's resident footprint below 1 GB."
-          },
-          {
-            type: "paragraph",
-            content: "I also introduced Progressive LoRA to adapt training to the device's thermal state. But making on-device training practical on CPU was not enough; I wanted to know whether the NPU could execute the training workload as effectively as it executed inference. I extended NNTrainer to use the mobile NPU while preserving its flexible layer-level execution, unlike existing accelerator paths designed around fixed, operator-level inference graphs."
+            content: "Making on-device training practical on CPU was not enough; I wanted to know whether the NPU could execute the training workload as effectively as it executed inference. I extended NNTrainer to use the mobile NPU while preserving its flexible layer-level execution, unlike existing accelerator paths designed around fixed, operator-level inference graphs."
           },
           {
             type: "paragraph",
@@ -330,69 +329,14 @@ export const siteContent = {
           }
         ]
       }
-    }
-  ],
-
-  selectedWork: [
-    {
-      id: "waveform",
-      number: "04",
-      title: "Waveform-Wizard: A free tool for Spectro-Temporal visualization of Speech",
-      metadata: "ICASSP 2025 Show & Tell",
-      teaser: "I led six undergraduates in building Waveform-Wizard, an open-source Python replacement for a MATLAB-heavy speech-analysis workflow. The project rebuilt the analysis stack around Python, NumPy, SciPy, and LibROSA, adding dynamic visualization tools in a unified application.",
-      result: "Presented",
-      link: "/publications/Icassp_Show_and_tell.pdf",
-      article: {
-        intro: "I led six undergraduates in building Waveform-Wizard, an open-source Python replacement for a MATLAB-heavy speech-analysis workflow.",
-        sections: [
-          {
-            type: "paragraph",
-            content: "The project rebuilt the analysis stack around Python, NumPy, SciPy, LibROSA and PyQt5, adding waveform, zero-time windowing, spectral flatness, S-transform, Constant-Q, formant, pitch, Gammatone and VAD analysis in a unified application."
-          },
-          {
-            type: "paragraph",
-            content: "The tool also supports multi-file comparison, dynamically linked analysis panes, save/resume through a custom workflow format, export to PDF/PNG/SVG, and packaging for Windows and Ubuntu with GitHub Actions."
-          }
-        ]
-      }
     },
     {
-      id: "speech-reps",
-      number: "05",
-      title: "Towards Classification of Typical and Atypical Disfluencies: A Self Supervised Representation Approach",
-      metadata: "Interspeech 2025",
-      teaser: "We evaluated layer-wise representations from Wav2Vec2.0, HuBERT, WavLM, and TERA for typical-vs-atypical disfluency classification. HuBERT's fifth layer reached a peak F1 of 0.97 and outperformed the final representation, showing that deeper computation was not universally more useful.",
-      result: "Published",
-      link: "/publications/Interspeech.pdf",
-      article: {
-        intro: "I studied whether the final representation of a self-supervised speech encoder is necessarily the most useful one for a downstream task.",
-        sections: [
-          {
-            type: "paragraph",
-            content: "We evaluated layer-wise representations from Wav2Vec2.0, HuBERT, WavLM, and TERA for typical-vs-atypical disfluency classification using downstream classifiers including SVMs and CNNs."
-          },
-          {
-            type: "paragraph",
-            content: "HuBERT's fifth layer reached a peak F1 of 0.97 and outperformed the final representation, showing that useful task information can emerge well before the encoder's endpoint. Later layers are not automatically better for every task. The work also involved IIITH-TISA, a 10-hour Indian-English dataset containing recordings from 30 persons who stutter and 3,251 annotated clips."
-          },
-          {
-            type: "figure",
-            caption: "Layer-wise performance: Peak at Layer 5",
-            visual: "speech-layers"
-          }
-        ]
-      }
-    }
-  ],
-
-  otherProjects: [
-    {
       id: "snaplite",
-      number: "06",
-      title: "SNAPLITE RUNTIME",
+      number: "04",
+      title: "SNAPLITE",
       metadata: "SAMSUNG RESEARCH INDIA · 2024",
-      teaser: "I led the migration from the legacy TensorFlow Lite execution backend to Google's LiteRT, reworking the runtime around a common deployment path across CPU, GPU, and NPU execution for over 200 production models. The resulting system was 10× faster on first inference.",
-      result: "10× Speedup",
+      teaser: "Unified CPU/GPU/NPU deployment runtime",
+      result: "10× GPU first-inference reduction",
       article: {
         intro: "During my Samsung Research internship, I worked inside SnapLite, Samsung's on-device AI deployment runtime supporting more than 200 production vision, speech, and text models.",
         sections: [
@@ -412,12 +356,38 @@ export const siteContent = {
       }
     },
     {
+      id: "speech-reps",
+      number: "05",
+      title: "TASK-DEPENDENT SPEECH REPRESENTATIONS",
+      metadata: "IIIT HYDERABAD · INTERSPEECH 2025",
+      teaser: "Intermediate representations can outperform final encoder states",
+      result: "0.97 F1 · HuBERT layer 5",
+      article: {
+        intro: "I studied whether the final representation of a self-supervised speech encoder is necessarily the most useful one for a downstream task.",
+        sections: [
+          {
+            type: "paragraph",
+            content: "We evaluated layer-wise representations from Wav2Vec2.0, HuBERT, WavLM, and TERA for typical-vs-atypical disfluency classification using downstream classifiers including SVMs and CNNs."
+          },
+          {
+            type: "paragraph",
+            content: "HuBERT's fifth layer reached a peak F1 of 0.97 and outperformed the final representation, showing that useful task information can emerge well before the encoder's endpoint. Later layers are not automatically better for every task. The work also involved IIITH-TISA, a 10-hour Indian-English dataset containing recordings from 30 persons who stutter and 3,251 annotated clips."
+          },
+          {
+            type: "figure",
+            caption: "Layer-wise performance: Peak at Layer 5",
+            visual: "speech-layers"
+          }
+        ]
+      }
+    },
+    {
       id: "wesper",
-      number: "07",
-      title: "WHISPERED SPEECH REPRESENTATIONS (WESPER)",
-      metadata: "IIIT HYDERABAD",
-      teaser: "I reproduced WESPER, a whispered-to-normal speech conversion system, and replaced MFCC targets with SFCC because whispered and noisy speech lose fine-grained acoustic information. SFCC improved performance 10–25% at low SNR, demonstrating that changing representation space improves tasks without increasing capacity.",
-      result: "10-25% Improvement",
+      number: "06",
+      title: "WHISPERED SPEECH REPRESENTATIONS WITH SFCC",
+      metadata: "IIIT HYDERABAD · EARLIER SPEECH RESEARCH",
+      teaser: "Task-relevant speech information can change with the target representation",
+      result: "10–25% low-SNR relative improvement if verified",
       article: {
         intro: "I reproduced WESPER, a whispered-to-normal speech conversion system built around self-supervised HuBERT representations and downstream synthesis.",
         sections: [
@@ -431,6 +401,42 @@ export const siteContent = {
           }
         ]
       }
+    },
+    {
+      id: "waveform",
+      number: "07",
+      title: "WAVEFORM-WIZARD",
+      metadata: "ICASSP 2025 SHOW & TELL",
+      teaser: "Rebuilt a MATLAB speech-analysis workflow as a Python tool",
+      result: "ICASSP 2025 Show & Tell",
+      article: {
+        intro: "I led six undergraduates in building Waveform-Wizard, an open-source Python replacement for a MATLAB-heavy speech-analysis workflow.",
+        sections: [
+          {
+            type: "paragraph",
+            content: "The project rebuilt the analysis stack around Python, NumPy, SciPy, LibROSA and PyQt5, adding waveform, zero-time windowing, spectral flatness, S-transform, Constant-Q, formant, pitch, Gammatone and VAD analysis in a unified application."
+          },
+          {
+            type: "paragraph",
+            content: "The tool also supports multi-file comparison, dynamically linked analysis panes, save/resume through a custom workflow format, export to PDF/PNG/SVG, and packaging for Windows and Ubuntu with GitHub Actions."
+          }
+        ]
+      }
+    }
+  ],
+
+  outputs: [
+    {
+      title: "On-Device Subspace-Restricted Zeroth-Order Fine-Tuning",
+      metadata: "Lead author · preparing for MLSys 2027"
+    },
+    {
+      title: "Task-Dependent Speech Representations",
+      metadata: "Interspeech 2025 · Published"
+    },
+    {
+      title: "Waveform-Wizard",
+      metadata: "ICASSP 2025 Show & Tell · Presented"
     }
   ],
 
@@ -438,8 +444,14 @@ export const siteContent = {
     {
       org: "Samsung Research India",
       role: "On-Device AI",
-      dates: "2024 — Present",
+      dates: "2025 — Present",
       desc: "Working across on-device LLM training, heterogeneous accelerator execution, zeroth-order optimization, and hybrid inference."
+    },
+    {
+      org: "Samsung Research India",
+      role: "Software Engineering Intern",
+      dates: "2024",
+      desc: "SnapLite: 200+ production vision/speech/text models, LiteRT migration, runtime and CPU optimization."
     },
     {
       org: "Speech Processing Lab, IIIT Hyderabad",
@@ -449,7 +461,7 @@ export const siteContent = {
     },
     {
       org: "Docturnal",
-      role: "Engineering",
+      role: "Earlier internship",
       dates: "2023",
       desc: "Voice-based TB screening."
     }
