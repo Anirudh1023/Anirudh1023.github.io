@@ -2,6 +2,7 @@ export const KO = {
   // Color 
   bg:        '#F7EEE4',    // warm cream background
   bgSec:     '#F5F0E2',    // slightly deeper cream
+  constr:    '#DCD8CD',    // subtle grey construction lines
   accent:    '#FF8000',    // orange — active/research intervention
   text:      '#222222',    // charcoal — baseline/context
   textDim:   '#22222299',  // 60% charcoal
