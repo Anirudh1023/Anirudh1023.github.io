@@ -1,26 +1,159 @@
-@import "tailwindcss";
+/* globals.css */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Tonal Palette: Base */
+  --ko-bg:        #F7EEE4;   /* Warm paper */
+  --ko-bgsec:     #F5F0E2;   /* Secondary paper */
+  --ko-surface:   #FFFFFF;   /* Light surface / highlights */
+  --ko-cream2:    #EBEBE5;   /* Light neutral */
+  --ko-cream3:    #F5F5F0;   /* Light neutral 2 */
+  
+  /* Tonal Palette: Structure */
+  --ko-constr:    #DCD8CD;   /* Subtle grey construction lines */
+  --ko-charcoal:  #222222;   /* Primary text / structure */
+  --ko-muted:     #22222299; /* 60% text */
+  --ko-faint:     #22222233; /* 20% text */
+  --ko-ghost:     #2222220D; /* 5% faint background blocks */
+
+  /* Tonal Palette: Signal */
+  --ko-orange:    #FF8000;   /* Primary signal */
+  --ko-orange-dim:#FF800022; /* Signal wash */
+
+  /* Spacing */
+  --column-read:  640px;
+  --column-wide:  960px;
+  --s-2xs:        0.25rem;
+  --s-xs:         0.5rem;
+  --s-sm:         1rem;
+  --s-md:         1.5rem;
+  --s-lg:         3rem;
+  --s-xl:         5rem;
+  --s-2xl:        8rem;
+
+  /* Geometry & Animation */
+  --radius-sm:    4px;
+  --radius-lg:    24px;
+  --trans-fast:   120ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --trans-smooth: 350ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--ko-bg);
+  color: var(--ko-charcoal);
+  font-family: 'Satoshi-Variable', 'Satoshi', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  min-height: 100vh;
+  position: relative;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 999999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.04;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TYPOGRAPHY CLASSES (KnockOut System Translated)
+   ───────────────────────────────────────────────────────────── */
+.t-logo { font-weight: 900; font-size: 1.5rem; letter-spacing: -0.025em; line-height: 1; }
+.t-hero { font-weight: 900; font-size: 4rem; letter-spacing: -0.04em; line-height: 0.95; }
+.t-head { font-weight: 700; font-size: 1.75rem; letter-spacing: -0.025em; line-height: 1.05; }
+.t-sub  { font-weight: 500; font-size: 1.125rem; letter-spacing: -0.015em; line-height: 1.2; }
+.t-body { font-weight: 400; font-size: 0.875rem; line-height: 1.4; }
+.t-eyebrow { font-weight: 700; font-size: 0.625rem; letter-spacing: 0.2em; line-height: 1; text-transform: uppercase; }
+.t-num { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ─────────────────────────────────────────────────────────────
+   RESPONSIVE & MOBILE
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  :root {
+    --s-xl: 3rem;
+    --s-2xl: 4rem;
+  }
+}
+
+.layout-col-4 { grid-column: span 4; }
+.layout-col-5 { grid-column: span 5; }
+.layout-col-6 { grid-column: span 6; }
+.layout-col-7 { grid-column: span 7; }
+.layout-col-8 { grid-column: span 8; }
+
+@media (max-width: 768px) {
+  :root {
+    --s-xl: 1.5rem;
+    --s-2xl: 1.5rem;
+  }
+  .layout-col-4, .layout-col-5, .layout-col-6, .layout-col-7, .layout-col-8 {
+    grid-column: 1 / -1 !important;
+  }
+  /* Force 1-column layouts on all responsive grid containers */
+  .responsive-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .responsive-flex-stack {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .mobile-padding {
+    padding: 16px !important;
+  }
+  .mobile-hide {
+    display: none !important;
+  }
+  /* For ResearchQuestionRow specifically */
+  .question-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  /* Squircles and hero fixes */
+  .hero-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+  .hero-buttons > * {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.question-grid {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ANIMATIONS
+   ───────────────────────────────────────────────────────────── */
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.8s cubic-bezier(0.2, 1, 0.3, 1) both;
+}
+
+@keyframes dash-flow {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -20; }
+}
+
+.animate-dash-flow {
+  animation: dash-flow 1s linear infinite;
 }

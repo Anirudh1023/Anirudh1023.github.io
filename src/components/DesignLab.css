@@ -1,0 +1,77 @@
+/* DesignLab.css - KnockOut Translation */
+
+.layout-col {
+  max-width: var(--column-read);
+  margin: 0 auto;
+}
+
+.layout-wide {
+  max-width: var(--column-wide);
+  margin: 0 auto;
+}
+
+.dl-header {
+  padding: var(--s-2xl) 0 var(--s-lg) 0;
+  border-bottom: 2px solid var(--ko-charcoal);
+  margin-bottom: var(--s-xl);
+}
+
+.dl-section {
+  margin-bottom: var(--s-xl);
+}
+
+.dl-section-label {
+  color: var(--ko-muted);
+  margin-bottom: var(--s-md);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Asymmetric Geometry & Evidence Blocks
+   ───────────────────────────────────────────────────────────── */
+.evidence-block {
+  background-color: var(--ko-surface);
+  border: 1px solid var(--ko-constr);
+  padding: var(--s-lg);
+  border-radius: var(--radius-lg) var(--radius-sm) var(--radius-lg) var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-sm);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SVG Graphic Language (Orange/Charcoal)
+   ───────────────────────────────────────────────────────────── */
+.svg-fig {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  user-select: none;
+}
+
+/* Fills & Backgrounds */
+.s-bg { fill: var(--ko-bg); }
+.s-bgsec { fill: var(--ko-bgsec); }
+.s-cream2 { fill: var(--ko-cream2); }
+.s-surface { fill: var(--ko-surface); }
+.s-ghost { fill: var(--ko-ghost); }
+
+/* Strokes */
+.s-line { fill: none; stroke: var(--ko-charcoal); stroke-width: 1.5; transition: stroke var(--trans-smooth); }
+.s-line-muted { stroke: var(--ko-muted); stroke-width: 1; }
+.s-line-constr { stroke: var(--ko-constr); stroke-width: 1; }
+.s-line-signal { stroke: var(--ko-orange); stroke-width: 2; }
+.s-line-dashed { stroke-dasharray: 4 4; }
+
+/* Text */
+.s-text { fill: var(--ko-charcoal); font-family: 'Satoshi-Variable'; font-weight: 500; font-size: 14px; transition: fill var(--trans-smooth); }
+.s-text-sub { font-size: 11px; fill: var(--ko-muted); }
+.s-text-signal { fill: var(--ko-orange); font-weight: 700; }
+
+/* Interaction */
+.s-interactive { cursor: pointer; }
+.s-interactive .s-hitbox { fill: transparent; stroke: none; }
+.s-interactive:hover .s-text { fill: var(--ko-orange); }
+.s-interactive:hover .s-line { stroke: var(--ko-orange); }
+
+.s-interactive.active .s-line { stroke: var(--ko-orange); stroke-width: 2; }
+.s-interactive.active .s-text { fill: var(--ko-orange); font-weight: 700; }
