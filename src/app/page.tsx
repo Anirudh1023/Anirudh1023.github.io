@@ -31,6 +31,31 @@ function renderTextWithTooltips(text: string) {
   });
 }
 
+function renderFormattedText(text: string) {
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+  
+  while ((match = linkRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(...renderTextWithTooltips(text.substring(lastIndex, match.index)));
+    }
+    parts.push(
+      <a key={`link-${match.index}`} href={match[2]} target="_blank" rel="noopener noreferrer" style={{ color: KO.text, textDecoration: "underline", textDecorationColor: KO.accent }}>
+        {match[1]}
+      </a>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  
+  if (lastIndex < text.length) {
+    parts.push(...renderTextWithTooltips(text.substring(lastIndex)));
+  }
+  
+  return parts;
+}
+
 function Tooltip({ children, content }: { children: React.ReactNode, content: React.ReactNode }) {
   const [show, setShow] = useState(false);
   return (
@@ -79,15 +104,17 @@ function Badge({ children }: { children: React.ReactNode }) {
 
 export default function Home() {
   const [activeModalId, setActiveModalId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"All" | "Current" | "Publications">("All");
+  const [activeTab, setActiveTab] = useState<"All" | "Current" | "Publications" | "Projects">("All");
 
   const activeArticleData = 
     siteContent.projects.find(p => p.id === activeModalId) ||
     siteContent.selectedWork.find(w => w.id === activeModalId) ||
+    (siteContent as any).otherProjects?.find((w: any) => w.id === activeModalId) ||
     null;
 
   const displayProjects = activeTab === "All" || activeTab === "Current" ? siteContent.projects : [];
   const displayWork = activeTab === "All" || activeTab === "Publications" ? siteContent.selectedWork : [];
+  const displayOther = activeTab === "All" || activeTab === "Projects" ? ((siteContent as any).otherProjects || []) : [];
 
   return (
     <main style={{ minHeight: "100vh", background: KO.bgPrimary, color: KO.text, overflow: activeModalId ? "hidden" : "auto", fontFamily: "'Satoshi-Variable', 'Satoshi', sans-serif" }}>
@@ -120,15 +147,11 @@ export default function Home() {
                   Machine Learning Engineer @ Samsung Research, Bengaluru
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  <p style={{ fontSize: "0.95rem", color: KO.text, lineHeight: 1.6, margin: 0 }}>
-                    Machine-learning algorithms are usually designed as though computation is free and the execution substrate is interchangeable. On a device, neither is true.
-                  </p>
-                  <p style={{ fontSize: "0.95rem", color: KO.text, lineHeight: 1.6, margin: 0 }}>
-                    At Samsung Research India, I work on the <Tooltip content="Running ML directly on mobile chips (CPUs, GPUs, NPUs) rather than servers.">On-Device AI</Tooltip> team, where I study how <Tooltip content="Large, general-purpose models like LLMs that require significant adaptation.">foundation models</Tooltip> can be adapted and executed when memory, latency, thermal limits, and accelerator capabilities constrain what a system can actually do.
-                  </p>
-                  <p style={{ fontSize: "0.95rem", color: KO.text, lineHeight: 1.6, margin: 0 }}>
-                    My work asks a recurring question: what information, computation, and state does a task actually require, and what can be removed, reused, or executed differently?
-                  </p>
+                  {siteContent.identity.heroParagraphs.map((p, i) => (
+                    <p key={i} style={{ fontSize: "0.95rem", color: KO.text, lineHeight: 1.6, margin: 0 }}>
+                      {renderFormattedText(p)}
+                    </p>
+                  ))}
                 </div>
               </div>
             </div>
@@ -141,7 +164,7 @@ export default function Home() {
                 Research & Projects
               </h2>
               <div style={{ display: "flex", gap: 16 }}>
-                {(["All", "Current", "Publications"] as const).map(tab => (
+                {(["All", "Current", "Publications", "Projects"] as const).map(tab => (
                   <button 
                     key={tab} 
                     onClick={() => setActiveTab(tab)}
@@ -165,11 +188,11 @@ export default function Home() {
               {displayProjects.map(proj => (
                 <div 
                   key={proj.id} 
-                  onClick={() => setActiveModalId(proj.id)}
+                  onClick={() => proj.article.sections.length > 0 ? setActiveModalId(proj.id) : null}
                   style={{ 
                     padding: "16px",
                     borderRadius: 16,
-                    cursor: "pointer",
+                    cursor: proj.article.sections.length > 0 ? "pointer" : "default",
                     transition: "background 0.2s",
                     marginLeft: -16,
                     marginRight: -16
@@ -181,26 +204,26 @@ export default function Home() {
                     <h3 style={{ fontSize: "1rem", fontWeight: 700, margin: 0, color: KO.text }}>
                       {proj.title}
                     </h3>
-                    <Badge>{proj.category.includes("CURRENT") ? "Current Research" : proj.category}</Badge>
+                    <Badge>{proj.category}</Badge>
                   </div>
-                  <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.5, margin: "0 0 12px 0" }}>
-                    {renderTextWithTooltips(proj.homepageSummary)}
+                  <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.5, margin: proj.article.sections.length > 0 ? "0 0 12px 0" : 0 }}>
+                    {renderFormattedText(proj.homepageSummary)}
                   </p>
-                  <div style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                    Read Notes <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(90deg)" }} />
-                  </div>
+                  {proj.article.sections.length > 0 && (
+                    <div style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      Read Notes <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(90deg)" }} />
+                    </div>
+                  )}
                 </div>
               ))}
 
-              {/* SELECTED WORK */}
+              {/* PUBLICATIONS */}
               {displayWork.map(work => (
                 <div 
                   key={work.id}
-                  onClick={() => setActiveModalId(work.id)}
                   style={{
                     padding: "16px",
                     borderRadius: 16,
-                    cursor: "pointer",
                     transition: "background 0.2s",
                     marginLeft: -16,
                     marginRight: -16
@@ -212,11 +235,43 @@ export default function Home() {
                     <h3 style={{ fontSize: "1rem", fontWeight: 700, margin: 0, color: KO.text }}>
                       {work.title}
                     </h3>
-                    <Badge>{work.metadata.includes("INTERSPEECH") || work.metadata.includes("ICASSP") ? "Conference Paper" : "Project"}</Badge>
-                    <span style={{ fontSize: "0.75rem", color: KO.textMute, fontWeight: 500 }}>· {work.result}</span>
+                    <Badge>Conference Paper</Badge>
+                    <span style={{ fontSize: "0.75rem", color: KO.textMute, fontWeight: 500 }}>· {work.metadata}</span>
+                  </div>
+                  <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.5, margin: "0 0 12px 0" }}>
+                    {renderFormattedText(work.teaser)}
+                  </p>
+                  {work.link && (
+                    <a href={work.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" }}>
+                      Read Paper PDF <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(45deg)" }} />
+                    </a>
+                  )}
+                </div>
+              ))}
+
+              {/* OTHER PROJECTS */}
+              {displayOther.map((work: any) => (
+                <div 
+                  key={work.id}
+                  style={{
+                    padding: "16px",
+                    borderRadius: 16,
+                    transition: "background 0.2s",
+                    marginLeft: -16,
+                    marginRight: -16
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.background = KO.surface; }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = "transparent"; }}
+                >
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
+                    <h3 style={{ fontSize: "1rem", fontWeight: 700, margin: 0, color: KO.text }}>
+                      {work.title}
+                    </h3>
+                    <Badge>Project</Badge>
+                    <span style={{ fontSize: "0.75rem", color: KO.textMute, fontWeight: 500 }}>· {work.metadata}</span>
                   </div>
                   <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.5, margin: 0 }}>
-                    {renderTextWithTooltips(work.teaser)}
+                    {renderFormattedText(work.teaser)}
                   </p>
                 </div>
               ))}
@@ -245,7 +300,7 @@ export default function Home() {
                   </div>
                   <div style={{ fontSize: "0.85rem", color: KO.textDim, fontWeight: 500, marginBottom: 4 }}>{exp.role}</div>
                   <div style={{ fontSize: "0.9rem", color: KO.text, lineHeight: 1.5 }}>
-                    {renderTextWithTooltips(exp.desc)}
+                    {renderFormattedText(exp.desc)}
                   </div>
                 </div>
               ))}
