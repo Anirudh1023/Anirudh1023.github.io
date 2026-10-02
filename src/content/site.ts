@@ -307,15 +307,19 @@ export const siteContent = {
       teaser: "Quantized on-device adaptation under memory and thermal limits",
       result: "3 GB → <1 GB pipeline",
       article: {
-        intro: "I worked with Samsung Research Korea on on-device parameter-efficient fine-tuning for foundation models, extending NNTrainer toward causal-LLM training and multi-batch execution across heterogeneous backends.",
+        intro: "I worked on on-device parameter-efficient fine-tuning for foundation models, extending NNTrainer toward causal-LLM training and multi-batch execution across heterogeneous backends.",
         sections: [
           {
             type: "paragraph",
-            content: "The base model stayed in a deployment-oriented quantized format while LoRA carried the adaptation. Rather than training in higher precision and compressing afterward, we used quantization-aware training so the adapters learned the behavior introduced by blockwise quantization during adaptation."
+            content: "Making on-device training practical on CPU was not enough; I wanted to know whether the NPU could execute the training workload as effectively as it executed inference. I extended NNTrainer to use the mobile NPU while preserving its flexible layer-level execution, unlike existing accelerator paths designed around fixed, operator-level inference graphs."
           },
           {
             type: "paragraph",
-            content: "I also worked on what the runtime needed to keep resident during training: checkpointing, memory mapping, selective recomputation, and thermal-aware Progressive LoRA. The resulting pipeline brought a 3 GB model workflow below 1 GB and extended on-device training from a static memory problem into a runtime problem that could respond to device conditions."
+            content: "My initial CPU–NPU design was inefficient because frequent synchronization and data transfers erased the benefit of NPU acceleration. I therefore redesigned the execution path so that successive layers could be submitted asynchronously while keeping intermediate data readily accessible across the CPU and NPU, and adapted existing inference kernels to support the additional operations required for backpropagation."
+          },
+          {
+            type: "paragraph",
+            content: "This enabled the NPU to handle the compute-intensive parts of training, accelerating prefill by roughly 5× while substantially reducing training memory. More importantly, the experience showed me that hardware and ML execution cannot be optimized independently: the way an algorithm schedules and moves computation can determine whether an accelerator helps at all."
           },
           {
             type: "figure",

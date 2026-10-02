@@ -29,9 +29,12 @@ export default function Home() {
           <div style={{ ...F.btn(12), color: KO.accent, marginBottom: 24 }}>
             {siteContent.identity.heroEyebrow}
           </div>
-          <h1 style={{ ...F.hero(72), maxWidth: 1000, letterSpacing: "-2px", lineHeight: 1.05, marginBottom: 48 }}>
-            {siteContent.identity.heroHeadline}
+          <h1 style={{ ...F.hero(72), color: KO.text, margin: 0, letterSpacing: "-1.5px", lineHeight: 1, maxWidth: 900 }}>
+            {siteContent.identity.name}
           </h1>
+          <p style={{ ...F.sub(24), color: KO.text, marginTop: 40, marginBottom: 24, lineHeight: 1.4, maxWidth: 800 }}>
+            {siteContent.identity.heroHeadline}
+          </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 680 }}>
             {siteContent.identity.heroParagraphs.map((p, i) => (
               <p key={i} style={{ ...F.sub(20), color: KO.textDim, lineHeight: 1.5, margin: 0 }}>
