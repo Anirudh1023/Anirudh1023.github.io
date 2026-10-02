@@ -11,9 +11,10 @@ export function TopNav() {
       position: "sticky", top: 0, zIndex: 1000,
       background: "rgba(247, 238, 228, 0.95)", /* nearly opaque */
       display: "flex", justifyContent: "space-between", alignItems: "flex-end",
-      padding: "24px 0",
+      padding: "24px var(--s-2xl)",
       borderBottom: `1px solid ${KO.border}`,
       gridColumn: "1 / -1",
+      marginLeft: "-var(--s-2xl)", marginRight: "-var(--s-2xl)", /* offset the page padding */
     }}>
       <div>
         <div style={{ ...F.btn(11), color: KO.textMute, lineHeight: 1.5 }}>

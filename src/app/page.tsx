@@ -19,17 +19,9 @@ export default function Home() {
 
   return (
     <main style={{ minHeight: "100vh", background: KO.bgPrimary, color: KO.text, overflow: activeModalId ? "hidden" : "auto" }}>
-      <TopNav />
-
-      <div className="responsive-grid" style={{
-        maxWidth: 1400,
-        margin: "0 auto",
-        display: "grid",
-        gridTemplateColumns: "repeat(12, 1fr)",
-        gap: 24,
-        padding: "0 24px"
-      }}>
-        
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 var(--s-2xl)", paddingBottom: 160 }}>
+        <TopNav />
+        <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 24 }}>
         {/* ================================================================== */}
         {/* HERO */}
         {/* ================================================================== */}
@@ -223,6 +215,7 @@ export default function Home() {
           </div>
         </section>
 
+      </div>
       </div>
       
       <ResearchNav />
