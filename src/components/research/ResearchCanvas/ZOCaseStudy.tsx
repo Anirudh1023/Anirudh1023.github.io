@@ -37,6 +37,7 @@ export function ZOCaseStudy() {
       {/* Header Toggle */}
       <div 
         onClick={() => setExpanded(!expanded)}
+        className="mobile-padding"
         style={{ 
           padding: "32px", 
           cursor: "pointer",
@@ -54,7 +55,7 @@ export function ZOCaseStudy() {
       </div>
 
       {/* Expandable Content */}
-      <div style={{ 
+      <div className="responsive-grid mobile-padding" style={{ 
         display: expanded ? "grid" : "none", 
         gridTemplateColumns: "repeat(12, 1fr)", 
         gap: 24, 

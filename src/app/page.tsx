@@ -30,7 +30,7 @@ export default function Home() {
       />
 
       {/* 12-column Grid Container */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 24 }}>
+      <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 24 }}>
 
         <TopNav />
 
@@ -128,7 +128,7 @@ export default function Home() {
         {/* ================================================================== */}
         {/* OUTPUTS & EXPERIENCE */}
         {/* ================================================================== */}
-        <section className="animate-fade-up" style={{ gridColumn: "1 / -1", display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 24, paddingTop: 80, animationDelay: "800ms" }}>
+        <section className="animate-fade-up responsive-grid" style={{ gridColumn: "1 / -1", display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 24, paddingTop: 80, animationDelay: "800ms" }}>
           <div className="layout-col-7">
             <h2 style={{ ...F.head(24), color: KO.text, margin: 0, marginBottom: 32 }}>SELECTED OUTPUTS</h2>
             <SelectedOutputs />

@@ -95,7 +95,7 @@ function CenterTab({ active, onClick, icon, label }: any) {
       transition: "all 0.2s cubic-bezier(0.2, 1, 0.3, 1)"
     }}>
       {icon}
-      <span style={{ ...F.btn(11), color: active ? KO.surface : KO.bgSec }}>{label}</span>
+      <span className="mobile-hide" style={{ ...F.btn(11), color: active ? KO.surface : KO.bgSec }}>{label}</span>
     </PressButton>
   );
 }
