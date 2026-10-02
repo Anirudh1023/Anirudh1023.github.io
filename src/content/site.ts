@@ -4,9 +4,10 @@ export const siteContent = {
     heroEyebrow: "SAMSUNG RESEARCH INDIA · ON-DEVICE AI",
     heroHeadline: "EFFICIENT FOUNDATION MODELS UNDER REAL HARDWARE CONSTRAINTS.",
     heroParagraphs: [
-      "Machine-learning algorithms are usually designed as though computation is free and the execution substrate is interchangeable. On a device, neither is true.",
-      "At Samsung Research India, I work on the On-Device AI team, where I study how foundation models can be adapted and executed when memory, latency, thermal limits, and accelerator capabilities constrain what a system can actually do.",
-      "My work asks a recurring question: what information, computation, and state does a task actually require, and what can be removed, reused, or executed differently? I have explored this through speech representations, model depth, production inference runtimes, on-device training, accelerator-aware optimization, and hybrid inference."
+      "👋 I'm a Machine Learning Engineer at Samsung Research India, working on the On-Device AI team. My current work revolves around making large foundation models run efficiently on mobile chips (CPUs, GPUs, NPUs) under strict memory, latency, and thermal constraints. This includes projects ranging from on-device LLM fine-tuning without backpropagation to hybrid speculative decoding across devices.",
+      "Previously, I spent two years doing Honours research at the Speech Processing Lab at IIIT Hyderabad with Prof. Anil Kumar Vuppala, where I explored task-dependent speech representations and built systems for whispered-to-normal speech conversion. I also worked on computational tools for speech analysis and helped build the first Indian-English stuttered-speech corpus.",
+      "Before that, I interned at Samsung Research, where I unified the CPU, GPU, and NPU deployment paths for over 200 production vision and speech models into a single runtime. I also spent time at Docturnal working on voice-based tuberculosis screening.",
+      "I am deeply interested in algorithm-system co-design: figuring out how scheduling, memory movement, and accelerator primitives can be designed together. If you want to chat about ML systems, or just want to say hello – please reach out!"
     ],
     links: {
       email: "mailto:anirudhnarayana7@gmail.com",
