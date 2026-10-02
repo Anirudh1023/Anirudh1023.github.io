@@ -90,7 +90,7 @@ export default function Home() {
             <HybridCaseStudy />
           </div>
 
-          <div className="animate-fade-up" style={{ marginBottom: 60, animationDelay: "600ms", borderTop: `1px solid ${KO.textGhost}`, paddingTop: 80 }}>
+          <div id="research" className="animate-fade-up" style={{ marginBottom: 60, animationDelay: "600ms", borderTop: `1px solid ${KO.textGhost}`, paddingTop: 80 }}>
             <h2 style={{ ...F.head(28), color: KO.text, margin: 0, marginBottom: 8 }}>OTHER WORK</h2>
             <div style={{ ...F.sub(20), color: KO.textDim, maxWidth: 800, marginTop: 16 }}>
               {siteContent.researchThread.question}
