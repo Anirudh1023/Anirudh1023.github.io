@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { KO, F } from "@/lib/knockout-tokens";
 import { Icon2T } from "@/components/knockout/icons/Icons2T";
 
@@ -231,21 +231,21 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
 function DiagramZOCrash() {
   const [subspace, setSubspace] = useState(false);
   return (
-    <div style={{ position: "relative", width: "100%", height: 320, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+    <div style={{ position: "relative", width: "100%", height: 360, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
         <div style={{ ...F.eyebrow(10), color: KO.textDim }}>
           {subspace ? "LEARNED SUBSPACE (SAFE)" : "FULL RANK (CRASH RISK)"}
         </div>
         <div style={{ display: "flex", background: KO.surface, borderRadius: 99, padding: 4, border: `1px solid ${KO.border}` }}>
-          <button onClick={() => setSubspace(false)} style={{ border: "none", cursor: "pointer", padding: "6px 12px", borderRadius: 99, background: !subspace ? KO.text : "transparent", color: !subspace ? KO.surface : KO.text, ...F.btn(10) }}>
+          <button onClick={() => setSubspace(false)} style={{ border: "none", cursor: "pointer", padding: "8px 16px", borderRadius: 99, background: !subspace ? KO.text : "transparent", color: !subspace ? KO.surface : KO.text, ...F.btn(11), transition: "all 0.2s" }}>
             FULL WEIGHTS
           </button>
-          <button onClick={() => setSubspace(true)} style={{ border: "none", cursor: "pointer", padding: "6px 12px", borderRadius: 99, background: subspace ? KO.accent : "transparent", color: subspace ? KO.surface : KO.text, ...F.btn(10) }}>
+          <button onClick={() => setSubspace(true)} style={{ border: "none", cursor: "pointer", padding: "8px 16px", borderRadius: 99, background: subspace ? KO.accent : "transparent", color: subspace ? KO.surface : KO.text, ...F.btn(11), transition: "all 0.2s" }}>
             SUBSPACE RxR
           </button>
         </div>
       </div>
-      <div style={{ flex: 1, position: "relative" }}>
+      <div style={{ flex: 1, position: "relative", background: KO.surface, borderRadius: 12, border: `1px solid ${KO.border}`, padding: 24 }}>
         <svg viewBox="0 0 700 240" style={{ width: "100%", height: "100%" }}>
           <defs>
             <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
@@ -257,35 +257,43 @@ function DiagramZOCrash() {
           </defs>
 
           {/* Full Rank Path */}
-          <g style={{ opacity: subspace ? 0.2 : 1, transition: "opacity 0.3s" }}>
-            <rect x="20" y="20" width="160" height="60" rx="8" fill={KO.surface} stroke={KO.border} />
-            <text x="100" y="54" textAnchor="middle" fill={KO.textDim} style={{ ...F.eyebrow(10) }}>FULL WEIGHT MATRIX</text>
-            <path d="M 180 50 L 260 50" fill="none" stroke={KO.textGhost} strokeWidth="2" markerEnd="url(#arrow)" />
-            <rect x="270" y="10" width="120" height="80" rx="8" fill="none" stroke={KO.accent} strokeWidth="2" strokeDasharray="4 4" />
-            <text x="330" y="54" textAnchor="middle" fill={KO.accent} style={{ ...F.eyebrow(10) }}>3.2 GB DISPATCH</text>
-            <path d="M 390 50 L 470 50" fill="none" stroke={KO.textGhost} strokeWidth="2" markerEnd="url(#arrow)" />
-          </g>
+          <motion.g animate={{ opacity: subspace ? 0.15 : 1 }} transition={{ duration: 0.4 }}>
+            <rect x="20" y="20" width="180" height="60" rx="8" fill={KO.bgSec} stroke={KO.border} />
+            <text x="110" y="54" textAnchor="middle" fill={KO.textDim} style={{ ...F.eyebrow(11) }}>FULL WEIGHT MATRIX</text>
+            
+            <path d="M 200 50 L 260 50" fill="none" stroke={KO.textGhost} strokeWidth="2" markerEnd="url(#arrow)" />
+            
+            <rect x="270" y="10" width="140" height="80" rx="8" fill="none" stroke={KO.accent} strokeWidth="2" strokeDasharray="4 4" className="animate-dash-flow" />
+            <text x="340" y="54" textAnchor="middle" fill={KO.accent} style={{ ...F.eyebrow(11) }}>3.2 GB DISPATCH</text>
+            
+            <path d="M 410 50 L 470 50" fill="none" stroke={KO.textGhost} strokeWidth="2" markerEnd="url(#arrow)" />
+          </motion.g>
 
           {/* Subspace Path */}
-          <g style={{ opacity: subspace ? 1 : 0.2, transition: "opacity 0.3s" }}>
-            <rect x="20" y="140" width="160" height="60" rx="8" fill={subspace ? KO.surface : KO.surface} stroke={KO.border} />
-            <text x="100" y="174" textAnchor="middle" fill={KO.textDim} style={{ ...F.eyebrow(10) }}>RxR COEFFICIENTS</text>
-            <path d="M 180 170 L 260 170" fill="none" stroke={subspace ? KO.accent : KO.textGhost} strokeWidth="2" markerEnd={subspace ? "url(#arrow-active)" : "url(#arrow)"} />
-            <rect x="270" y="140" width="120" height="60" rx="8" fill={subspace ? KO.accent : KO.surface} stroke={KO.border} />
-            <text x="330" y="174" textAnchor="middle" fill={subspace ? KO.surface : KO.textDim} style={{ ...F.eyebrow(10) }}>SAFE DISPATCH</text>
-            <path d="M 390 170 L 470 120" fill="none" stroke={subspace ? KO.accent : KO.textGhost} strokeWidth="2" markerEnd={subspace ? "url(#arrow-active)" : "url(#arrow)"} />
-          </g>
+          <motion.g animate={{ opacity: subspace ? 1 : 0.15 }} transition={{ duration: 0.4 }}>
+            <rect x="20" y="160" width="180" height="60" rx="8" fill={subspace ? KO.accent + "11" : KO.bgSec} stroke={KO.border} />
+            <text x="110" y="194" textAnchor="middle" fill={KO.textDim} style={{ ...F.eyebrow(11) }}>RxR COEFFICIENTS</text>
+            
+            <path d="M 200 190 L 260 190" fill="none" stroke={subspace ? KO.accent : KO.textGhost} strokeWidth="2" markerEnd={subspace ? "url(#arrow-active)" : "url(#arrow)"} />
+            
+            <rect x="270" y="160" width="140" height="60" rx="8" fill={subspace ? KO.accent : KO.bgSec} stroke={KO.border} />
+            <text x="340" y="194" textAnchor="middle" fill={subspace ? KO.surface : KO.textDim} style={{ ...F.eyebrow(11) }}>SAFE DISPATCH</text>
+            
+            <path d="M 410 190 L 470 120" fill="none" stroke={subspace ? KO.accent : KO.textGhost} strokeWidth="2" markerEnd={subspace ? "url(#arrow-active)" : "url(#arrow)"} className={subspace ? "animate-dash-flow" : ""} strokeDasharray={subspace ? "4 4" : "0"} />
+          </motion.g>
 
           {/* Device Path */}
-          <rect x="480" y="60" width="160" height="60" rx="8" fill={KO.surface} stroke={KO.border} />
-          <text x="560" y="94" textAnchor="middle" fill={KO.textDim} style={{ ...F.eyebrow(10) }}>FORWARD EVALUATION</text>
+          <rect x="480" y="70" width="180" height="60" rx="8" fill={KO.bgSec} stroke={KO.border} />
+          <text x="570" y="104" textAnchor="middle" fill={KO.textDim} style={{ ...F.eyebrow(11) }}>FORWARD EVALUATION</text>
           
-          {!subspace && (
-            <g>
-              <rect x="480" y="10" width="160" height="40" rx="4" fill="#FF4444" />
-              <text x="560" y="34" textAnchor="middle" fill={KO.surface} style={{ ...F.eyebrow(10) }}>DEVICE CRASH!</text>
-            </g>
-          )}
+          <AnimatePresence>
+            {!subspace && (
+              <motion.g initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.3 }}>
+                <rect x="480" y="15" width="180" height="45" rx="6" fill="#FF4444" />
+                <text x="570" y="42" textAnchor="middle" fill={KO.surface} style={{ ...F.eyebrow(11) }}>DEVICE CRASH!</text>
+              </motion.g>
+            )}
+          </AnimatePresence>
 
         </svg>
       </div>
@@ -295,21 +303,21 @@ function DiagramZOCrash() {
 
 function DiagramZORank() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 0" }}>
-      <div style={{ display: "flex", gap: 32, marginBottom: 24, width: "100%", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ ...F.head(24), color: KO.text }}>r = 8</div>
-          <div style={{ ...F.btn(11), color: KO.textDim }}>LOW RANK</div>
-          <div style={{ ...F.body(14), color: KO.accent, marginTop: 8 }}>CPU FASTER (0.92s)</div>
-        </div>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0" }}>
+      <div style={{ display: "flex", gap: 64, marginBottom: 32, width: "100%", justifyContent: "center" }}>
+        <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ textAlign: "center" }}>
+          <div style={{ ...F.hero(48), color: KO.text }}>r = 8</div>
+          <div style={{ ...F.btn(12), color: KO.textDim, marginTop: 8 }}>LOW RANK</div>
+          <div style={{ ...F.btn(11), color: KO.surface, background: KO.accent, padding: "6px 12px", borderRadius: 99, marginTop: 16 }}>CPU FASTER (0.92s)</div>
+        </motion.div>
         <div style={{ width: 1, background: KO.border }}></div>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ ...F.head(24), color: KO.text }}>r = 256</div>
-          <div style={{ ...F.btn(11), color: KO.textDim }}>HIGH RANK</div>
-          <div style={{ ...F.body(14), color: KO.accent, marginTop: 8 }}>NPU FASTER (2.75s)</div>
-        </div>
+        <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} style={{ textAlign: "center" }}>
+          <div style={{ ...F.hero(48), color: KO.text }}>r = 256</div>
+          <div style={{ ...F.btn(12), color: KO.textDim, marginTop: 8 }}>HIGH RANK</div>
+          <div style={{ ...F.btn(11), color: KO.surface, background: KO.accent, padding: "6px 12px", borderRadius: 99, marginTop: 16 }}>NPU FASTER (2.75s)</div>
+        </motion.div>
       </div>
-      <div style={{ ...F.body(14), color: KO.textDim, fontStyle: "italic" }}>
+      <div style={{ ...F.body(16), color: KO.textDim, fontStyle: "italic" }}>
         At higher ranks, enough useful work accumulates to amortize NPU fixed dispatch overhead.
       </div>
     </div>
@@ -317,51 +325,78 @@ function DiagramZORank() {
 }
 
 function DiagramHybridHandoff() {
+  const [method, setMethod] = useState("direct"); // "direct" or "ngram"
   return (
-    <div style={{ position: "relative", width: "100%", height: 320 }}>
-      <svg viewBox="0 0 700 320" style={{ width: "100%", height: "100%" }}>
-        <defs>
-          <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-            <polygon points="0 0, 6 3, 0 6" fill={KO.textGhost} />
-          </marker>
-        </defs>
+    <div style={{ position: "relative", width: "100%", height: 380, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
+        <div style={{ ...F.eyebrow(10), color: KO.textDim }}>
+          CROSS-VOCABULARY TRANSLATION
+        </div>
+        <div style={{ display: "flex", background: KO.surface, borderRadius: 99, padding: 4, border: `1px solid ${KO.border}` }}>
+          <button onClick={() => setMethod("direct")} style={{ border: "none", cursor: "pointer", padding: "8px 16px", borderRadius: 99, background: method === "direct" ? KO.accent : "transparent", color: method === "direct" ? KO.surface : KO.text, ...F.btn(11), transition: "all 0.2s" }}>
+            DIRECT MAPPING
+          </button>
+          <button onClick={() => setMethod("ngram")} style={{ border: "none", cursor: "pointer", padding: "8px 16px", borderRadius: 99, background: method === "ngram" ? KO.accent : "transparent", color: method === "ngram" ? KO.surface : KO.text, ...F.btn(11), transition: "all 0.2s" }}>
+            N-GRAM MERGE
+          </button>
+        </div>
+      </div>
+      <div style={{ flex: 1, position: "relative", background: KO.surface, borderRadius: 12, border: `1px solid ${KO.border}`, padding: 24 }}>
+        <svg viewBox="0 0 700 240" style={{ width: "100%", height: "100%" }}>
+          <defs>
+            <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <polygon points="0 0, 6 3, 0 6" fill={KO.textGhost} />
+            </marker>
+            <marker id="arrow-accent" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <polygon points="0 0, 6 3, 0 6" fill={KO.accent} />
+            </marker>
+          </defs>
 
-        <rect x="20" y="40" width="160" height="240" rx="12" fill={KO.surface} stroke={KO.border} />
-        <text x="100" y="70" textAnchor="middle" fill={KO.text} style={{ ...F.eyebrow(12) }}>DEVICE</text>
-        <rect x="40" y="100" width="120" height="40" rx="8" fill={KO.bgSec} />
-        <text x="100" y="124" textAnchor="middle" fill={KO.textDim} style={{ ...F.eyebrow(10) }}>SMALL MODEL</text>
-        
-        <path d="M 160 120 L 250 120" fill="none" stroke={KO.textGhost} strokeWidth="2" strokeDasharray="4 4" markerEnd="url(#arrow)" />
-        <text x="205" y="110" textAnchor="middle" fill={KO.accent} style={{ ...F.eyebrow(10) }}>DRAFT TOKENS</text>
+          {/* Device Side */}
+          <rect x="20" y="20" width="180" height="200" rx="12" fill={KO.bgSec} stroke={KO.border} />
+          <text x="110" y="50" textAnchor="middle" fill={KO.text} style={{ ...F.eyebrow(12) }}>DEVICE</text>
+          
+          <rect x="40" y="90" width="140" height="60" rx="8" fill={KO.surface} stroke={KO.border} />
+          <text x="110" y="124" textAnchor="middle" fill={KO.textDim} style={{ ...F.eyebrow(11) }}>SMALL MODEL</text>
+          
+          <path d="M 180 120 L 250 120" fill="none" stroke={KO.textGhost} strokeWidth="2" strokeDasharray="4 4" markerEnd="url(#arrow)" className="animate-dash-flow" />
+          <text x="215" y="105" textAnchor="middle" fill={KO.textDim} style={{ ...F.eyebrow(10) }}>DRAFT TOKENS</text>
 
-        <rect x="260" y="100" width="140" height="60" rx="8" fill={KO.accent} stroke={KO.border} />
-        <text x="330" y="128" textAnchor="middle" fill={KO.surface} style={{ ...F.eyebrow(10) }}>CROSS-VOCAB</text>
-        <text x="330" y="144" textAnchor="middle" fill={KO.surface} style={{ ...F.eyebrow(10) }}>TRANSLATION</text>
+          {/* Translation Box */}
+          <motion.rect animate={{ fill: method === "direct" ? KO.accent : KO.text }} transition={{ duration: 0.3 }} x="260" y="80" width="180" height="80" rx="8" />
+          <text x="350" y="120" textAnchor="middle" fill={KO.surface} style={{ ...F.eyebrow(11) }}>TRANSLATION</text>
+          <text x="350" y="140" textAnchor="middle" fill={KO.surface} style={{ ...F.eyebrow(10), opacity: 0.8 }}>
+            {method === "direct" ? "[ 1:1 MAP ]" : "[ N-GRAM MERGE ]"}
+          </text>
 
-        <path d="M 400 130 L 490 130" fill="none" stroke={KO.textGhost} strokeWidth="2" strokeDasharray="4 4" markerEnd="url(#arrow)" />
+          <path d="M 440 120 L 510 120" fill="none" stroke={KO.accent} strokeWidth="2" strokeDasharray="4 4" markerEnd="url(#arrow-accent)" className="animate-dash-flow" />
 
-        <rect x="500" y="40" width="160" height="240" rx="12" fill={KO.surface} stroke={KO.border} />
-        <text x="580" y="70" textAnchor="middle" fill={KO.text} style={{ ...F.eyebrow(12) }}>SERVER</text>
-        <rect x="520" y="110" width="120" height="40" rx="8" fill={KO.bgSec} />
-        <text x="580" y="134" textAnchor="middle" fill={KO.textDim} style={{ ...F.eyebrow(10) }}>LARGE MODEL</text>
-        <rect x="520" y="180" width="120" height="40" rx="8" fill={KO.text} />
-        <text x="580" y="204" textAnchor="middle" fill={KO.surface} style={{ ...F.eyebrow(10) }}>VERIFICATION</text>
-      </svg>
+          {/* Server Side */}
+          <rect x="520" y="20" width="160" height="200" rx="12" fill={KO.bgSec} stroke={KO.border} />
+          <text x="600" y="50" textAnchor="middle" fill={KO.text} style={{ ...F.eyebrow(12) }}>SERVER</text>
+          
+          <rect x="540" y="70" width="120" height="45" rx="8" fill={KO.surface} stroke={KO.border} />
+          <text x="600" y="96" textAnchor="middle" fill={KO.textDim} style={{ ...F.eyebrow(10) }}>LARGE MODEL</text>
+          
+          <rect x="540" y="135" width="120" height="45" rx="8" fill={KO.text} />
+          <text x="600" y="161" textAnchor="middle" fill={KO.surface} style={{ ...F.eyebrow(10) }}>VERIFICATION</text>
+        </svg>
+      </div>
     </div>
   );
 }
 
 function DiagramNNTrainer() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ ...F.btn(11), background: KO.surface, padding: "8px 16px", borderRadius: 8, border: `1px solid ${KO.border}` }}>PTQ BASE</div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "24px 0" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", justifyContent: "center" }}>
+        <motion.div initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} style={{ ...F.btn(12), background: KO.surface, padding: "12px 24px", borderRadius: 8, border: `1px solid ${KO.border}` }}>PTQ BASE</motion.div>
         <div style={{ ...F.btn(11), color: KO.textGhost }}>→</div>
-        <div style={{ ...F.btn(11), background: KO.surface, padding: "8px 16px", borderRadius: 8, border: `1px solid ${KO.border}` }}>LORA</div>
+        <motion.div initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} style={{ ...F.btn(12), background: KO.surface, padding: "12px 24px", borderRadius: 8, border: `1px solid ${KO.border}` }}>LORA</motion.div>
         <div style={{ ...F.btn(11), color: KO.textGhost }}>→</div>
-        <div style={{ ...F.btn(11), background: KO.accent, color: KO.surface, padding: "8px 16px", borderRadius: 8 }}>QAT ADAPTATION</div>
+        <motion.div initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} style={{ ...F.btn(12), background: KO.accent, color: KO.surface, padding: "12px 24px", borderRadius: 8 }}>QAT ADAPTATION</motion.div>
       </div>
-      <div style={{ ...F.body(14), color: KO.textDim, marginTop: 8 }}>
+      <div style={{ ...F.body(15), color: KO.textDim, marginTop: 16, textAlign: "center" }}>
         Adapters learn blockwise quantization behavior dynamically rather than quantizing post-adaptation.
       </div>
     </div>
@@ -369,21 +404,27 @@ function DiagramNNTrainer() {
 }
 
 function DiagramSpeechLayers() {
+  const bars = [40, 60, 100, 80, 50];
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 0" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", width: "100%", maxWidth: 400, alignItems: "flex-end", height: 120, borderBottom: `1px solid ${KO.border}` }}>
-        <div style={{ width: "20%", height: "40%", background: KO.bgSec, borderRadius: "4px 4px 0 0" }}></div>
-        <div style={{ width: "20%", height: "60%", background: KO.bgSec, borderRadius: "4px 4px 0 0" }}></div>
-        <div style={{ width: "20%", height: "100%", background: KO.accent, borderRadius: "4px 4px 0 0", display: "flex", alignItems: "flex-start", justifyContent: "center" }}>
-          <span style={{ ...F.btn(10), color: KO.surface, marginTop: 8 }}>0.97 F1</span>
-        </div>
-        <div style={{ width: "20%", height: "80%", background: KO.bgSec, borderRadius: "4px 4px 0 0" }}></div>
-        <div style={{ width: "20%", height: "50%", background: KO.bgSec, borderRadius: "4px 4px 0 0" }}></div>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", width: "100%", maxWidth: 480, alignItems: "flex-end", height: 160, borderBottom: `2px solid ${KO.border}`, gap: 8 }}>
+        {bars.map((height, i) => (
+          <motion.div 
+            key={i}
+            initial={{ height: 0 }}
+            whileInView={{ height: `${height}%` }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: i * 0.1, type: "spring", damping: 15 }}
+            style={{ flex: 1, background: i === 2 ? KO.accent : KO.bgSec, borderRadius: "8px 8px 0 0", display: "flex", justifyContent: "center", border: `1px solid ${i === 2 ? KO.accent : KO.border}`, borderBottom: "none" }}
+          >
+            {i === 2 && <span style={{ ...F.btn(12), color: KO.surface, marginTop: 12 }}>0.97 F1</span>}
+          </motion.div>
+        ))}
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", width: "100%", maxWidth: 400, marginTop: 12 }}>
-        <span style={{ ...F.btn(10), color: KO.textDim }}>Layer 1</span>
-        <span style={{ ...F.btn(10), color: KO.text }}>Layer 5 (Peak)</span>
-        <span style={{ ...F.btn(10), color: KO.textDim }}>Final Layer</span>
+      <div style={{ display: "flex", justifyContent: "space-between", width: "100%", maxWidth: 480, marginTop: 16 }}>
+        <span style={{ ...F.btn(11), color: KO.textDim }}>Layer 1</span>
+        <span style={{ ...F.btn(11), color: KO.text }}>Layer 5 (Peak)</span>
+        <span style={{ ...F.btn(11), color: KO.textDim }}>Final Layer</span>
       </div>
     </div>
   );

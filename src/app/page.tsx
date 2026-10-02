@@ -130,7 +130,7 @@ export default function Home() {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
                   <div>
-                    <div style={{ ...F.btn(11), color: KO.textGhost, marginBottom: 8 }}>{work.number} · {work.metadata}</div>
+                    <div style={{ ...F.btn(11), color: KO.textMute, marginBottom: 8 }}>{work.number} · {work.metadata}</div>
                     <div style={{ ...F.head(20), color: KO.text }}>{work.title}</div>
                   </div>
                   <div style={{ ...F.btn(12), color: KO.accent }}>{work.result}</div>
@@ -169,7 +169,7 @@ export default function Home() {
                 <div key={i}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
                     <div style={{ ...F.head(18), color: KO.text }}>{exp.org}</div>
-                    <div style={{ ...F.btn(11), color: KO.textGhost }}>{exp.dates}</div>
+                    <div style={{ ...F.btn(11), color: KO.textMute }}>{exp.dates}</div>
                   </div>
                   <div style={{ ...F.btn(12), color: KO.textDim, marginBottom: 12 }}>{exp.role}</div>
                   <div style={{ ...F.body(15), color: KO.textDim, lineHeight: 1.5 }}>{exp.desc}</div>
