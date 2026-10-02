@@ -129,64 +129,61 @@ export default function Home() {
                   borderRadius: 16,
                   padding: "24px 32px",
                   cursor: "pointer",
-                  display: "grid",
-                  gridTemplateColumns: "1fr 2fr 1fr",
-                  gap: 24,
-                  alignItems: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 16,
                   transition: "border-color 0.2s"
                 }}
-                className="responsive-grid mobile-padding"
+                className="mobile-padding"
               >
-                <div>
-                  <div style={{ ...F.btn(11), color: KO.textGhost, marginBottom: 8 }}>{work.number} · {work.metadata}</div>
-                  <div style={{ ...F.head(20), color: KO.text }}>{work.title}</div>
-                </div>
-                <div>
-                  <div style={{ ...F.body(15), color: KO.textDim }}>{work.teaser}</div>
-                </div>
-                <div style={{ textAlign: "right" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
+                  <div>
+                    <div style={{ ...F.btn(11), color: KO.textGhost, marginBottom: 8 }}>{work.number} · {work.metadata}</div>
+                    <div style={{ ...F.head(20), color: KO.text }}>{work.title}</div>
+                  </div>
                   <div style={{ ...F.btn(12), color: KO.accent }}>{work.result}</div>
                 </div>
+                <div style={{ ...F.body(15), color: KO.textDim, maxWidth: 800 }}>{work.teaser}</div>
               </div>
             ))}
           </div>
         </section>
 
         {/* ================================================================== */}
-        {/* PUBLICATIONS & OUTPUTS */}
         {/* ================================================================== */}
-        <section id="outputs" style={{ gridColumn: "1 / 7", paddingTop: 80, paddingBottom: 80 }}>
-          <div style={{ borderBottom: `1px solid ${KO.border}`, paddingBottom: 24, marginBottom: 48 }}>
-            <h2 style={{ ...F.head(24), margin: 0, letterSpacing: "-1px" }}>PUBLICATIONS & OUTPUTS</h2>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-            {siteContent.outputs.map((out, i) => (
-              <div key={i}>
-                <div style={{ ...F.head(18), color: KO.text, marginBottom: 8 }}>{out.title}</div>
-                <div style={{ ...F.btn(12), color: KO.textDim }}>{out.metadata}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
+        {/* OUTPUTS & EXPERIENCE */}
         {/* ================================================================== */}
-        {/* EXPERIENCE */}
-        {/* ================================================================== */}
-        <section id="experience" style={{ gridColumn: "7 / -1", paddingTop: 80, paddingBottom: 80 }}>
-          <div style={{ borderBottom: `1px solid ${KO.border}`, paddingBottom: 24, marginBottom: 48 }}>
-            <h2 style={{ ...F.head(24), margin: 0, letterSpacing: "-1px" }}>EXPERIENCE</h2>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-            {siteContent.experience.map((exp, i) => (
-              <div key={i}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-                  <div style={{ ...F.head(18), color: KO.text }}>{exp.org}</div>
-                  <div style={{ ...F.btn(11), color: KO.textGhost }}>{exp.dates}</div>
+        <section className="responsive-grid" style={{ gridColumn: "1 / -1", display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 24, paddingTop: 80, paddingBottom: 80 }}>
+          <div className="layout-col-7">
+            <div style={{ borderBottom: `1px solid ${KO.border}`, paddingBottom: 24, marginBottom: 48 }}>
+              <h2 style={{ ...F.head(24), margin: 0, letterSpacing: "-1px" }}>PUBLICATIONS & OUTPUTS</h2>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+              {siteContent.outputs.map((out, i) => (
+                <div key={i}>
+                  <div style={{ ...F.head(18), color: KO.text, marginBottom: 8 }}>{out.title}</div>
+                  <div style={{ ...F.btn(12), color: KO.textDim }}>{out.metadata}</div>
                 </div>
-                <div style={{ ...F.btn(12), color: KO.textDim, marginBottom: 12 }}>{exp.role}</div>
-                <div style={{ ...F.body(15), color: KO.textDim, lineHeight: 1.5 }}>{exp.desc}</div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+
+          <div className="layout-col-5">
+            <div style={{ borderBottom: `1px solid ${KO.border}`, paddingBottom: 24, marginBottom: 48 }}>
+              <h2 style={{ ...F.head(24), margin: 0, letterSpacing: "-1px" }}>EXPERIENCE</h2>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+              {siteContent.experience.map((exp, i) => (
+                <div key={i}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
+                    <div style={{ ...F.head(18), color: KO.text }}>{exp.org}</div>
+                    <div style={{ ...F.btn(11), color: KO.textGhost }}>{exp.dates}</div>
+                  </div>
+                  <div style={{ ...F.btn(12), color: KO.textDim, marginBottom: 12 }}>{exp.role}</div>
+                  <div style={{ ...F.body(15), color: KO.textDim, lineHeight: 1.5 }}>{exp.desc}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
