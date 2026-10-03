@@ -4,9 +4,9 @@ export const siteContent = {
     heroEyebrow: "SAMSUNG RESEARCH INDIA · ON-DEVICE AI",
     heroHeadline: "EFFICIENT FOUNDATION MODELS UNDER REAL HARDWARE CONSTRAINTS.",
     heroParagraphs: [
-      "👋 I'm a Machine Learning Engineer at [Samsung Research India](https://research.samsung.com/sri) in Bengaluru. My current work on the On-Device AI team revolves around making large foundation models run efficiently under strict constraints, with projects ranging from on-device LLM fine-tuning without backpropagation to hybrid speculative decoding across devices. I've also worked on the SnapLite runtime, unifying the CPU, GPU, and NPU deployment paths for over 200 production vision and speech models.",
-      "Previously, I spent two years doing Honours research at the Speech Processing Lab at [IIIT Hyderabad](https://www.iiit.ac.in/) with Prof. Anil Kumar Vuppala. There, I explored task-dependent speech representations and built systems for whispered-to-normal speech conversion. I also led a team to build Waveform-Wizard, curated the first Indian-English stuttered-speech corpus, and spent time at Docturnal working on voice-based tuberculosis screening.",
-      "I'm deeply interested in algorithm-system co-design—figuring out how scheduling, memory movement, and accelerator primitives can be designed together. If you find me a good fit for your team, want to chat about ML systems, or just want to say hello – please freely reach out via the links below!"
+      "I’m a Machine Learning Engineer at [Samsung Research India](https://research.samsung.com/sri), where I work on making machine learning more efficient across training, inference, and systems. My current work spans on-device LLMs, heterogeneous CPU–NPU execution, quantization, memory-efficient training, continual adaptation, and adaptive inference. More broadly, I’m interested in understanding what information, computation, and state a model actually needs for a task, and how those requirements can be reduced, reused, or adapted as models and workloads change.",
+      "At Samsung, I’ve explored efficiency at different levels of the stack: choosing better representations and computation depth, reducing training state and numerical precision, adapting models to changing resource conditions, and redesigning runtimes to make better use of heterogeneous hardware. More recently, I’ve been studying how computation can be reused across models during inference and how models can adapt their computation to the difficulty of a task. These problems have led me toward a broader interest in designing ML algorithms and systems together rather than treating model efficiency and system efficiency as separate problems.",
+      "I first became interested in these questions through speech research at [IIIT Hyderabad](https://www.iiit.ac.in/). In Prof. Anil Kumar Vuppala’s Speech Processing Lab, I studied how different representations and intermediate layers affected task performance, finding that more information and deeper computation were not always more useful. That perspective has stayed with me as my work has moved from speech representations to model optimization, efficient execution, and adaptive ML systems."
     ],
     links: {
       email: "mailto:anirudhnarayana7@gmail.com",
@@ -29,27 +29,27 @@ export const siteContent = {
         "Lead author",
         "Preparing for MLSys 2027"
       ],
-      heroQuestion: "Can an LLM be adapted when the accelerator can execute forward computation but does not provide the conventional backward path?",
-      homepageSummary: "Mobile NPUs are built around forward execution, but the hardware path we targeted exposes no conventional backward/autodiff route. I therefore built a forward-only fine-tuning system around zeroth-order optimization. The first naïve implementation revealed a deeper constraint: perturbing the real weights at full rank pushed roughly 3.2 GB through a single dispatch and crashed the device. Restricting the update to a learned low-rank subspace turned out to be not just an efficiency optimization, but a hardware requirement.\n\nThe current system combines gradient-informed subspace identification with a hardware-compatible Rademacher estimator, adaptive sampling, and on-device subspace refresh.",
+      heroQuestion: "Can an LLM be fine-tuned on a mobile NPU with forward passes alone, and what does the hardware force you to change about the method?",
+      homepageSummary: "Backpropagation worked on the NPU, but it still had to store backward state, so I asked whether forward passes alone could fine-tune the model. My zeroth-order system needs only inference-level memory, but its first version crashed the device: perturbing the real weights at full rank pushed about 3.2 GB through a single dispatch. Restricting updates to a learned low-rank subspace of the model's real weights fixed that, and made the restriction a hardware requirement, not an optimization. On Qwen3-0.6B running on a Qualcomm Hexagon NPU, it reaches 92.0% on SST-2, against 92.7% for our full-LoRA baseline.",
       metrics: [
         { value: "92.0%", label: "SST-2 accuracy (N=500)" },
         { value: "9.1×", label: "subspace-refresh speedup" },
         { value: "10.5×", label: "steady-state speedup" }
       ],
       article: {
-        intro: "The problem is not just memory.",
+        intro: "Backpropagation already runs on the NPU, but it still has to store backward state.",
         sections: [
           {
             type: "heading",
-            content: "THE PROBLEM IS NOT JUST MEMORY"
+            content: "WHY GO FORWARD-ONLY WHEN BACKPROPAGATION RUNS"
           },
           {
             type: "paragraph",
-            content: "Fine-tuning a language model directly on a user's device is attractive because personalization can happen locally without sending private data back to a server. But mobile NPUs introduce a different constraint from a conventional server GPU: the accelerator is highly capable at forward neural-network execution while the execution path exposes no documented backward/autodiff primitives for the training path we target."
+            content: "Fine-tuning a language model directly on a user's device is attractive because personalization can happen locally, without sending private data back to a server. In NNTrainer I had already built an NPU training path that runs backpropagation, so the NPU could train. The cost was memory: backpropagation has to keep the intermediate state the backward pass needs, and on a phone that memory is scarce."
           },
           {
             type: "paragraph",
-            content: "On a GPU, zeroth-order optimization is one alternative among several. It trades analytical gradients for repeated forward evaluations, usually to reduce memory pressure. On an inference-oriented mobile NPU, the situation is different. If the accelerator does not expose the backward path, forward-only optimization is not simply a convenient alternative. It becomes the path through which training can be expressed using the available hardware."
+            content: "Zeroth-order optimization replaces analytical gradients with repeated forward evaluations, so training can run at close to inference-level memory. It also suits the hardware, because mobile NPUs are built around forward execution. The question was whether a forward-only method could fine-tune the model's real weights on the device, and what the hardware would force me to change along the way."
           },
           {
             type: "heading",
@@ -180,7 +180,7 @@ export const siteContent = {
         "2.797× server compute reduction"
       ],
       heroQuestion: "How can computation already performed by a small device model remain useful when control moves to a larger model?",
-      homepageSummary: "A small model can handle many requests locally while a larger model provides additional capability when needed. The usual escalation strategy discards the small model's work and makes the larger model process the conversation again. I instead use speculative decoding as the handoff itself: the small model's draft is translated into the large model's vocabulary, then verified by the large model in a batched forward pass. The verification step simultaneously accelerates generation and lets the larger model pick up the computation.",
+      homepageSummary: "A small model on the device can handle most requests, and a larger server model takes over when it's needed. The usual way to escalate throws away what the small model already wrote and has the large model start over. I use speculative decoding as the handoff instead: the small model's draft is translated into the large model's vocabulary, and the large model verifies it in one batched pass. That check speeds up generation and lets the large model pick up where the small one stopped. In a cloud-GPU setup, it cut wall-clock time by 1.4× and server compute by 2.8×, with the same output as the large model decoding greedily on its own.",
       metrics: [
         { value: "1.394×", label: "WALL-CLOCK SPEEDUP" },
         { value: "2.797×", label: "SERVER-COMPUTE REDUCTION" },
@@ -299,7 +299,7 @@ export const siteContent = {
         "SAMSUNG RESEARCH"
       ],
       heroQuestion: "How does execution scheduling and memory design impact on-device training efficiency?",
-      homepageSummary: "I worked on on-device parameter-efficient fine-tuning for foundation models, extending NNTrainer toward causal-LLM training and multi-batch execution across heterogeneous backends. By combining quantization-aware training, activation checkpointing, selective recomputation, and a completely redesigned asynchronous CPU–NPU execution pipeline, I reduced a 3 GB model's training footprint below 1 GB while accelerating prefill by roughly 5×.",
+      homepageSummary: "I extended NNTrainer, Samsung's open-source on-device training engine, to fine-tune Qwen3-class models with LoRA while keeping the base model in the 4-bit Q4_0 format it ships in. Quantization-aware training, checkpointing, and memory-mapped storage cut a 3 GB model's training footprint below 1 GB. I then moved training onto the NPU. My first CPU–NPU design was slower than the CPU alone, and redesigning it around asynchronous execution brought prefill to roughly 5× the CPU baseline. I also introduced Progressive LoRA, which adapts training to the device's thermal state.",
       metrics: [
         { value: "3 GB → <1 GB", label: "MEMORY PIPELINE REDUCTION" },
         { value: "5×", label: "PREFILL ACCELERATION" }
@@ -339,7 +339,7 @@ export const siteContent = {
       number: "04",
       title: "Waveform-Wizard: A free tool for Spectro-Temporal visualization of Speech",
       metadata: "ICASSP 2025 Show & Tell",
-      teaser: "I led six undergraduates in building Waveform-Wizard, an open-source Python replacement for a MATLAB-heavy speech-analysis workflow. The project rebuilt the analysis stack around Python, NumPy, SciPy, and LibROSA, adding dynamic visualization tools in a unified application.",
+      teaser: "I led a team of six undergraduates in building Waveform-Wizard, an open-source Python tool that replaced our lab's MATLAB speech-analysis workflow. It brings waveform, spectral, pitch, formant, and other analyses into one application, with linked views, multi-file comparison, and installers for Windows and Ubuntu. We presented it at ICASSP 2025 Show & Tell.",
       result: "Presented",
       link: "/publications/Icassp_Show_and_tell.pdf",
       article: {
@@ -361,11 +361,11 @@ export const siteContent = {
       number: "05",
       title: "Towards Classification of Typical and Atypical Disfluencies: A Self Supervised Representation Approach",
       metadata: "Interspeech 2025",
-      teaser: "We evaluated layer-wise representations from Wav2Vec2.0, HuBERT, WavLM, and TERA for typical-vs-atypical disfluency classification. HuBERT's fifth layer reached a peak F1 of 0.97 and outperformed the final representation, showing that deeper computation was not universally more useful.",
+      teaser: "We compared layer-wise representations from Wav2Vec2.0, HuBERT, WavLM, and TERA for telling typical from atypical speech disfluencies. HuBERT's fifth layer, five layers into a 24-layer encoder, reached a peak F1 of 0.97 and outperformed the final layer, so more depth did not help on this task. I also helped build IIITH-TISA, a 10-hour Indian-English stuttered-speech corpus from 30 speakers.",
       result: "Published",
       link: "/publications/Interspeech.pdf",
       article: {
-        intro: "I studied whether the final representation of a self-supervised speech encoder is necessarily the most useful one for a downstream task.",
+        intro: "We studied whether the final representation of a self-supervised speech encoder is necessarily the most useful one for a downstream task.",
         sections: [
           {
             type: "paragraph",
@@ -391,7 +391,7 @@ export const siteContent = {
       number: "06",
       title: "SNAPLITE RUNTIME",
       metadata: "SAMSUNG RESEARCH INDIA · 2024",
-      teaser: "I led the migration from the legacy TensorFlow Lite execution backend to Google's LiteRT, reworking the runtime around a common deployment path across CPU, GPU, and NPU execution for over 200 production models. The resulting system was 10× faster on first inference.",
+      teaser: "SnapLite is Samsung's on-device deployment runtime for more than 200 production vision, speech, and text models. As an intern, I traced unsupported operations and wrong outputs in converted PyTorch and ONNX models, added optimized CPU matrix-multiplication paths, and reworked the runtime around Google's LiteRT instead of TensorFlow Lite, so CPU, GPU, and NPU deployment share one path. First inference on GPU dropped from 1.2 s to 120 ms.",
       result: "10× Speedup",
       article: {
         intro: "During my Samsung Research internship, I worked inside SnapLite, Samsung's on-device AI deployment runtime supporting more than 200 production vision, speech, and text models.",
@@ -402,7 +402,7 @@ export const siteContent = {
           },
           {
             type: "paragraph",
-            content: "I then led the migration from the legacy TensorFlow Lite execution backend to Google's LiteRT, reworking the runtime around a common deployment path across CPU, GPU, and NPU execution while retaining accelerator-specific optimizations. The resulting infrastructure addressed graph partitioning, delegate execution, compiled artifacts, cache lifecycle, driver-aware cache validation, quantization workflows, startup cost, and fallback behavior."
+            content: "I then reworked the runtime around Google's LiteRT in place of the legacy TensorFlow Lite execution backend, giving CPU, GPU, and NPU deployment a common path while retaining accelerator-specific optimizations. The resulting infrastructure addressed graph partitioning, delegate execution, compiled artifacts, cache lifecycle, driver-aware cache validation, quantization workflows, startup cost, and fallback behavior."
           },
           {
             type: "result-table",
@@ -416,7 +416,7 @@ export const siteContent = {
       number: "07",
       title: "WHISPERED SPEECH REPRESENTATIONS (WESPER)",
       metadata: "IIIT HYDERABAD",
-      teaser: "I reproduced WESPER, a whispered-to-normal speech conversion system, and replaced MFCC targets with SFCC because whispered and noisy speech lose fine-grained acoustic information. SFCC improved performance 10–25% at low SNR, demonstrating that changing representation space improves tasks without increasing capacity.",
+      teaser: "I reproduced WESPER, a whispered-to-normal speech conversion system built on HuBERT, and replaced its MFCC training targets with SFCC, which keeps more information from whispered and noisy speech. Smoothing and component selection kept the larger representation practical. The change improved results by 10–25% (relative) at low SNR, and it came from the targets, not from a bigger model.",
       result: "10-25% Improvement",
       article: {
         intro: "I reproduced WESPER, a whispered-to-normal speech conversion system built around self-supervised HuBERT representations and downstream synthesis.",
@@ -437,21 +437,27 @@ export const siteContent = {
   experience: [
     {
       org: "Samsung Research India",
-      role: "On-Device AI",
-      dates: "2024 — Present",
-      desc: "Working across on-device LLM training, heterogeneous accelerator execution, zeroth-order optimization, and hybrid inference."
+      role: "On-Device AI (ML Systems)",
+      dates: "2025 — Present",
+      desc: "Full time on LLM fine-tuning, NPU execution, and device–server speculative decoding."
+    },
+    {
+      org: "Samsung Research India",
+      role: "Software Engineering Intern, SnapLite",
+      dates: "Jun 2024 — Aug 2024",
+      desc: "Worked on the SnapLite deployment runtime: debugging converted models, optimizing CPU matrix multiplication, and moving the runtime onto LiteRT so CPU, GPU, and NPU deployment share one path."
     },
     {
       org: "Speech Processing Lab, IIIT Hyderabad",
       role: "Honours research",
       dates: "2023 — 2025",
-      desc: "Focus: speech representations, disfluency classification, WESPER, Waveform-Wizard."
+      desc: "Four-semester Honours research with Prof. Anil Kumar Vuppala on speech representations, whispered-speech conversion, and disfluency classification. Led the Waveform-Wizard team."
     },
     {
       org: "Docturnal",
-      role: "Engineering",
-      dates: "2023",
-      desc: "Voice-based TB screening."
+      role: "Software Intern",
+      dates: "Jan 2023 — Jun 2023",
+      desc: "Built the Android app and FastAPI inference backend for a voice-based tuberculosis screening product."
     }
   ]
 };
