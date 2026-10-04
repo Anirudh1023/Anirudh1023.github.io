@@ -1,11 +1,11 @@
 export const siteContent = {
   identity: {
     name: "ANIRUDH BOCHA",
-    heroEyebrow: "SAMSUNG RESEARCH INDIA · ON-DEVICE AI",
-    heroHeadline: "EFFICIENT FOUNDATION MODELS UNDER REAL HARDWARE CONSTRAINTS.",
+    heroEyebrow: "SAMSUNG RESEARCH INDIA · ML SYSTEMS",
+    heroHeadline: "EFFICIENT MACHINE LEARNING SYSTEMS.",
     heroParagraphs: [
-      "I’m a Machine Learning Engineer at [Samsung Research India](https://research.samsung.com/sri), where I work on making machine learning more efficient across training, inference, and systems. My current work spans on-device LLMs, heterogeneous CPU–NPU execution, quantization, memory-efficient training, continual adaptation, and adaptive inference. More broadly, I’m interested in understanding what information, computation, and state a model actually needs for a task, and how those requirements can be reduced, reused, or adapted as models and workloads change.",
-      "At Samsung, I’ve explored efficiency at different levels of the stack: choosing better representations and computation depth, reducing training state and numerical precision, adapting models to changing resource conditions, and redesigning runtimes to make better use of heterogeneous hardware. More recently, I’ve been studying how computation can be reused across models during inference and how models can adapt their computation to the difficulty of a task. These problems have led me toward a broader interest in designing ML algorithms and systems together rather than treating model efficiency and system efficiency as separate problems.",
+      "I’m a Machine Learning Engineer at [Samsung Research India](https://research.samsung.com/sri), where I work on making machine learning more efficient across training, inference, and systems. My work spans on-device LLMs, heterogeneous execution, quantization, memory-efficient training, continual adaptation, and adaptive inference. More broadly, I’m interested in understanding what information, computation, and state a model actually needs for a task, and how that work can be reduced, reused, or adapted as models and workloads change.",
+      "I’ve explored these questions at different levels of the stack: from representations and computation depth to optimization, memory, runtimes, scheduling, and accelerator execution. More recently, I’ve also been studying how computation can be reused across models during inference and how models can adapt their computation to the workload. These problems have led me toward a broader interest in designing ML algorithms and systems together rather than treating model efficiency and system efficiency as separate problems.",
       "I first became interested in these questions through speech research at [IIIT Hyderabad](https://www.iiit.ac.in/). In Prof. Anil Kumar Vuppala’s Speech Processing Lab, I studied how different representations and intermediate layers affected task performance, finding that more information and deeper computation were not always more useful. That perspective has stayed with me as my work has moved from speech representations to model optimization, efficient execution, and adaptive ML systems."
     ],
     links: {
@@ -16,10 +16,52 @@ export const siteContent = {
     }
   },
 
-  projects: [
+  featuredResearch: [
+    {
+      id: "nntrainer",
+      number: "01",
+      category: "CURRENT WORK",
+      title: "NNTRAINER",
+      articleTitle: "NNTRAINER",
+      metadata: [
+        "SAMSUNG RESEARCH"
+      ],
+      heroQuestion: "How does execution scheduling and memory design impact on-device training efficiency?",
+      homepageSummary: "I extended Samsung’s open-source NNTrainer framework toward causal-LLM fine-tuning on mobile devices. I added the CPU-side support needed for Qwen3-class models, including quantized Q4_0 execution, LoRA and multi-batch training, quantization-aware training, and memory-saving techniques that brought a roughly 3 GB model’s resident training footprint below 1 GB. I then extended the training path to the mobile NPU; an initial hybrid design was bottlenecked by CPU–NPU synchronization, so I redesigned execution around asynchronous layer submission and accelerator-resident data, bringing prefill to roughly 5× the CPU baseline.",
+      metrics: [
+        { value: "3 GB → <1 GB", label: "MEMORY PIPELINE REDUCTION" },
+        { value: "5×", label: "PREFILL ACCELERATION" }
+      ],
+      article: {
+        intro: "I worked on on-device parameter-efficient fine-tuning for foundation models, extending NNTrainer toward causal-LLM training and multi-batch execution across heterogeneous backends.",
+        sections: [
+          {
+            type: "paragraph",
+            content: "The challenge was making Qwen3-class LoRA fine-tuning feasible under real on-device constraints. I enabled causal-LLM and multi-batch training while keeping the deployed base model in Q4_0 and LoRA weights in FP32. Quantization-aware training made the adaptation learn deployment-time quantization error, while weight and activation checkpointing, selective recomputation, and memory-mapped storage reduced a 3 GB model's resident footprint below 1 GB."
+          },
+          {
+            type: "paragraph",
+            content: "I also introduced Progressive LoRA to adapt training to the device's thermal state. But making on-device training practical on CPU was not enough; I wanted to know whether the NPU could execute the training workload as effectively as it executed inference. I extended NNTrainer to use the mobile NPU while preserving its flexible layer-level execution, unlike existing accelerator paths designed around fixed, operator-level inference graphs."
+          },
+          {
+            type: "paragraph",
+            content: "My initial CPU–NPU design was inefficient because frequent synchronization and data transfers erased the benefit of NPU acceleration. I therefore redesigned the execution path so that successive layers could be submitted asynchronously while keeping intermediate data readily accessible across the CPU and NPU, and adapted existing inference kernels to support the additional operations required for backpropagation."
+          },
+          {
+            type: "paragraph",
+            content: "This enabled the NPU to handle the compute-intensive parts of training, accelerating prefill by roughly 5× while substantially reducing training memory. More importantly, the experience showed me that hardware and ML execution cannot be optimized independently: the way an algorithm schedules and moves computation can determine whether an accelerator helps at all."
+          },
+          {
+            type: "figure",
+            caption: "PTQ + LoRA + QAT Pipeline",
+            visual: "nntrainer-pipeline"
+          }
+        ]
+      }
+    },
     {
       id: "zo",
-      number: "01",
+      number: "02",
       category: "CURRENT RESEARCH",
       title: "ON-DEVICE SUBSPACE-RESTRICTED ZEROTH-ORDER FINE-TUNING",
       articleTitle: "NECESSITY, NOT CONVENIENCE: SUBSPACE-RESTRICTED ZEROTH-ORDER FINE-TUNING OF REAL WEIGHTS ON MOBILE NPUs",
@@ -30,7 +72,7 @@ export const siteContent = {
         "Preparing for MLSys 2027"
       ],
       heroQuestion: "Can an LLM be fine-tuned on a mobile NPU with forward passes alone, and what does the hardware force you to change about the method?",
-      homepageSummary: "Backpropagation worked on the NPU, but it still had to store backward state, so I asked whether forward passes alone could fine-tune the model. My zeroth-order system needs only inference-level memory, but its first version crashed the device: perturbing the real weights at full rank pushed about 3.2 GB through a single dispatch. Restricting updates to a learned low-rank subspace of the model's real weights fixed that, and made the restriction a hardware requirement, not an optimization. On Qwen3-0.6B running on a Qualcomm Hexagon NPU, it reaches 92.0% on SST-2, against 92.7% for our full-LoRA baseline.",
+      homepageSummary: "After getting backpropagation running on the NPU, I asked whether fine-tuning could avoid the backward state altogether. Zeroth-order optimization reduced the memory requirement to forward execution, but perturbing the model’s real weights at full rank pushed about 3.2 GB through a single NPU dispatch and crashed the device. I therefore restricted updates to a learned low-rank subspace of the real weights, turning a computational limitation into a hardware requirement; the resulting system reaches 92.0% on SST-2 on a Qualcomm Hexagon NPU, close to our 92.7% full-LoRA baseline.",
       metrics: [
         { value: "92.0%", label: "SST-2 accuracy (N=500)" },
         { value: "9.1×", label: "subspace-refresh speedup" },
@@ -170,7 +212,7 @@ export const siteContent = {
     },
     {
       id: "hybrid",
-      number: "02",
+      number: "03",
       category: "CURRENT RESEARCH",
       title: "CROSS-VOCABULARY SPECULATIVE DECODING",
       articleTitle: "CROSS-VOCABULARY SPECULATIVE DECODING AS BOTH ACCELERATOR AND HANDOFF MECHANISM",
@@ -180,7 +222,7 @@ export const siteContent = {
         "2.797× server compute reduction"
       ],
       heroQuestion: "How can computation already performed by a small device model remain useful when control moves to a larger model?",
-      homepageSummary: "A small model on the device can handle most requests, and a larger server model takes over when it's needed. The usual way to escalate throws away what the small model already wrote and has the large model start over. I use speculative decoding as the handoff instead: the small model's draft is translated into the large model's vocabulary, and the large model verifies it in one batched pass. That check speeds up generation and lets the large model pick up where the small one stopped. In a cloud-GPU setup, it cut wall-clock time by 1.4× and server compute by 2.8×, with the same output as the large model decoding greedily on its own.",
+      homepageSummary: "A small model can handle easier requests locally while a larger server model takes over when more capability is needed, but a conventional handoff throws away computation the smaller model has already performed. I use speculative decoding itself as the handoff: the local model’s draft is translated into the larger model’s vocabulary and verified in a single batched pass, allowing the larger model to reuse the work instead of starting from the full context again. In the current cloud-GPU setup, this reduced wall-clock time by 1.394× and server compute by 2.797× without changing the output under greedy decoding.",
       metrics: [
         { value: "1.394×", label: "WALL-CLOCK SPEEDUP" },
         { value: "2.797×", label: "SERVER-COMPUTE REDUCTION" },
@@ -288,81 +330,45 @@ export const siteContent = {
           }
         ]
       }
-    },
+    }
+  ],
+
+  systemsDeployment: [
     {
-      id: "nntrainer",
-      number: "03",
-      category: "CURRENT WORK",
-      title: "NNTRAINER (CAUSAL-LLM TRAINING & CPU+NPU PIPELINE)",
-      articleTitle: "NNTRAINER",
-      metadata: [
-        "SAMSUNG RESEARCH"
-      ],
-      heroQuestion: "How does execution scheduling and memory design impact on-device training efficiency?",
-      homepageSummary: "I extended NNTrainer, Samsung's open-source on-device training engine, to fine-tune Qwen3-class models with LoRA while keeping the base model in the 4-bit Q4_0 format it ships in. Quantization-aware training, checkpointing, and memory-mapped storage cut a 3 GB model's training footprint below 1 GB. I then moved training onto the NPU. My first CPU–NPU design was slower than the CPU alone, and redesigning it around asynchronous execution brought prefill to roughly 5× the CPU baseline. I also introduced Progressive LoRA, which adapts training to the device's thermal state.",
-      metrics: [
-        { value: "3 GB → <1 GB", label: "MEMORY PIPELINE REDUCTION" },
-        { value: "5×", label: "PREFILL ACCELERATION" }
-      ],
+      id: "snaplite",
+      number: "04",
+      title: "SNAPLITE RUNTIME",
+      metadata: "SAMSUNG RESEARCH INDIA · 2024",
+      teaser: "During my Samsung Research internship, I worked on SnapLite, Samsung’s on-device deployment runtime supporting more than 200 production vision, speech, and text models. I helped unify CPU, GPU, and NPU deployment around a common LiteRT-based path while retaining accelerator-specific optimizations, working across model conversion, runtime dispatch, compiled artifacts, caching, and fallback behavior. The resulting changes reduced representative first-inference latency by 10× on GPU.",
+      result: "10× Speedup",
       article: {
-        intro: "I worked on on-device parameter-efficient fine-tuning for foundation models, extending NNTrainer toward causal-LLM training and multi-batch execution across heterogeneous backends.",
+        intro: "During my Samsung Research internship, I worked inside SnapLite, Samsung's on-device AI deployment runtime supporting more than 200 production vision, speech, and text models.",
         sections: [
           {
             type: "paragraph",
-            content: "The challenge was making Qwen3-class LoRA fine-tuning feasible under real on-device constraints. I enabled causal-LLM and multi-batch training while keeping the deployed base model in Q4_0 and LoRA weights in FP32. Quantization-aware training made the adaptation learn deployment-time quantization error, while weight and activation checkpointing, selective recomputation, and memory-mapped storage reduced a 3 GB model's resident footprint below 1 GB."
+            content: "The work started with unsupported operations and incorrect outputs in converted models: tracing failures through the model graph and runtime, modifying architectures where necessary, and adding optimized CPU matrix-multiplication paths."
           },
           {
             type: "paragraph",
-            content: "I also introduced Progressive LoRA to adapt training to the device's thermal state. But making on-device training practical on CPU was not enough; I wanted to know whether the NPU could execute the training workload as effectively as it executed inference. I extended NNTrainer to use the mobile NPU while preserving its flexible layer-level execution, unlike existing accelerator paths designed around fixed, operator-level inference graphs."
+            content: "I then reworked the runtime around Google's LiteRT in place of the legacy TensorFlow Lite execution backend, giving CPU, GPU, and NPU deployment a common path while retaining accelerator-specific optimizations. The resulting infrastructure addressed graph partitioning, delegate execution, compiled artifacts, cache lifecycle, driver-aware cache validation, quantization workflows, startup cost, and fallback behavior."
           },
           {
-            type: "paragraph",
-            content: "My initial CPU–NPU design was inefficient because frequent synchronization and data transfers erased the benefit of NPU acceleration. I therefore redesigned the execution path so that successive layers could be submitted asynchronously while keeping intermediate data readily accessible across the CPU and NPU, and adapted existing inference kernels to support the additional operations required for backpropagation."
-          },
-          {
-            type: "paragraph",
-            content: "This enabled the NPU to handle the compute-intensive parts of training, accelerating prefill by roughly 5× while substantially reducing training memory. More importantly, the experience showed me that hardware and ML execution cannot be optimized independently: the way an algorithm schedules and moves computation can determine whether an accelerator helps at all."
-          },
-          {
-            type: "figure",
-            caption: "PTQ + LoRA + QAT Pipeline",
-            visual: "nntrainer-pipeline"
+            type: "result-table",
+            content: "GPU first inference: 1200ms → 120ms (10× reduction)\nNPU first inference: 1320ms → 150ms (8.8× reduction)\nMemory: 70% reduction on MobileNetV3 (CPU), 74% reduction on YOLOv8n (NPU)\n\n*Based on representative evaluation workloads."
           }
         ]
       }
     }
   ],
 
-  selectedWork: [
-    {
-      id: "waveform",
-      number: "04",
-      title: "Waveform-Wizard: A free tool for Spectro-Temporal visualization of Speech",
-      metadata: "ICASSP 2025 Show & Tell",
-      teaser: "I led a team of six undergraduates in building Waveform-Wizard, an open-source Python tool that replaced our lab's MATLAB speech-analysis workflow. It brings waveform, spectral, pitch, formant, and other analyses into one application, with linked views, multi-file comparison, and installers for Windows and Ubuntu. We presented it at ICASSP 2025 Show & Tell.",
-      result: "Presented",
-      link: "/publications/Icassp_Show_and_tell.pdf",
-      article: {
-        intro: "I led six undergraduates in building Waveform-Wizard, an open-source Python replacement for a MATLAB-heavy speech-analysis workflow.",
-        sections: [
-          {
-            type: "paragraph",
-            content: "The project rebuilt the analysis stack around Python, NumPy, SciPy, LibROSA and PyQt5, adding waveform, zero-time windowing, spectral flatness, S-transform, Constant-Q, formant, pitch, Gammatone and VAD analysis in a unified application."
-          },
-          {
-            type: "paragraph",
-            content: "The tool also supports multi-file comparison, dynamically linked analysis panes, save/resume through a custom workflow format, export to PDF/PNG/SVG, and packaging for Windows and Ubuntu with GitHub Actions."
-          }
-        ]
-      }
-    },
+  researchFoundations: [
     {
       id: "speech-reps",
       number: "05",
-      title: "Towards Classification of Typical and Atypical Disfluencies: A Self Supervised Representation Approach",
-      metadata: "Interspeech 2025",
-      teaser: "We compared layer-wise representations from Wav2Vec2.0, HuBERT, WavLM, and TERA for telling typical from atypical speech disfluencies. HuBERT's fifth layer, five layers into a 24-layer encoder, reached a peak F1 of 0.97 and outperformed the final layer, so more depth did not help on this task. I also helped build IIITH-TISA, a 10-hour Indian-English stuttered-speech corpus from 30 speakers.",
-      result: "Published",
+      title: "TOWARDS CLASSIFICATION OF TYPICAL AND ATYPICAL DISFLUENCIES: A SELF-SUPERVISED REPRESENTATION APPROACH",
+      metadata: "INTERSPEECH 2025",
+      teaser: "I studied whether the final representation of a self-supervised speech model is necessarily the most useful one for a downstream task. Across Wav2Vec2.0, HuBERT, WavLM, and TERA, HuBERT’s fifth layer reached an F1 of 0.97 and outperformed its final representation, showing that deeper computation was not automatically more useful for the task. The work also involved IIITH-TISA, a 10-hour Indian-English stuttered-speech corpus that I helped build.",
+      result: "PUBLISHED — INTERSPEECH 2025",
       link: "/publications/Interspeech.pdf",
       article: {
         intro: "We studied whether the final representation of a self-supervised speech encoder is necessarily the most useful one for a downstream task.",
@@ -382,42 +388,14 @@ export const siteContent = {
           }
         ]
       }
-    }
-  ],
-
-  otherProjects: [
-    {
-      id: "snaplite",
-      number: "06",
-      title: "SNAPLITE RUNTIME",
-      metadata: "SAMSUNG RESEARCH INDIA · 2024",
-      teaser: "SnapLite is Samsung's on-device deployment runtime for more than 200 production vision, speech, and text models. As an intern, I traced unsupported operations and wrong outputs in converted PyTorch and ONNX models, added optimized CPU matrix-multiplication paths, and reworked the runtime around Google's LiteRT instead of TensorFlow Lite, so CPU, GPU, and NPU deployment share one path. First inference on GPU dropped from 1.2 s to 120 ms.",
-      result: "10× Speedup",
-      article: {
-        intro: "During my Samsung Research internship, I worked inside SnapLite, Samsung's on-device AI deployment runtime supporting more than 200 production vision, speech, and text models.",
-        sections: [
-          {
-            type: "paragraph",
-            content: "The work started with unsupported operations and incorrect outputs in converted models: tracing failures through the model graph and runtime, modifying architectures where necessary, and adding optimized CPU matrix-multiplication paths."
-          },
-          {
-            type: "paragraph",
-            content: "I then reworked the runtime around Google's LiteRT in place of the legacy TensorFlow Lite execution backend, giving CPU, GPU, and NPU deployment a common path while retaining accelerator-specific optimizations. The resulting infrastructure addressed graph partitioning, delegate execution, compiled artifacts, cache lifecycle, driver-aware cache validation, quantization workflows, startup cost, and fallback behavior."
-          },
-          {
-            type: "result-table",
-            content: "GPU first inference: 1200ms → 120ms (10× reduction)\nNPU first inference: 1320ms → 150ms (8.8× reduction)\nMemory: 70% reduction on MobileNetV3 (CPU), 74% reduction on YOLOv8n (NPU)\n\n*Based on representative evaluation workloads."
-          }
-        ]
-      }
     },
     {
       id: "wesper",
-      number: "07",
+      number: "06",
       title: "WHISPERED SPEECH REPRESENTATIONS (WESPER)",
       metadata: "IIIT HYDERABAD",
-      teaser: "I reproduced WESPER, a whispered-to-normal speech conversion system built on HuBERT, and replaced its MFCC training targets with SFCC, which keeps more information from whispered and noisy speech. Smoothing and component selection kept the larger representation practical. The change improved results by 10–25% (relative) at low SNR, and it came from the targets, not from a bigger model.",
-      result: "10-25% Improvement",
+      teaser: "I reproduced WESPER, a whispered-to-normal speech conversion system built on HuBERT, and replaced its MFCC targets with SFCC to retain more information from whispered and noisy speech. Smoothing and component selection made the larger representation practical, improving results by 10–25% at low SNR without increasing model capacity. It was my first experience seeing that changing what information a model receives can be more effective than simply making the model larger.",
+      result: "10–25% IMPROVEMENT",
       article: {
         intro: "I reproduced WESPER, a whispered-to-normal speech conversion system built around self-supervised HuBERT representations and downstream synthesis.",
         sections: [
@@ -428,6 +406,31 @@ export const siteContent = {
           {
             type: "paragraph",
             content: "The takeaway: representation design can improve performance before adding model complexity."
+          }
+        ]
+      }
+    }
+  ],
+
+  engineeringLeadership: [
+    {
+      id: "waveform",
+      number: "07",
+      title: "WAVEFORM-WIZARD: A FREE TOOL FOR SPECTRO-TEMPORAL VISUALIZATION OF SPEECH",
+      metadata: "ICASSP 2025 SHOW & TELL",
+      teaser: "I led a team of six undergraduates in building Waveform-Wizard, an open-source Python replacement for our lab’s MATLAB speech-analysis workflow. We brought waveform, spectral, pitch, formant, and other analyses into one application with linked views, multi-file comparison, workflow persistence, and portable installers for Windows and Ubuntu. We presented the tool at ICASSP 2025 Show & Tell.",
+      result: "PRESENTED — ICASSP 2025 SHOW & TELL",
+      link: "/publications/Icassp_Show_and_tell.pdf",
+      article: {
+        intro: "I led six undergraduates in building Waveform-Wizard, an open-source Python replacement for a MATLAB-heavy speech-analysis workflow.",
+        sections: [
+          {
+            type: "paragraph",
+            content: "The project rebuilt the analysis stack around Python, NumPy, SciPy, LibROSA and PyQt5, adding waveform, zero-time windowing, spectral flatness, S-transform, Constant-Q, formant, pitch, Gammatone and VAD analysis in a unified application."
+          },
+          {
+            type: "paragraph",
+            content: "The tool also supports multi-file comparison, dynamically linked analysis panes, save/resume through a custom workflow format, export to PDF/PNG/SVG, and packaging for Windows and Ubuntu with GitHub Actions."
           }
         ]
       }

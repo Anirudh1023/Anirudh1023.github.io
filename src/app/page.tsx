@@ -8,13 +8,35 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Icon2T } from "@/components/knockout/icons/Icons2T";
 
 const TOOLTIPS: Record<string, string> = {
+  "Q4_0": "Blockwise 4-bit weight quantization format used by the deployment model.",
+  "QAT": "Quantization-aware training: training while modeling the quantization behavior used at deployment.",
+  "quantization-aware training": "Quantization-aware training: training while modeling the quantization behavior used at deployment.",
+  "LoRA": "Low-Rank Adaptation: fine-tuning a small set of trainable low-rank parameters while keeping the base model fixed.",
+  "multi-batch training": "Training with batch sizes > 1 to amortize weight-loading costs.",
+  "NPU": "Neural Processing Unit — a hardware accelerator specialized for ML computation on mobile devices.",
+  "CPU–NPU synchronization": "The overhead of coordinating execution and data transfer between the CPU and NPU.",
+  "asynchronous execution": "Submitting layers to the accelerator without blocking the CPU, masking dispatch latency.",
+  "accelerator-resident data": "Keeping intermediate activations on the NPU to avoid costly transfers back to the CPU.",
+  "zeroth-order optimization": "Optimization using function evaluations rather than backpropagated gradients.",
+  "low-rank subspace": "A constrained parameter space that reduces the dimensionality of the update.",
+  "speculative decoding": "A decoding method where a smaller model proposes tokens that a larger model verifies.",
+  "cross-vocabulary": "Mapping tokens or text across models that do not share the same tokenizer.",
+  "greedy decoding": "Selecting the single most probable token at each step.",
+  "LiteRT": "Google's on-device inference runtime used here as the common execution path across accelerator backends.",
+  "HMX": "Qualcomm Hexagon matrix accelerator used for high-throughput matrix computation.",
+  "HVX": "Qualcomm Hexagon vector processing architecture.",
+  "FastRPC": "RPC mechanism used to coordinate host and DSP-side execution on Qualcomm platforms.",
+  "VTCM": "Fast on-chip memory available to the Hexagon accelerator.",
+  "ggml-hexagon": "The Hexagon backend for the ggml tensor library.",
+  "HuBERT": "Self-supervised speech representation model.",
+  "Wav2Vec2.0": "Self-supervised speech representation model.",
+  "WavLM": "Self-supervised speech representation model.",
+  "TERA": "Self-supervised speech representation model.",
+  "MFCC": "Mel-frequency cepstral coefficients, a traditional compact representation of speech acoustics.",
+  "SFCC": "Subband-based cepstral representation used here to retain more acoustic information in whispered/noisy speech.",
+  "IIITH-TISA": "10-hour Indian-English stuttered-speech corpus.",
   "NNTrainer": "Samsung's open-source on-device Gen AI runtime.",
-  "zeroth-order": "Optimizing models without analytical gradients, using only forward passes.",
-  "speculative decoding": "Accelerating generation by using a small model to draft tokens and a large model to verify them.",
-  "HuBERT": "A self-supervised speech model that learns representations from raw audio.",
-  "Wav2Vec2.0": "A self-supervised speech model that learns representations from raw audio.",
-  "SnapLite": "Samsung's unified on-device deployment runtime.",
-  "forward-only": "Execution that does not use a backward pass (autodiff)."
+  "SnapLite": "Samsung's unified on-device deployment runtime."
 };
 
 function renderTextWithTooltips(text: string) {
@@ -95,26 +117,102 @@ function Badge({ children }: { children: React.ReactNode }) {
       color: KO.accent, 
       border: `1px solid rgba(255, 128, 0, 0.15)`,
       fontWeight: 600,
-      letterSpacing: "0.5px"
+      letterSpacing: "0.5px",
+      display: "inline-block"
     }}>
       {children}
     </span>
   );
 }
 
+function ProjectCard({ proj, isFeatured, onClick }: { proj: any, isFeatured?: boolean, onClick: () => void }) {
+  const hasArticle = proj.article && proj.article.sections && proj.article.sections.length > 0;
+  return (
+    <div 
+      onClick={hasArticle ? onClick : undefined}
+      style={{ 
+        padding: isFeatured ? "24px 20px" : "16px",
+        borderRadius: 16,
+        cursor: hasArticle ? "pointer" : "default",
+        transition: "background 0.2s",
+        marginLeft: isFeatured ? -20 : -16,
+        marginRight: isFeatured ? -20 : -16,
+        background: isFeatured ? KO.surface : "transparent",
+        border: isFeatured ? `1px solid ${KO.border}` : "1px solid transparent",
+        marginBottom: 16
+      }}
+      onMouseOver={(e) => { e.currentTarget.style.background = KO.surface; e.currentTarget.style.borderColor = KO.border; }}
+      onMouseOut={(e) => { 
+        e.currentTarget.style.background = isFeatured ? KO.surface : "transparent"; 
+        e.currentTarget.style.borderColor = isFeatured ? KO.border : "transparent"; 
+      }}
+    >
+      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: isFeatured ? 12 : 8, flexWrap: "wrap" }}>
+        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: KO.textMute }}>{proj.number}</div>
+        <h3 style={{ fontSize: isFeatured ? "1.15rem" : "1rem", fontWeight: 700, margin: 0, color: KO.text }}>
+          {proj.title}
+        </h3>
+        {proj.category && <Badge>{proj.category}</Badge>}
+      </div>
+
+      {proj.metadata && (
+        <div style={{ fontSize: "0.75rem", color: KO.textMute, fontWeight: 500, marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          {Array.isArray(proj.metadata) ? proj.metadata.join(" · ") : proj.metadata}
+        </div>
+      )}
+
+      {proj.result && (
+        <div style={{ marginBottom: 12 }}>
+          <Badge>{proj.result}</Badge>
+        </div>
+      )}
+
+      {proj.heroQuestion && (
+        <p style={{ fontSize: "0.95rem", fontWeight: 600, color: KO.text, margin: "0 0 12px 0", lineHeight: 1.5 }}>
+          {renderFormattedText(proj.heroQuestion)}
+        </p>
+      )}
+
+      <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.6, margin: hasArticle || proj.metrics || proj.link ? "0 0 16px 0" : 0 }}>
+        {renderFormattedText(proj.homepageSummary || proj.teaser)}
+      </p>
+
+      {proj.metrics && proj.metrics.length > 0 && (
+        <div style={{ display: "flex", gap: 24, marginBottom: hasArticle ? 16 : 0, flexWrap: "wrap" }}>
+          {proj.metrics.map((m: any, idx: number) => (
+            <div key={idx}>
+              <div style={{ fontSize: "1.2rem", fontWeight: 700, color: KO.text }}>{m.value}</div>
+              <div style={{ fontSize: "0.7rem", color: KO.textMute, textTransform: "uppercase", letterSpacing: "0.5px" }}>{m.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+        {hasArticle && (
+          <div style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
+            Read Notes <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(90deg)" }} />
+          </div>
+        )}
+        {proj.link && (
+          <a href={proj.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
+            Read Paper PDF <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(45deg)" }} />
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [activeModalId, setActiveModalId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"All" | "Current" | "Publications" | "Projects">("All");
 
   const activeArticleData = 
-    siteContent.projects.find(p => p.id === activeModalId) ||
-    siteContent.selectedWork.find(w => w.id === activeModalId) ||
-    (siteContent as any).otherProjects?.find((w: any) => w.id === activeModalId) ||
+    siteContent.featuredResearch.find(p => p.id === activeModalId) ||
+    siteContent.systemsDeployment.find(w => w.id === activeModalId) ||
+    siteContent.researchFoundations.find(w => w.id === activeModalId) ||
+    siteContent.engineeringLeadership.find(w => w.id === activeModalId) ||
     null;
-
-  const displayProjects = activeTab === "All" || activeTab === "Current" ? siteContent.projects : [];
-  const displayWork = activeTab === "All" || activeTab === "Publications" ? siteContent.selectedWork : [];
-  const displayOther = activeTab === "All" || activeTab === "Projects" ? ((siteContent as any).otherProjects || []) : [];
 
   return (
     <main style={{ minHeight: "100vh", background: KO.bgPrimary, color: KO.text, overflow: activeModalId ? "hidden" : "auto", fontFamily: "'Satoshi-Variable', 'Satoshi', sans-serif" }}>
@@ -140,12 +238,12 @@ export default function Home() {
                 <img src="/profile.jpg" alt="Anirudh Bocha" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
               <div style={{ flex: 1, minWidth: 280 }}>
-                <h1 style={{ fontSize: "1.5rem", fontWeight: 700, margin: "0 0 4px 0", letterSpacing: "-0.5px", color: KO.text }}>
-                  {siteContent.identity.name}
-                </h1>
-                <div style={{ fontSize: "0.9rem", color: KO.textDim, fontWeight: 500, marginBottom: 16 }}>
-                  Machine Learning Engineer @ Samsung Research, Bengaluru
+                <div style={{ fontSize: "0.75rem", fontWeight: 700, letterSpacing: "1px", color: KO.accent, marginBottom: 8 }}>
+                  {siteContent.identity.heroEyebrow}
                 </div>
+                <h1 style={{ fontSize: "1.6rem", fontWeight: 700, margin: "0 0 16px 0", letterSpacing: "-0.5px", color: KO.text }}>
+                  {siteContent.identity.heroHeadline}
+                </h1>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {siteContent.identity.heroParagraphs.map((p, i) => (
                     <p key={i} style={{ fontSize: "0.95rem", color: KO.text, lineHeight: 1.6, margin: 0 }}>
@@ -157,139 +255,50 @@ export default function Home() {
             </div>
           </section>
 
-          {/* RESEARCH & PROJECTS (Combined with Tabs) */}
-          <section id="research" style={{ marginBottom: 80 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${KO.border}`, paddingBottom: 12, marginBottom: 24 }}>
-              <h2 style={{ fontSize: "1.1rem", fontWeight: 700, margin: 0, color: KO.text }}>
-                Research & Projects
-              </h2>
-              <div style={{ display: "flex", gap: 16 }}>
-                {(["All", "Current", "Publications", "Projects"] as const).map(tab => (
-                  <button 
-                    key={tab} 
-                    onClick={() => setActiveTab(tab)}
-                    style={{ 
-                      background: "none", border: "none", padding: 0, cursor: "pointer", 
-                      fontSize: "0.85rem", fontWeight: 600, 
-                      color: activeTab === tab ? KO.text : KO.textMute,
-                      borderBottom: activeTab === tab ? `2px solid ${KO.text}` : "2px solid transparent",
-                      paddingBottom: 4
-                    }}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
+          {/* FEATURED RESEARCH */}
+          <section id="featured-research" style={{ marginBottom: 64 }}>
+            <h2 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 24px 0", borderBottom: `1px solid ${KO.border}`, paddingBottom: 12, color: KO.text }}>
+              Featured Research
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {siteContent.featuredResearch.map(proj => (
+                <ProjectCard key={proj.id} proj={proj} isFeatured={true} onClick={() => setActiveModalId(proj.id)} />
+              ))}
             </div>
+          </section>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              
-              {/* CURRENT PROJECTS */}
-              {displayProjects.map(proj => (
-                <div 
-                  key={proj.id} 
-                  onClick={() => proj.article.sections.length > 0 ? setActiveModalId(proj.id) : null}
-                  style={{ 
-                    padding: "16px",
-                    borderRadius: 16,
-                    cursor: proj.article.sections.length > 0 ? "pointer" : "default",
-                    transition: "background 0.2s",
-                    marginLeft: -16,
-                    marginRight: -16
-                  }}
-                  onMouseOver={(e) => { e.currentTarget.style.background = KO.surface; }}
-                  onMouseOut={(e) => { e.currentTarget.style.background = "transparent"; }}
-                >
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8, flexWrap: "wrap" }}>
-                    <h3 style={{ fontSize: "1rem", fontWeight: 700, margin: 0, color: KO.text }}>
-                      {proj.title}
-                    </h3>
-                    <Badge>{proj.category}</Badge>
-                  </div>
-                  <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.5, margin: proj.article.sections.length > 0 ? "0 0 12px 0" : 0 }}>
-                    {renderFormattedText(proj.homepageSummary)}
-                  </p>
-                  {proj.article.sections.length > 0 && (
-                    <div style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                      Read Notes <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(90deg)" }} />
-                    </div>
-                  )}
-                </div>
+          {/* SYSTEMS & DEPLOYMENT */}
+          <section id="systems" style={{ marginBottom: 64 }}>
+            <h2 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 24px 0", borderBottom: `1px solid ${KO.border}`, paddingBottom: 12, color: KO.text }}>
+              Systems & Deployment
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {siteContent.systemsDeployment.map(proj => (
+                <ProjectCard key={proj.id} proj={proj} isFeatured={true} onClick={() => setActiveModalId(proj.id)} />
               ))}
+            </div>
+          </section>
 
-              {/* PUBLICATIONS */}
-              {displayWork.map(work => (
-                <div 
-                  key={work.id}
-                  onClick={() => work.article?.sections?.length > 0 ? setActiveModalId(work.id) : null}
-                  style={{
-                    padding: "16px",
-                    borderRadius: 16,
-                    cursor: work.article?.sections?.length > 0 ? "pointer" : "default",
-                    transition: "background 0.2s",
-                    marginLeft: -16,
-                    marginRight: -16
-                  }}
-                  onMouseOver={(e) => { e.currentTarget.style.background = KO.surface; }}
-                  onMouseOut={(e) => { e.currentTarget.style.background = "transparent"; }}
-                >
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
-                    <h3 style={{ fontSize: "1rem", fontWeight: 700, margin: 0, color: KO.text }}>
-                      {work.title}
-                    </h3>
-                    <Badge>Conference Paper</Badge>
-                    <span style={{ fontSize: "0.75rem", color: KO.textMute, fontWeight: 500 }}>· {work.metadata}</span>
-                  </div>
-                  <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.5, margin: "0 0 12px 0" }}>
-                    {renderFormattedText(work.teaser)}
-                  </p>
-                  <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                    {work.article?.sections?.length > 0 && (
-                      <div style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        Read Notes <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(90deg)" }} />
-                      </div>
-                    )}
-                    {work.link && (
-                      <a href={work.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
-                        Read Paper PDF <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(45deg)" }} />
-                      </a>
-                    )}
-                  </div>
-                </div>
+          {/* RESEARCH FOUNDATIONS */}
+          <section id="foundations" style={{ marginBottom: 64 }}>
+            <h2 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 24px 0", borderBottom: `1px solid ${KO.border}`, paddingBottom: 12, color: KO.text }}>
+              Research Foundations
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {siteContent.researchFoundations.map(proj => (
+                <ProjectCard key={proj.id} proj={proj} onClick={() => setActiveModalId(proj.id)} />
               ))}
+            </div>
+          </section>
 
-              {/* OTHER PROJECTS */}
-              {displayOther.map((work: any) => (
-                <div 
-                  key={work.id}
-                  onClick={() => work.article?.sections?.length > 0 ? setActiveModalId(work.id) : null}
-                  style={{
-                    padding: "16px",
-                    borderRadius: 16,
-                    cursor: work.article?.sections?.length > 0 ? "pointer" : "default",
-                    transition: "background 0.2s",
-                    marginLeft: -16,
-                    marginRight: -16
-                  }}
-                  onMouseOver={(e) => { e.currentTarget.style.background = KO.surface; }}
-                  onMouseOut={(e) => { e.currentTarget.style.background = "transparent"; }}
-                >
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
-                    <h3 style={{ fontSize: "1rem", fontWeight: 700, margin: 0, color: KO.text }}>
-                      {work.title}
-                    </h3>
-                    <Badge>Project</Badge>
-                    <span style={{ fontSize: "0.75rem", color: KO.textMute, fontWeight: 500 }}>· {work.metadata}</span>
-                  </div>
-                  <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.5, margin: work.article?.sections?.length > 0 ? "0 0 12px 0" : 0 }}>
-                    {renderFormattedText(work.teaser)}
-                  </p>
-                  {work.article?.sections?.length > 0 && (
-                    <div style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                      Read Notes <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(90deg)" }} />
-                    </div>
-                  )}
-                </div>
+          {/* ENGINEERING & LEADERSHIP */}
+          <section id="engineering" style={{ marginBottom: 64 }}>
+            <h2 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 24px 0", borderBottom: `1px solid ${KO.border}`, paddingBottom: 12, color: KO.text }}>
+              Engineering & Leadership
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {siteContent.engineeringLeadership.map(proj => (
+                <ProjectCard key={proj.id} proj={proj} onClick={() => setActiveModalId(proj.id)} />
               ))}
             </div>
           </section>
@@ -340,7 +349,10 @@ export default function Home() {
           }}>
             <div style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "1.5px", color: KO.textDim, textTransform: "uppercase" }}>CONTENTS</div>
             <a href="#hello" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Hello</a>
-            <a href="#research" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Research</a>
+            <a href="#featured-research" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Featured Research</a>
+            <a href="#systems" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Systems & Deployment</a>
+            <a href="#foundations" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Research Foundations</a>
+            <a href="#engineering" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Engineering</a>
             <a href="#experience" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Experience</a>
           </div>
         </div>
