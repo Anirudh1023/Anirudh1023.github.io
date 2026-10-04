@@ -11,6 +11,17 @@ const TOOLTIPS: Record<string, string> = {
   "EMA": "Exponential Moving Average — used here to track blockwise quantization scales smoothly over training steps.",
   "DMA": "Direct Memory Access — allows the NPU to fetch tensor data independently of the CPU.",
 
+  "zeroth-order optimization": "Optimization techniques that estimate gradients using only forward evaluations rather than analytical backpropagation.",
+  "Rademacher perturbation": "Perturbing weights using random signs (+1 or -1), which allows the perturbation to be applied using efficient bit-level operations.",
+  "low-rank subspace": "A smaller, lower-dimensional representational space that constrains the optimization search space.",
+  "SVD": "Singular Value Decomposition — a mathematical method used here to identify the most important directions for the subspace.",
+  "Qwen3-0.6B": "A 0.6 billion parameter causal language model from the Qwen3 family.",
+  "FZOO": "Forward-only Zeroth-Order Optimization — an estimator using one-sided perturbations.",
+  "P-GAP": "A subspace identification method that builds a basis from historical gradients or activations.",
+  "adaptive-N": "A controller that dynamically adjusts the number of forward evaluations (N) based on step difficulty.",
+  "SST-2": "Stanford Sentiment Treebank — a standard benchmark dataset for binary sentiment classification.",
+  "block power iteration": "A batched iterative algorithm for subspace refresh that is highly efficient on hardware accelerators.",
+
   "LayerNorm": "A technique to normalize the activations of a neural network layer, stabilizing training.",
   "RMSNorm": "Root Mean Square Normalization, a computationally cheaper alternative to LayerNorm.",
   "Qwen3": "A family of foundation models; in this context, referring to causal language models in the Qwen3 class.",
@@ -40,8 +51,7 @@ const TOOLTIPS: Record<string, string> = {
   "CPU–NPU synchronization": "The overhead of coordinating execution and data transfer between the CPU and NPU.",
   "asynchronous execution": "Submitting layers to the accelerator without blocking the CPU, masking dispatch latency.",
   "accelerator-resident data": "Keeping intermediate activations on the NPU to avoid costly transfers back to the CPU.",
-  "zeroth-order optimization": "Optimization using function evaluations rather than backpropagated gradients.",
-  "low-rank subspace": "A constrained parameter space that reduces the dimensionality of the update.",
+
   "speculative decoding": "A decoding method where a smaller model proposes tokens that a larger model verifies.",
   "cross-vocabulary": "Mapping tokens or text across models that do not share the same tokenizer.",
   "greedy decoding": "Selecting the single most probable token at each step.",

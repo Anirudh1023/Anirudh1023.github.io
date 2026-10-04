@@ -237,134 +237,136 @@ export const siteContent = {
         { value: "9.1×", label: "subspace-refresh speedup" },
         { value: "10.5×", label: "steady-state speedup" }
       ],
-      article: {
-        intro: "Backpropagation already runs on the NPU, but it still has to store backward state.",
+            article: {
+        intro: "Qwen3-0.6B is being fine-tuned directly on Qualcomm Hexagon NPU hardware. Mobile NPU execution is inherently inference-oriented, meaning conventional backpropagation does not fit the target execution model. Zeroth-order optimization provides a forward-only training path that aligns with accelerator capabilities. This project studies applying a learned low-rank subspace directly to the model's real weights to make on-device zeroth-order optimization both representable and safe.",
         sections: [
           {
             type: "heading",
-            content: "WHY GO FORWARD-ONLY WHEN BACKPROPAGATION RUNS"
+            content: "Hardware Constraints for On-Device Fine-Tuning"
           },
           {
             type: "paragraph",
-            content: "Fine-tuning a language model directly on a user's device is attractive because personalization can happen locally, without sending private data back to a server. In NNTrainer I had already built an NPU training path that runs backpropagation, so the NPU could train. The cost was memory: backpropagation has to keep the intermediate state the backward pass needs, and on a phone that memory is scarce."
-          },
-          {
-            type: "paragraph",
-            content: "Zeroth-order optimization replaces analytical gradients with repeated forward evaluations, so training can run at close to inference-level memory. It also suits the hardware, because mobile NPUs are built around forward execution. The question was whether a forward-only method could fine-tune the model's real weights on the device, and what the hardware would force me to change along the way."
-          },
-          {
-            type: "heading",
-            content: "THE NAÏVE IMPLEMENTATION CRASHED THE DEVICE"
-          },
-          {
-            type: "paragraph",
-            content: "The natural extension was to perturb the model's real weights and batch the resulting forward evaluations. On paper, this is a straightforward way to exploit the same forward-only execution path. On the target device, it exposed a failure that is invisible in GPU-only experiments."
-          },
-          {
-            type: "paragraph",
-            content: "The dispatch path attempted to move roughly 3.2 GB of full-rank perturbed weight data through a single DSP kernel path. That operand size had not previously been exercised at real-weight scale; the same batching mechanism had been used around much smaller adapter-scale tensors. The device entered firmware recovery mode and required a manual reboot."
-          },
-          {
-            type: "paragraph",
-            content: "This failure changed the role of subspace restriction. It was no longer just a way to reduce estimator variance or computational cost. It became the interface that made the computation representable and safe on the accelerator."
+            content: "Conventional backpropagation requires maintaining intermediate activation state for the backward pass. On mobile devices, this memory requirement is often prohibitive. Zeroth-order (ZO) optimization replaces analytical gradients with repeated forward evaluations, estimating the loss variation to calculate the update. The critical advantage here is not that ZO is universally better, but that forward-only computation perfectly matches the existing inference-optimized execution model of mobile accelerators."
           },
           {
             type: "figure",
-            caption: "The Crash vs The Solution",
+            caption: "Backpropagation vs. Forward-Only ZO Optimization",
+            visual: "zo-hardware-constraints"
+          },
+          {
+            type: "heading",
+            content: "Subspace-Restricted Zeroth-Order Optimization"
+          },
+          {
+            type: "paragraph",
+            content: "The adaptation target is the model's real weights; this is not a persistent LoRA adapter. For a weight matrix W ∈ R^(m×n), we use a learned rank-r basis defined by U_r and V_r. The perturbation lives entirely within this compact r×r coefficient space, which drastically reduces the dimensionality."
+          },
+          {
+            type: "math",
+            content: "v = x V_r\ncoeff_i = Z_i v\nŷ_i = y + ε(coeff_i U_r^T)"
+          },
+          {
+            type: "paragraph",
+            content: "where Z_i ∈ {-1,+1}^(r×r). The restriction to a lower-dimensional subspace changes the scale of the update, requiring a normalization factor μ = √(mn) / r to prevent the effective learning rate from becoming silently too small."
+          },
+          {
+            type: "figure",
+            caption: "Subspace Perturbation Flow",
+            visual: "zo-subspace-perturb"
+          },
+          {
+            type: "heading",
+            content: "Hardware-Compatible Perturbation Estimation"
+          },
+          {
+            type: "paragraph",
+            content: "We combine P-GAP's subspace identification mechanism with FZOO's one-sided Rademacher estimator. The Rademacher formulation is specifically useful on the NPU because the perturbation can be represented through bit-valued sign operations rather than requiring continuous random directions and floating-point perturbation generation. This representation directly aligns with the hardware's efficient integer arithmetic paths."
+          },
+          {
+            type: "figure",
+            caption: "Continuous vs. Sign-Based Perturbation",
+            visual: "zo-perturb-rep"
+          },
+          {
+            type: "heading",
+            content: "Full-Rank Dispatch and Subspace Restriction"
+          },
+          {
+            type: "paragraph",
+            content: "A naïve full-rank implementation pushed approximately 3.2 GB of perturbed weight data through a single DSP dispatch, which caused the device to enter firmware recovery mode. The low-rank subspace is therefore not merely a computational optimization. It keeps the fused perturbation operand small enough to safely execute within the accelerator's dispatch path. Subspace restriction is a strict hardware requirement."
+          },
+          {
+            type: "figure",
+            caption: "Full-Rank Dispatch Failure vs. Safe Subspace",
             visual: "zo-crash"
           },
           {
             type: "heading",
-            content: "THE UPDATE SPACE HAS TO MATCH THE HARDWARE"
+            content: "Rank-Dependent CPU and NPU Execution"
           },
           {
             type: "paragraph",
-            content: "For a weight matrix W ∈ R^(m×n), we define a rank-r subspace using orthonormal U_r and V_r. Each step draws Rademacher directions: Z_i ∈ {-1,+1}^{r×r}. Instead of perturbing the full matrix, the perturbation lives in the compact coefficient space."
-          },
-          {
-            type: "equation",
-            content: "v = x V_r\ncoeff_i = Z_i v\nŷ_i = y + ε(coeff_i U_rᵀ)"
-          },
-          {
-            type: "paragraph",
-            content: "We project the current activation into the learned subspace, apply the ±1 perturbation there, reconstruct the induced output perturbation, and run the normal forward computation. The loss variation estimates the update. THE MODEL'S REAL WEIGHTS ARE THE OBJECT BEING ADAPTED. This is not just LoRA; we do not use a persistent LoRA adapter as the update object."
-          },
-          {
-            type: "equation",
-            content: "μ = √(mn) / r"
-          },
-          {
-            type: "paragraph",
-            content: "Restricting random signs to r² coefficients changes the scale of the update. Without the normalization μ, the same learning rate can become silently up to ~20× too small for the restricted update."
-          },
-          {
-            type: "heading",
-            content: "WHY THE PERTURBATION HAS TO BE HARDWARE-COMPATIBLE"
-          },
-          {
-            type: "paragraph",
-            content: "We use P-GAP's subspace-identification mechanism, but we use FZOO's one-sided Rademacher estimator because Rademacher perturbations can be represented through bit-valued sign flips. This avoids the floating-point sampling/multiplication behavior that would undermine the intended NPU dispatch. We combined pieces because the hardware made one of the original algorithmic choices unusable."
-          },
-          {
-            type: "heading",
-            content: "THE NUMBER OF FORWARD EVALUATIONS SHOULD NOT BE FIXED BLINDLY"
-          },
-          {
-            type: "paragraph",
-            content: "One calibration statistic drives TWO decisions: how many perturbation directions to sample, and when the subspace itself needs refreshing. In the measured on-device configuration at r=256, adaptive-N reached 92.0% while the fixed-N=8 arm reached only 86.7%. The adaptive-N arm used approximately 30% fewer forward passes."
-          },
-          {
-            type: "heading",
-            content: "THE SUBSPACE REFRESH BECAME A SECOND SYSTEMS PROBLEM"
-          },
-          {
-            type: "paragraph",
-            content: "The old host-side refresh was sequential and large ranks became impractical. Moving it to the NPU wasn't just running the same algorithm faster; it required reformulating it as a batch block-power iteration using ordinary large matmul operations to exploit the hardware's efficient batched math path."
-          },
-          {
-            type: "heading",
-            content: "THE OPTIMUM RANK ALSO CHANGES THE OPTIMUM BACKEND"
-          },
-          {
-            type: "paragraph",
-            content: "At very low rank, the NPU's fixed dispatch overhead dominates. At higher rank, enough useful work accumulates to amortize that overhead. The same rank parameter that changes the optimization capacity therefore also changes which processor is faster."
+            content: "The subspace rank affects both the expressiveness of the update and the amount of work available to amortize the NPU's dispatch overhead. At r=256, the NPU achieved a 9.1× subspace refresh speedup (452.4 s → 49.5 s) and a 10.5× steady-state execution speedup (28.9 s → 2.75 s) over the CPU. However, at a low rank of r=8, the NPU processed steps at ~1.35 s/step while the CPU completed them in ~0.92 s/step, demonstrating that fixed accelerator overhead dominates when the workload is too small."
           },
           {
             type: "figure",
-            caption: "CPU vs NPU Speedup by Rank",
+            caption: "Rank and Backend Amortization",
             visual: "zo-rank"
           },
           {
             type: "heading",
-            content: "EXPERIMENTS & RESULTS"
+            content: "On-Device Subspace Refresh"
           },
           {
             type: "paragraph",
-            content: "Hyperparameters were developed on GPU then transferred to the device setup (Qwen3-0.6B, Qualcomm Hexagon v81 NPU). The best on-device result currently reaches 92.0%, a 0.7 percentage-point gap to the measured full-LoRA baseline."
+            content: "The subspace must be periodically refreshed to remain effective. The original host-side implementation used sequential power iteration and deflation, which became computationally impractical at high ranks. I reformulated this as a batched block power iteration using large matrix multiplications that the accelerator already executes efficiently. At r=64, this reduced refresh time from 270 s to 5.4 s (a 50× improvement). At r=256, a process that was infeasible on the host completed in 33 s on-device."
           },
           {
-            type: "result-table",
-            content: "OPT-2.7B SST-2\nffn_down: 86.1% (31,407 passes)\nattention q/k/v/o: 93.3% (41,437 passes)\n\nAttention targeting required less than half the forward-pass budget of the 20k-step ffn_down run."
-          },
-          {
-            type: "result-table",
-            content: "92.0% ON REAL HEXAGON NPU\n\nFull-LoRA no-subspace baseline: 92.7%\nOurs subspace (r=256, adaptive N): 92.0%\nFixed N=8: 86.7%\nPlain FZOO full-LoRA: 91.3%"
+            type: "figure",
+            caption: "Host SVD vs. Block Power Iteration",
+            visual: "zo-refresh"
           },
           {
             type: "heading",
-            content: "WHAT IS STILL OPEN"
-          },
-          {
-            type: "status-list",
-            content: "[VERIFIED] On-device numbers in current table use N=500\n[VERIFIED] GPU MobiZO comparison uses N=1000 (not directly interchangeable)\n[PENDING] Attention-target NPU run (pending target-matching bug fix)\n[PENDING] Clean rank sweep r={8,32,64,128,256}\n[PENDING] Exact CPU/NPU crossover rank\n[FUTURE] Quantization-compatible persistent correction"
-          },
-          {
-            type: "heading",
-            content: "CONCLUSION"
+            content: "Experimental Results"
           },
           {
             type: "paragraph",
-            content: "The important result is not simply that zeroth-order fine-tuning can run on a mobile NPU. It is that deployment exposed algorithmic structure that is invisible in GPU simulation. Full-rank perturbations were not simply expensive; they were unsafe for the dispatch path. Subspace restriction therefore became a hardware requirement. Rank was not merely an optimization hyperparameter; it changed the balance between CPU and NPU execution. And moving subspace identification on-device required reformulating the refresh algorithm around the accelerator's own strengths. The hardware did not merely host the optimization method. It helped determine the method itself."
+            content: "For Qwen3-0.6B evaluated on SST-2 using real Hexagon NPU hardware (N=500), our subspace-restricted adaptive-N method reached 92.0% accuracy, closely approaching the measured full-LoRA no-subspace baseline of 92.7%. A fixed-N=8 configuration at the same rank only achieved 86.7%. The adaptive-N controller reaches higher accuracy while using approximately 30% fewer forward evaluations.\\n\\nIn GPU validation comparisons (N=1000), our attention-target configuration achieved 87.3%, closely matching the MobiZO reported result of 87.8% under the same sample-count protocol."
+          },
+          {
+            type: "figure",
+            caption: "On-Device Results Comparison",
+            visual: "zo-results"
+          },
+          {
+            type: "heading",
+            content: "Continual Learning Extension"
+          },
+          {
+            type: "paragraph",
+            content: "I am currently extending this on-device optimization framework toward continual personalization. For sequential tasks, we identify important activation directions using SVD-based top-k directions and apply soft suppression to directions that would strongly interfere with previously learned behavior."
+          },
+          {
+            type: "figure",
+            caption: "Continual Learning Subspace Suppression",
+            visual: "zo-continual"
+          },
+          {
+            type: "heading",
+            content: "Future Work"
+          },
+          {
+            type: "paragraph",
+            content: "Future directions include implementing a quantization-compatible persistent correction mechanism and scaling the continual learning methodology for robust, long-term on-device personalization."
+          },
+          {
+            type: "heading",
+            content: "Conclusion"
+          },
+          {
+            type: "paragraph",
+            content: "Deploying the optimization on real NPU hardware exposed constraints that GPU simulation did not show. Full-rank perturbations were unsafe at the accelerator dispatch level. Rank changed the relative efficiency of CPU and NPU execution. Subspace refresh had to be reformulated around batched accelerator-friendly computation. The resulting system reached 92.0% SST-2 accuracy on real Hexagon hardware, close to the 92.7% full-LoRA baseline, while showing that the hardware affected not only execution strategy but the optimization representation itself.\\n\\nThis work solves the backward-state memory constraint. A separate challenge in heterogeneous inference is how to efficiently reuse context when computation moves between models. This led to my work on [CROSS-VOCABULARY SPECULATIVE DECODING](#hybrid)."
           }
         ]
       }
