@@ -240,6 +240,42 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
                   </div>
                 );
               }
+              if (sec.type === "figure") {
+                return (
+                  <div key={idx} style={{ margin: "24px 0", display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div style={{ background: KO.bgSec, borderRadius: 16, border: `1px solid ${KO.border}`, padding: 32, overflow: "hidden" }}>
+                      {sec.visual === "zo-hardware-constraints" && <DiagramZOHardware />}
+                      {sec.visual === "zo-subspace-perturb" && <DiagramZOSubspace />}
+                      {sec.visual === "zo-perturb-rep" && <DiagramZOPerturbRep />}
+                      {sec.visual === "zo-crash" && <DiagramZOCrash />}
+                      {sec.visual === "zo-rank" && <DiagramZORank />}
+                      {sec.visual === "zo-refresh" && <DiagramZORefresh />}
+                      {sec.visual === "zo-results" && <DiagramZOResults />}
+                      {sec.visual === "zo-continual" && <DiagramZOContinual />}
+                      {sec.visual === "hybrid-handoff" && <DiagramHybridHandoff />}
+                      {sec.visual === "hybrid-tokenizers" && <DiagramHybridTokenizers />}
+                      {sec.visual === "hybrid-verify" && <DiagramHybridVerify />}
+                      {sec.visual === "hybrid-greedy" && <DiagramHybridGreedy />}
+                      {sec.visual === "hybrid-kv-cache" && <DiagramHybridKVCache />}
+                      {sec.visual === "hybrid-speedup" && <DiagramHybridSpeedup />}
+                      {sec.visual === "hybrid-domain" && <DiagramHybridDomain />}
+                      {sec.visual === "speech-layers" && <DiagramSpeechLayers />}
+                      {sec.visual === "nntrainer-cpu-dispatch" && <DiagramCPUPipeline />}
+                      {sec.visual === "nntrainer-training-flow" && <DiagramTrainingFlow />}
+                      {sec.visual === "nntrainer-qat" && <DiagramQAT />}
+                      {sec.visual === "nntrainer-memory" && <DiagramMemory />}
+                      {sec.visual === "nntrainer-hexagon-arch" && <DiagramHexagonArch />}
+                      {sec.visual === "nntrainer-hybrid-fail" && <DiagramHybridFail />}
+                      {sec.visual === "nntrainer-async" && <DiagramAsync />}
+                      {sec.visual === "nntrainer-fwd-bwd" && <DiagramFwdBwd />}
+                      {sec.visual === "nntrainer-prefill" && <DiagramPrefill />}
+                      {sec.visual === "nntrainer-progressive" && <DiagramProgressive />}
+                      {sec.visual === "nntrainer-architecture" && <DiagramArchitecture />}
+                      </div>
+                    <span style={{ ...F.btn(12), color: KO.textDim, textAlign: "center" }}>{sec.caption}</span>
+                  </div>
+                );
+              }
               if (sec.type === "math") {
                 return (
                   <div key={idx} style={{ padding: "32px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
