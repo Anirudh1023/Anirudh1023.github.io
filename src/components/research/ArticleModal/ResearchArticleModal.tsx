@@ -1,5 +1,63 @@
 "use client";
 
+function parseMath(text: string) {
+  // Handle ^(multi-character) and ^single_character
+  let parsed = text.replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>');
+  parsed = parsed.replace(/\^([a-zA-Z0-9]+)/g, '<sup>$1</sup>');
+  // Handle _(multi-character) and _single_character
+  parsed = parsed.replace(/_\(([^)]+)\)/g, '<sub>$1</sub>');
+  parsed = parsed.replace(/_([a-zA-Z0-9]+)/g, '<sub>$1</sub>');
+  return <span dangerouslySetInnerHTML={{ __html: parsed }} />;
+}
+
+function parseFormatting(text: string) {
+  // First, split by links
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+  
+  while ((match = linkRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(parseBold(text.substring(lastIndex, match.index)));
+    }
+    const url = match[2];
+    const isAnchor = url.startsWith('#');
+    parts.push(
+      <a key={`link-${match.index}`} href={url} target={isAnchor ? "_self" : "_blank"} rel="noopener noreferrer" style={{ color: KO.text, textDecoration: "underline", textDecorationColor: KO.accent }}>
+        {match[1]}
+      </a>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  
+  if (lastIndex < text.length) {
+    parts.push(parseBold(text.substring(lastIndex)));
+  }
+  
+  return parts;
+}
+
+function parseBold(text: string) {
+  const boldRegex = /\*\*([^*]+)\*\*/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+  
+  while ((match = boldRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(<span key={`text-${lastIndex}`}>{text.substring(lastIndex, match.index)}</span>);
+    }
+    parts.push(<strong key={`bold-${match.index}`} style={{ color: KO.text, fontWeight: 600 }}>{match[1]}</strong>);
+    lastIndex = match.index + match[0].length;
+  }
+  
+  if (lastIndex < text.length) {
+    parts.push(<span key={`text-${lastIndex}`}>{text.substring(lastIndex)}</span>);
+  }
+  return parts;
+}
+
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { KO, F } from "@/lib/knockout-tokens";
@@ -147,7 +205,7 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
           )}
 
           <p style={{ ...F.sub(20), color: KO.text, marginBottom: 48, lineHeight: 1.5 }}>
-            {data.article.intro}
+            {parseFormatting(data.article.intro || "")}
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
@@ -155,31 +213,26 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
               if (sec.type === "heading") {
                 return (
                   <h3 key={idx} style={{ ...F.head(20), color: KO.text, marginTop: 16 }}>
-                    {sec.content}
+                    {parseFormatting(sec.content || "")}
                   </h3>
                 );
               }
               if (sec.type === "paragraph") {
                 return (
                   <p key={idx} style={{ ...F.body(16), color: KO.textDim, lineHeight: 1.6 }}>
-                    {sec.content}
+                    {parseFormatting(sec.content || "")}
                   </p>
                 );
               }
               if (sec.type === "equation") {
                 return (
-                  <div key={idx} style={{ background: "#0D1117", borderRadius: 8, border: `1px solid #30363D`, overflow: "hidden", margin: "16px 0" }}>
-                    <div style={{ background: "#161B22", padding: "8px 16px", display: "flex", gap: 6, borderBottom: `1px solid #30363D` }}>
-                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF5F56" }}></div>
-                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FFBD2E" }}></div>
-                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#27C93F" }}></div>
-                    </div>
-                    <div style={{ padding: 20, fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 13, color: "#C9D1D9", whiteSpace: "pre-wrap", overflowX: "auto", lineHeight: 1.6 }}>
+                  <div key={idx} style={{ background: KO.surface, borderRadius: 8, border: `1px solid ${KO.border}`, overflow: "hidden", margin: "24px 0", padding: 24 }}>
+                    <div style={{ ...F.code(13), color: KO.text, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
                       {(sec.content || '').split('\n').map((line, i) => {
                         const isComment = line.trim().startsWith('//');
                         return (
-                          <div key={i} style={{ color: isComment ? "#8B949E" : "inherit" }}>
-                            {line}
+                          <div key={i} style={{ color: isComment ? KO.textDim : KO.text, opacity: isComment ? 0.6 : 1 }}>
+                            {parseMath(line)}
                           </div>
                         );
                       })}
@@ -189,75 +242,12 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
               }
               if (sec.type === "math") {
                 return (
-                  <div key={idx} style={{ padding: "32px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, fontFamily: "ui-serif, Georgia, Cambria, Times New Roman, Times, serif", fontSize: 22, color: KO.text, letterSpacing: "0.02em" }}>
+                  <div key={idx} style={{ padding: "32px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
                     {(sec.content || '').split('\n').map((line, i) => (
-                      <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <span style={{ fontStyle: "italic" }}>{line}</span>
+                      <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", ...F.sub(16), fontStyle: "italic", color: KO.text, letterSpacing: "0.02em" }}>
+                        {parseMath(line)}
                       </div>
                     ))}
-                  </div>
-                );
-              }
-              if (sec.type === "result-table") {
-                return (
-                  <div key={idx} style={{ padding: 24, background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 12 }}>
-                    <pre style={{ ...F.body(14), color: KO.text, margin: 0, whiteSpace: "pre-wrap", fontFamily: "inherit" }}>
-                      {sec.content}
-                    </pre>
-                  </div>
-                );
-              }
-              if (sec.type === "status-list") {
-                return (
-                  <ul key={idx} style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-                    {sec.content?.split('\n').map((line, i) => {
-                      const match = line.match(/^\[(.*?)\] (.*)$/);
-                      if (match) {
-                        return (
-                          <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                            <span style={{ ...F.btn(11), background: KO.bgSec, color: KO.text, padding: "4px 8px", borderRadius: 4, marginTop: 2 }}>{match[1]}</span>
-                            <span style={{ ...F.body(15), color: KO.textDim, lineHeight: 1.5 }}>{match[2]}</span>
-                          </li>
-                        )
-                      }
-                      return <li key={i} style={{ ...F.body(15), color: KO.textDim }}>{line}</li>
-                    })}
-                  </ul>
-                );
-              }
-              if (sec.type === "figure") {
-                return (
-                  <div key={idx} style={{ margin: "24px 0", display: "flex", flexDirection: "column", gap: 12 }}>
-                    <div style={{ background: KO.bgSec, borderRadius: 16, border: `1px solid ${KO.border}`, padding: 32, overflow: "hidden" }}>
-                      {sec.visual === "zo-hardware-constraints" && <DiagramZOHardware />}
-                      {sec.visual === "zo-subspace-perturb" && <DiagramZOSubspace />}
-                      {sec.visual === "zo-perturb-rep" && <DiagramZOPerturbRep />}
-                      {sec.visual === "zo-crash" && <DiagramZOCrash />}
-                      {sec.visual === "zo-rank" && <DiagramZORank />}
-                      {sec.visual === "zo-refresh" && <DiagramZORefresh />}
-                      {sec.visual === "zo-results" && <DiagramZOResults />}
-                      {sec.visual === "zo-continual" && <DiagramZOContinual />}
-                      {sec.visual === "hybrid-handoff" && <DiagramHybridHandoff />}
-                      {sec.visual === "hybrid-tokenizers" && <DiagramHybridTokenizers />}
-                      {sec.visual === "hybrid-verify" && <DiagramHybridVerify />}
-                      {sec.visual === "hybrid-greedy" && <DiagramHybridGreedy />}
-                      {sec.visual === "hybrid-kv-cache" && <DiagramHybridKVCache />}
-                      {sec.visual === "hybrid-speedup" && <DiagramHybridSpeedup />}
-                      {sec.visual === "hybrid-domain" && <DiagramHybridDomain />}
-                      {sec.visual === "speech-layers" && <DiagramSpeechLayers />}
-                      {sec.visual === "nntrainer-cpu-dispatch" && <DiagramCPUPipeline />}
-                      {sec.visual === "nntrainer-training-flow" && <DiagramTrainingFlow />}
-                      {sec.visual === "nntrainer-qat" && <DiagramQAT />}
-                      {sec.visual === "nntrainer-memory" && <DiagramMemory />}
-                      {sec.visual === "nntrainer-hexagon-arch" && <DiagramHexagonArch />}
-                      {sec.visual === "nntrainer-hybrid-fail" && <DiagramHybridFail />}
-                      {sec.visual === "nntrainer-async" && <DiagramAsync />}
-                      {sec.visual === "nntrainer-fwd-bwd" && <DiagramFwdBwd />}
-                      {sec.visual === "nntrainer-prefill" && <DiagramPrefill />}
-                      {sec.visual === "nntrainer-progressive" && <DiagramProgressive />}
-                      {sec.visual === "nntrainer-architecture" && <DiagramArchitecture />}
-                      </div>
-                    <span style={{ ...F.btn(12), color: KO.textDim, textAlign: "center" }}>{sec.caption}</span>
                   </div>
                 );
               }
@@ -397,43 +387,46 @@ function DiagramQAT() {
 }
 
 function DiagramMemory() {
-  const [optimized, setOptimized] = useState(false);
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setStep(s => (s + 1) % 3), 2000);
+    return () => clearInterval(timer);
+  }, []);
+  
   return (
-    <div style={{ display: "flex", flexDirection: "column", padding: "20px 0", gap: 32 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ ...F.eyebrow(11), color: KO.textDim }}>RESIDENT MEMORY FOOTPRINT</div>
-        <button onClick={() => setOptimized(!optimized)} style={{ border: `1px solid ${KO.accent}`, cursor: "pointer", padding: "6px 12px", borderRadius: 99, background: optimized ? KO.accent : "transparent", color: optimized ? KO.surface : KO.accent, ...F.btn(11), transition: "all 0.2s" }}>
-          TOGGLE OPTIMIZATIONS
-        </button>
-      </div>
-      
-      <div style={{ position: "relative", height: 120, width: "100%", background: KO.bgSec, borderRadius: 12, overflow: "hidden", display: "flex" }}>
-        <motion.div animate={{ width: optimized ? "33%" : "100%" }} transition={{ type: "spring", damping: 20, stiffness: 100 }} style={{ height: "100%", display: "flex", width: "100%" }}>
-          <motion.div animate={{ flex: optimized ? 2 : 4, background: optimized ? KO.text : KO.textDim }} style={{ height: "100%", borderRight: `1px solid ${KO.bgPrimary}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ ...F.btn(11), color: KO.surface }}>{optimized ? "Q4_0" : "WEIGHTS"}</span>
-          </motion.div>
-          <motion.div animate={{ flex: optimized ? 1 : 6, background: optimized ? KO.accent : KO.textGhost }} style={{ height: "100%", borderRight: `1px solid ${KO.bgPrimary}`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", whiteSpace: "nowrap" }}>
-            <span style={{ ...F.btn(11), color: optimized ? KO.surface : KO.text }}>{optimized ? "RECOMP" : "ACTIVATIONS"}</span>
-          </motion.div>
-          <motion.div animate={{ flex: optimized ? 1 : 4, background: KO.textMute }} style={{ height: "100%", borderRight: `1px solid ${KO.bgPrimary}`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-            <span style={{ ...F.btn(11), color: KO.surface }}>{optimized ? "CKPT" : "BWD STATE"}</span>
-          </motion.div>
-          <motion.div animate={{ flex: optimized ? 1 : 2, background: KO.border }} style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ ...F.btn(11), color: KO.text }}>OTHER</span>
-          </motion.div>
-        </motion.div>
-      </div>
-      
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div style={{ ...F.hero(24), color: KO.text }}>{optimized ? "< 1 GB" : "~ 3 GB"}</div>
-        <div style={{ ...F.btn(12), color: KO.textDim, textAlign: "right" }}>
-          {optimized ? "With Checkpointing & Recomputation" : "Standard Training Memory"}
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0", alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 40 }}>
+        
+        {/* Baseline */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+          <div style={{ ...F.eyebrow(10), color: KO.textDim }}>STANDARD BWD</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {[...Array(6)].map((_, i) => (
+              <div key={i} style={{ width: 100, height: 16, background: KO.textGhost, borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ ...F.btn(9), color: KO.textDim }}>Act_{i}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ ...F.btn(10), color: KO.textDim }}>O(N) Memory</div>
         </div>
+
+        {/* Optimized */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+          <div style={{ ...F.eyebrow(10), color: KO.accent }}>CHECKPOINTING</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {[...Array(6)].map((_, i) => (
+              <motion.div key={i} animate={{ opacity: i % 3 === 0 || (step === 1 && i % 3 !== 0) ? 1 : 0.2 }} style={{ width: 100, height: 16, background: i % 3 === 0 ? KO.textDim : KO.accent, borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ ...F.btn(9), color: KO.surface }}>Act_{i}</span>
+              </motion.div>
+            ))}
+          </div>
+          <div style={{ ...F.btn(10), color: KO.textDim }}>O(sqrt(N)) Memory</div>
+        </div>
+
       </div>
     </div>
   );
 }
-
 function DiagramHexagonArch() {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "20px 0" }}>
@@ -549,26 +542,49 @@ function DiagramFwdBwd() {
 }
 
 function DiagramPrefill() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setStep(s => (s + 1) % 4), 1500);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "32px 0" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-        <div style={{ ...F.eyebrow(12), color: KO.textDim, width: 40 }}>CPU</div>
-        <div style={{ flex: 1, height: 32, background: KO.bgSec, borderRadius: 16, overflow: "hidden", position: "relative" }}>
-          <motion.div initial={{ width: 0 }} whileInView={{ width: "20%" }} viewport={{ once: true }} transition={{ duration: 1, ease: "easeOut" }} style={{ position: "absolute", left: 0, top: 0, bottom: 0, background: KO.textGhost }} />
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 24 }}>
+        <div style={{ width: 80, ...F.eyebrow(10), color: KO.textDim }}>SYNC<br/>(Baseline)</div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ display: "flex", gap: 4 }}>
+            <div style={{ width: 40, height: 12, background: KO.textDim, borderRadius: 2 }} />
+            <div style={{ width: 40, height: 12, background: "transparent" }} />
+            <div style={{ width: 40, height: 12, background: KO.textDim, borderRadius: 2 }} />
+          </div>
+          <div style={{ display: "flex", gap: 4 }}>
+            <div style={{ width: 40, height: 12, background: "transparent" }} />
+            <div style={{ width: 40, height: 12, background: KO.textGhost, borderRadius: 2 }} />
+            <div style={{ width: 40, height: 12, background: "transparent" }} />
+          </div>
         </div>
-        <div style={{ ...F.hero(20), color: KO.textDim, width: 40 }}>1×</div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-        <div style={{ ...F.eyebrow(12), color: KO.accent, width: 40 }}>HYBRID</div>
-        <div style={{ flex: 1, height: 32, background: KO.bgSec, borderRadius: 16, overflow: "hidden", position: "relative" }}>
-          <motion.div initial={{ width: 0 }} whileInView={{ width: "100%" }} viewport={{ once: true }} transition={{ duration: 1, ease: "easeOut", delay: 0.2 }} style={{ position: "absolute", left: 0, top: 0, bottom: 0, background: KO.accent }} />
+
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 24 }}>
+        <div style={{ width: 80, ...F.eyebrow(10), color: KO.accent }}>ASYNC<br/>(DMA Ring)</div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ display: "flex", gap: 4 }}>
+            <div style={{ width: 40, height: 12, background: KO.accent, borderRadius: 2 }} />
+            <div style={{ width: 40, height: 12, background: KO.accent, borderRadius: 2 }} />
+            <div style={{ width: 40, height: 12, background: KO.accent, borderRadius: 2 }} />
+          </div>
+          <div style={{ display: "flex", gap: 4, marginLeft: 20 }}>
+            <motion.div animate={{ opacity: step >= 1 ? 1 : 0 }} style={{ width: 40, height: 12, background: KO.bgSec, border: `1px solid ${KO.accent}`, borderRadius: 2 }} />
+            <motion.div animate={{ opacity: step >= 2 ? 1 : 0 }} style={{ width: 40, height: 12, background: KO.bgSec, border: `1px solid ${KO.accent}`, borderRadius: 2 }} />
+            <motion.div animate={{ opacity: step >= 3 ? 1 : 0 }} style={{ width: 40, height: 12, background: KO.bgSec, border: `1px solid ${KO.accent}`, borderRadius: 2 }} />
+          </div>
         </div>
-        <div style={{ ...F.hero(20), color: KO.text, width: 40 }}>5×</div>
       </div>
+      <div style={{ textAlign: "center", ...F.btn(11), color: KO.textDim }}>Overlapping Host Enqueue & DSP Execution (5× Speedup)</div>
     </div>
   );
 }
-
 function DiagramProgressive() {
   const [highTemp, setHighTemp] = useState(false);
   return (
@@ -678,7 +694,7 @@ function DiagramZOSubspace() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "20px 0", alignItems: "center", height: 300 }}>
-      <div style={{ ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 16 }, height: 40 }}>
+      <div style={{ ...{ ...F.code(16) }, height: 40 }}>
         {step === 0 && <span>W ∈ R^(m×n)</span>}
         {step === 1 && <span>v = x V_r</span>}
         {step === 2 && <span>Z_i ∈ &#123;-1,+1&#125;^(r×r)</span>}
@@ -688,31 +704,31 @@ function DiagramZOSubspace() {
       
       <div style={{ display: "flex", alignItems: "center", gap: 24, position: "relative" }}>
         <motion.div animate={{ opacity: step === 0 ? 1 : 0.3 }} style={{ width: 120, height: 160, background: KO.bgSec, borderRadius: 8, border: `1px solid ${KO.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 14 } }}>W (m×n)</span>
+          <span style={{ ...{ ...F.code(14) } }}>W (m×n)</span>
         </motion.div>
         
         <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
           <motion.div animate={{ opacity: step === 1 ? 1 : 0.3, scale: step === 1 ? 1.1 : 1 }} style={{ width: 40, height: 160, background: KO.surface, borderRadius: 4, border: `1px solid ${KO.accent}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 } }}>V_r</span>
+            <span style={{ ...{ ...F.code(12) } }}>V_r</span>
           </motion.div>
-          <motion.div animate={{ opacity: step === 1 ? 1 : 0 }} style={{ ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 }, color: KO.accent }}>x → v</motion.div>
+          <motion.div animate={{ opacity: step === 1 ? 1 : 0 }} style={{ ...{ ...F.code(12) }, color: KO.accent }}>x → v</motion.div>
         </div>
         
         <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
           <motion.div animate={{ opacity: (step === 2 || step === 3) ? 1 : 0.3, scale: step === 2 ? 1.1 : 1 }} style={{ width: 60, height: 60, background: KO.bgSec, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, padding: 2 }}>
-            <div style={{ background: KO.textDim, display: "flex", alignItems: "center", justifyContent: "center", color: KO.surface, ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 10 } }}>+1</div>
-            <div style={{ background: KO.surface, border: `1px solid ${KO.border}`, display: "flex", alignItems: "center", justifyContent: "center", ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 10 } }}>-1</div>
-            <div style={{ background: KO.surface, border: `1px solid ${KO.border}`, display: "flex", alignItems: "center", justifyContent: "center", ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 10 } }}>-1</div>
-            <div style={{ background: KO.textDim, display: "flex", alignItems: "center", justifyContent: "center", color: KO.surface, ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 10 } }}>+1</div>
+            <div style={{ background: KO.textDim, display: "flex", alignItems: "center", justifyContent: "center", color: KO.surface, ...{ ...F.code(10) } }}>+1</div>
+            <div style={{ background: KO.surface, border: `1px solid ${KO.border}`, display: "flex", alignItems: "center", justifyContent: "center", ...{ ...F.code(10) } }}>-1</div>
+            <div style={{ background: KO.surface, border: `1px solid ${KO.border}`, display: "flex", alignItems: "center", justifyContent: "center", ...{ ...F.code(10) } }}>-1</div>
+            <div style={{ background: KO.textDim, display: "flex", alignItems: "center", justifyContent: "center", color: KO.surface, ...{ ...F.code(10) } }}>+1</div>
           </motion.div>
-          <motion.div animate={{ opacity: step === 3 ? 1 : 0 }} style={{ ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 }, color: KO.accent }}>coeff</motion.div>
+          <motion.div animate={{ opacity: step === 3 ? 1 : 0 }} style={{ ...{ ...F.code(12) }, color: KO.accent }}>coeff</motion.div>
         </div>
         
         <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
           <motion.div animate={{ opacity: step === 4 ? 1 : 0.3, scale: step === 4 ? 1.1 : 1 }} style={{ width: 120, height: 40, background: KO.surface, borderRadius: 4, border: `1px solid ${KO.accent}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 } }}>U_r^T</span>
+            <span style={{ ...{ ...F.code(12) } }}>U_r^T</span>
           </motion.div>
-          <motion.div animate={{ opacity: step === 4 ? 1 : 0 }} style={{ ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 }, color: KO.accent }}>y + pert</motion.div>
+          <motion.div animate={{ opacity: step === 4 ? 1 : 0 }} style={{ ...{ ...F.code(12) }, color: KO.accent }}>y + pert</motion.div>
         </div>
       </div>
     </div>
@@ -739,12 +755,12 @@ function DiagramZOPerturbRep() {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
           <div style={{ ...F.eyebrow(11), color: KO.accent }}>SIGN-BASED (RADEMACHER)</div>
           <div style={{ width: 120, height: 80, background: KO.bgSec, borderRadius: 8, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 2, padding: 2 }}>
-            <div style={{ background: KO.text, display: "flex", alignItems: "center", justifyContent: "center", color: KO.surface, ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 } }}>+</div>
-            <div style={{ background: KO.surface, display: "flex", alignItems: "center", justifyContent: "center", ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 } }}>-</div>
-            <div style={{ background: KO.surface, display: "flex", alignItems: "center", justifyContent: "center", ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 } }}>-</div>
-            <div style={{ background: KO.surface, display: "flex", alignItems: "center", justifyContent: "center", ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 } }}>-</div>
-            <div style={{ background: KO.text, display: "flex", alignItems: "center", justifyContent: "center", color: KO.surface, ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 } }}>+</div>
-            <div style={{ background: KO.text, display: "flex", alignItems: "center", justifyContent: "center", color: KO.surface, ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 } }}>+</div>
+            <div style={{ background: KO.text, display: "flex", alignItems: "center", justifyContent: "center", color: KO.surface, ...{ ...F.code(12) } }}>+</div>
+            <div style={{ background: KO.surface, display: "flex", alignItems: "center", justifyContent: "center", ...{ ...F.code(12) } }}>-</div>
+            <div style={{ background: KO.surface, display: "flex", alignItems: "center", justifyContent: "center", ...{ ...F.code(12) } }}>-</div>
+            <div style={{ background: KO.surface, display: "flex", alignItems: "center", justifyContent: "center", ...{ ...F.code(12) } }}>-</div>
+            <div style={{ background: KO.text, display: "flex", alignItems: "center", justifyContent: "center", color: KO.surface, ...{ ...F.code(12) } }}>+</div>
+            <div style={{ background: KO.text, display: "flex", alignItems: "center", justifyContent: "center", color: KO.surface, ...{ ...F.code(12) } }}>+</div>
           </div>
           <div style={{ ...F.btn(11), color: KO.text }}>Bit-valued Operations</div>
           <div style={{ ...F.btn(11), color: KO.text }}>NPU Integer Path</div>
@@ -770,12 +786,12 @@ function DiagramZOCrash() {
         <div style={{ width: 120, ...F.eyebrow(11), color: KO.accent }}>SUBSPACE</div>
         <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ height: 40, width: 60, background: KO.bgSec, borderRadius: 8, border: `1px solid ${KO.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 10 } }}>W</span>
+            <span style={{ ...{ ...F.code(10) } }}>W</span>
           </div>
-          <div style={{ ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 }, color: KO.textDim }}>+</div>
+          <div style={{ ...{ ...F.code(12) }, color: KO.textDim }}>+</div>
           <div style={{ height: 40, width: 100, background: KO.surface, borderRadius: 8, border: `1px solid ${KO.accent}`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
             <motion.div animate={{ x: [-100, 100] }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} style={{ position: "absolute", width: "100%", height: "100%", background: `linear-gradient(90deg, transparent, ${KO.accent}44, transparent)` }} />
-            <span style={{ ...{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12 }, color: KO.accent }}>r×r Coeff</span>
+            <span style={{ ...{ ...F.code(12) }, color: KO.accent }}>r×r Coeff</span>
           </div>
         </div>
         <div style={{ width: 120, ...F.btn(12), color: KO.accent, textAlign: "right" }}>SAFE DISPATCH</div>
@@ -1054,7 +1070,7 @@ function DiagramHybridVerify() {
         <div style={{ ...F.eyebrow(10), color: KO.textDim, width: 80, textAlign: "right" }}>DRAFT (Small)</div>
         <div style={{ display: "flex", gap: 8 }}>
           {['A', 'B', 'C', 'D', 'E'].map((char, i) => (
-            <div key={i} style={{ width: 40, height: 40, background: KO.bgSec, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 14 }}>{char}</div>
+            <div key={i} style={{ width: 40, height: 40, background: KO.bgSec, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", ...F.code(14) }}>{char}</div>
           ))}
         </div>
       </div>
@@ -1064,10 +1080,10 @@ function DiagramHybridVerify() {
         <div style={{ display: "flex", gap: 8 }}>
           {['A', 'B', 'C', 'D', 'E'].map((char, i) => (
             <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-              <motion.div animate={{ opacity: step > i ? 1 : 0, scale: step > i ? 1 : 0.8 }} style={{ width: 40, height: 40, background: step > 3 && i >= 3 ? (i === 3 ? KO.surface : 'transparent') : KO.surface, border: `1px solid ${step > 3 && i >= 3 ? (i === 3 ? KO.accent : 'transparent') : KO.border}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 14, color: step > 3 && i >= 3 ? (i === 3 ? KO.accent : 'transparent') : KO.text }}>
+              <motion.div animate={{ opacity: step > i ? 1 : 0, scale: step > i ? 1 : 0.8 }} style={{ width: 40, height: 40, background: step > 3 && i >= 3 ? (i === 3 ? KO.surface : 'transparent') : KO.surface, border: `1px solid ${step > 3 && i >= 3 ? (i === 3 ? KO.accent : 'transparent') : KO.border}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", ...F.code(14), color: step > 3 && i >= 3 ? (i === 3 ? KO.accent : 'transparent') : KO.text }}>
                 {step > 3 && i === 3 ? "D'" : (step > 3 && i > 3 ? "" : char)}
               </motion.div>
-              <motion.div animate={{ opacity: step > i ? 1 : 0 }} style={{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 12, color: step > 3 && i >= 3 ? '#FF4444' : '#27C93F' }}>
+              <motion.div animate={{ opacity: step > i ? 1 : 0 }} style={{ ...F.code(12), color: step > 3 && i >= 3 ? '#FF4444' : '#27C93F' }}>
                 {step > 3 && i >= 3 ? (i === 3 ? '✗' : '—') : '✓'}
               </motion.div>
             </div>
@@ -1088,9 +1104,9 @@ function DiagramHybridGreedy() {
     <div style={{ display: "flex", flexDirection: "column", gap: 40, padding: "20px 0", alignItems: "center" }}>
       
       <div style={{ background: KO.surface, border: `1px solid ${KO.border}`, padding: "16px 24px", borderRadius: 8, display: "flex", alignItems: "center", gap: 12 }}>
-        <span style={{ fontFamily: "ui-serif, Georgia, serif", fontStyle: "italic", fontSize: 20 }}>accept</span>
-        <span style={{ fontFamily: "ui-serif, Georgia, serif", fontSize: 20 }}>⇔</span>
-        <span style={{ fontFamily: "ui-serif, Georgia, serif", fontStyle: "italic", fontSize: 20 }}>draft token = argmax p_target</span>
+        <span style={{ ...F.sub(20), fontStyle: "italic" }}>accept</span>
+        <span style={{ ...F.sub(20) }}>⇔</span>
+        <span style={{ ...F.sub(20), fontStyle: "italic" }}>draft token = argmax p_target</span>
       </div>
 
       <div style={{ display: "flex", gap: 40 }}>
