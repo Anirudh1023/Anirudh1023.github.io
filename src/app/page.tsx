@@ -364,14 +364,14 @@ export default function Home() {
             </div>
           </section>
 
-          {/* RESEARCH FOUNDATIONS */}
-          <section id="foundations" style={{ marginBottom: 64 }}>
+          {/* FEATURED RESEARCH */}
+          <section id="featured-research" style={{ marginBottom: 64 }}>
             <h2 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 24px 0", borderBottom: `1px solid ${KO.border}`, paddingBottom: 12, color: KO.text }}>
-              Research Foundations
+              Featured Research
             </h2>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              {siteContent.researchFoundations.map(proj => (
-                <ProjectCard key={proj.id} proj={proj} onClick={() => setActiveModalId(proj.id)} />
+              {siteContent.featuredResearch.map(proj => (
+                <ProjectCard key={proj.id} proj={proj} isFeatured={true} onClick={() => setActiveModalId(proj.id)} />
               ))}
             </div>
           </section>
@@ -388,14 +388,14 @@ export default function Home() {
             </div>
           </section>
 
-          {/* FEATURED RESEARCH */}
-          <section id="featured-research" style={{ marginBottom: 64 }}>
+          {/* RESEARCH FOUNDATIONS */}
+          <section id="foundations" style={{ marginBottom: 64 }}>
             <h2 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 24px 0", borderBottom: `1px solid ${KO.border}`, paddingBottom: 12, color: KO.text }}>
-              Featured Research
+              Research Foundations
             </h2>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              {siteContent.featuredResearch.map(proj => (
-                <ProjectCard key={proj.id} proj={proj} isFeatured={true} onClick={() => setActiveModalId(proj.id)} />
+              {siteContent.researchFoundations.map(proj => (
+                <ProjectCard key={proj.id} proj={proj} onClick={() => setActiveModalId(proj.id)} />
               ))}
             </div>
           </section>
@@ -458,9 +458,9 @@ export default function Home() {
           }}>
             <div style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "1.5px", color: KO.textDim, textTransform: "uppercase" }}>CONTENTS</div>
             <a href="#hello" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Hello</a>
-            <a href="#foundations" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Research Foundations</a>
-            <a href="#systems" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Systems & Deployment</a>
             <a href="#featured-research" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Featured Research</a>
+            <a href="#systems" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Systems & Deployment</a>
+            <a href="#foundations" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Research Foundations</a>
             <a href="#engineering" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Engineering</a>
             <a href="#experience" style={{ color: KO.text, textDecoration: "none", fontSize: "0.85rem", fontWeight: 500 }}>Experience</a>
           </div>
