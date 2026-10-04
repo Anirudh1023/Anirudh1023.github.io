@@ -157,3 +157,50 @@ body::after {
 .animate-dash-flow {
   animation: dash-flow 1s linear infinite;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   CUSTOM SCROLLBARS
+   ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ko-bgsec);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ko-constr);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ko-charcoal);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MAGNETIC GLOW HOVER (PROJECT CARDS)
+   ───────────────────────────────────────────────────────────── */
+.project-card {
+  position: relative;
+}
+.project-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    400px circle at var(--mouse-x, 0) var(--mouse-y, 0), 
+    rgba(255, 128, 0, 0.05),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+.project-card:hover::before {
+  opacity: 1;
+}
+

@@ -1,5 +1,21 @@
 "use client";
 
+function highlightSyntax(code: string) {
+  if (!code) return null;
+  return code.split('\n').map((line, i) => {
+    let highlighted = line
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\b(int|float|void|const|for|if|else|return|size_t|auto)\b/g, '<span style="color: #ff79c6">$1</span>')
+      .replace(/(\b\w+)(?=\()/g, '<span style="color: #50fa7b">$1</span>')
+      .replace(/(\/\/.*)/g, '<span style="color: #8B949E">$1</span>');
+      
+    return (
+      <span key={i} dangerouslySetInnerHTML={{ __html: highlighted || ' ' }} style={{ display: "block", minHeight: "1em" }} />
+    );
+  });
+}
+
 function parseMath(text: string) {
   try {
     const html = katex.renderToString(text, { throwOnError: false, displayMode: false });
@@ -234,14 +250,7 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
                     </div>
                     <div style={{ padding: 24, overflowX: "auto" }}>
                       <div style={{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 13, color: "#E6EDF3", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
-                        {(sec.content || '').split('\n').map((line, i) => {
-                          const isComment = line.trim().startsWith('//');
-                          return (
-                            <div key={i} style={{ color: isComment ? "#8B949E" : "#E6EDF3" }}>
-                              {line}
-                            </div>
-                          );
-                        })}
+                        {highlightSyntax(sec.content || '')}
                       </div>
                     </div>
                   </div>
@@ -1367,7 +1376,7 @@ function DiagramSnapliteUnified() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
+      <div className="responsive-flex-stack" style={{ display: "flex", alignItems: "center", gap: 40, width: "100%" }}>
         
         {/* BEFORE */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, alignItems: "center", opacity: step === 0 ? 1 : 0.4 }}>
@@ -1487,7 +1496,7 @@ function DiagramSnaplitePartitioning() {
          ))}
       </div>
 
-      <div style={{ display: "flex", gap: 40, width: "100%", maxWidth: 400 }}>
+      <div className="responsive-flex-stack" style={{ display: "flex", gap: 40, width: "100%", maxWidth: 400 }}>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
           <div style={{ ...F.eyebrow(10), color: KO.accent }}>ACCELERATOR (NPU/GPU)</div>
           <div style={{ width: "100%", height: 60, background: KO.bgSec, borderRadius: 8, border: `1px dashed ${KO.accent}`, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>

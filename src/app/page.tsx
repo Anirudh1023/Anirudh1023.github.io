@@ -202,19 +202,32 @@ function Badge({ children }: { children: React.ReactNode }) {
 
 function ProjectCard({ proj, isFeatured, onClick }: { proj: any, isFeatured?: boolean, onClick: () => void }) {
   const hasArticle = proj.article && proj.article.sections && proj.article.sections.length > 0;
+  
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+    e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+  };
+
   return (
     <div 
+      className="project-card"
       onClick={hasArticle ? onClick : undefined}
+      onMouseMove={handleMouseMove}
       style={{ 
         padding: isFeatured ? "24px 20px" : "16px",
         borderRadius: 16,
         cursor: hasArticle ? "pointer" : "default",
-        transition: "background 0.2s",
+        transition: "background 0.2s, border-color 0.2s",
         marginLeft: isFeatured ? -20 : -16,
         marginRight: isFeatured ? -20 : -16,
         background: isFeatured ? KO.surface : "transparent",
         border: isFeatured ? `1px solid ${KO.border}` : "1px solid transparent",
-        marginBottom: 16
+        marginBottom: 16,
+        position: "relative",
+        zIndex: 1
       }}
       onMouseOver={(e) => { e.currentTarget.style.background = KO.surface; e.currentTarget.style.borderColor = KO.border; }}
       onMouseOut={(e) => { 
@@ -222,67 +235,43 @@ function ProjectCard({ proj, isFeatured, onClick }: { proj: any, isFeatured?: bo
         e.currentTarget.style.borderColor = isFeatured ? KO.border : "transparent"; 
       }}
     >
-      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: isFeatured ? 12 : 8, flexWrap: "wrap" }}>
-        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: KO.textMute }}>{proj.number}</div>
-        <h3 style={{ fontSize: isFeatured ? "1.15rem" : "1rem", fontWeight: 700, margin: 0, color: KO.text }}>
-          {proj.title}
-        </h3>
-        {proj.category && <Badge>{proj.category}</Badge>}
-      </div>
-
-      {proj.metadata && (
-        <div style={{ fontSize: "0.75rem", color: KO.textMute, fontWeight: 500, marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-          {Array.isArray(proj.metadata) ? proj.metadata.join(" · ") : proj.metadata}
+      <div style={{ position: "relative", zIndex: 2 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: isFeatured ? 12 : 8, flexWrap: "wrap" }}>
+          <div style={{ fontSize: "0.85rem", fontWeight: 700, color: KO.textMute }}>{proj.number}</div>
+          <h3 style={{ fontSize: isFeatured ? "1.15rem" : "1rem", fontWeight: 700, margin: 0, color: KO.text }}>
+            {proj.title}
+          </h3>
+          {proj.category && <Badge>{proj.category}</Badge>}
         </div>
-      )}
 
-      {proj.result && (
-        <div style={{ marginBottom: 12 }}>
-          <Badge>{proj.result}</Badge>
-        </div>
-      )}
-
-      {proj.heroQuestion && (
-        <p style={{ fontSize: "0.95rem", fontWeight: 600, color: KO.text, margin: "0 0 12px 0", lineHeight: 1.5 }}>
-          {renderFormattedText(proj.heroQuestion)}
-        </p>
-      )}
-
-      <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.6, margin: hasArticle || proj.metrics || proj.link ? "0 0 16px 0" : 0 }}>
-        {renderFormattedText(proj.homepageSummary || proj.teaser)}
-      </p>
-
-      {proj.metrics && proj.metrics.length > 0 && (
-        <div style={{ display: "flex", gap: 24, marginBottom: hasArticle ? 16 : 0, flexWrap: "wrap" }}>
-          {proj.metrics.map((m: any, idx: number) => (
-            <div key={idx}>
-              <div style={{ fontSize: "1.2rem", fontWeight: 700, color: KO.text }}>{m.value}</div>
-              <div style={{ fontSize: "0.7rem", color: KO.textMute, textTransform: "uppercase", letterSpacing: "0.5px" }}>{m.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-        {hasArticle && (
-          <div style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
-            Read Notes <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(90deg)" }} />
+        {proj.metadata && (
+          <div style={{ fontSize: "0.75rem", color: KO.textMute, fontWeight: 500, marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            {Array.isArray(proj.metadata) ? proj.metadata.join(" · ") : proj.metadata}
           </div>
         )}
-        {proj.codeLink && (
-          <a href={proj.codeLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.85rem", color: KO.text, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
-            Source Code <Icon2T name="arrow" size={10} primary={KO.text} secondary="transparent" style={{ transform: "rotate(45deg)" }} />
-          </a>
+
+        {proj.result && (
+          <div style={{ marginBottom: 12 }}>
+            <span style={{ fontSize: "0.75rem", fontWeight: 700, color: KO.accent, background: `${KO.accent}11`, padding: "2px 8px", borderRadius: 4 }}>
+              {proj.result}
+            </span>
+          </div>
         )}
-        {proj.link && (
-          <a href={proj.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
-            Read Paper PDF <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(45deg)" }} />
-          </a>
+
+        <p style={{ fontSize: "0.95rem", color: KO.textDim, margin: 0, lineHeight: 1.5 }}>
+          {proj.teaser}
+        </p>
+
+        {hasArticle && (
+          <div style={{ marginTop: 16, display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.85rem", fontWeight: 700, color: KO.text }}>
+            Read Note <span style={{ color: KO.accent }}>→</span>
+          </div>
         )}
       </div>
     </div>
   );
 }
+
 
 export default function Home() {
   const [activeModalId, setActiveModalId] = useState<string | null>(null);
