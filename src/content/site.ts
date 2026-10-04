@@ -263,7 +263,7 @@ export const siteContent = {
           },
           {
             type: "math",
-            content: "v = x V_r\ncoeff_i = Z_i v\nŷ_i = y + ε(coeff_i U_r^T)"
+            content: "v = x V_r\n\\text{coeff}_i = Z_i v\n\\hat{y}_i = y + \\epsilon(\\text{coeff}_i U_r^T)"
           },
           {
             type: "paragraph",

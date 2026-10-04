@@ -1,13 +1,12 @@
 "use client";
 
 function parseMath(text: string) {
-  // Handle ^(multi-character) and ^single_character
-  let parsed = text.replace(/\^\(([^)]+)\)/g, '<sup>$1</sup>');
-  parsed = parsed.replace(/\^([a-zA-Z0-9]+)/g, '<sup>$1</sup>');
-  // Handle _(multi-character) and _single_character
-  parsed = parsed.replace(/_\(([^)]+)\)/g, '<sub>$1</sub>');
-  parsed = parsed.replace(/_([a-zA-Z0-9]+)/g, '<sub>$1</sub>');
-  return <span dangerouslySetInnerHTML={{ __html: parsed }} />;
+  try {
+    const html = katex.renderToString(text, { throwOnError: false, displayMode: false });
+    return <span dangerouslySetInnerHTML={{ __html: html }} />;
+  } catch (e) {
+    return <span>{text}</span>;
+  }
 }
 
 function parseFormatting(text: string) {
@@ -60,6 +59,7 @@ function parseBold(text: string) {
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import katex from "katex";
 import { KO, F } from "@/lib/knockout-tokens";
 import { Icon2T } from "@/components/knockout/icons/Icons2T";
 
@@ -226,16 +226,23 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
               }
               if (sec.type === "equation") {
                 return (
-                  <div key={idx} style={{ background: KO.surface, borderRadius: 8, border: `1px solid ${KO.border}`, overflow: "hidden", margin: "24px 0", padding: 24 }}>
-                    <div style={{ ...F.code(13), color: KO.text, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
-                      {(sec.content || '').split('\n').map((line, i) => {
-                        const isComment = line.trim().startsWith('//');
-                        return (
-                          <div key={i} style={{ color: isComment ? KO.textDim : KO.text, opacity: isComment ? 0.6 : 1 }}>
-                            {parseMath(line)}
-                          </div>
-                        );
-                      })}
+                  <div key={idx} style={{ background: "#0D1117", borderRadius: 8, border: `1px solid #30363D`, overflow: "hidden", margin: "24px 0", display: "flex", flexDirection: "column" }}>
+                    <div style={{ background: "#161B22", padding: "8px 16px", display: "flex", gap: 6, borderBottom: `1px solid #30363D` }}>
+                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF5F56" }}></div>
+                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FFBD2E" }}></div>
+                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#27C93F" }}></div>
+                    </div>
+                    <div style={{ padding: 24, overflowX: "auto" }}>
+                      <div style={{ fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace", fontSize: 13, color: "#E6EDF3", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+                        {(sec.content || '').split('\n').map((line, i) => {
+                          const isComment = line.trim().startsWith('//');
+                          return (
+                            <div key={i} style={{ color: isComment ? "#8B949E" : "#E6EDF3" }}>
+                              {line}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 );
@@ -331,97 +338,120 @@ function DiagramSpeechLayers() {
 
 
 function DiagramCPUPipeline() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setStep(s => (s + 1) % 4), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "20px 0" }}>
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 16 }}>
-        <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} style={{ ...F.btn(12), background: KO.surface, border: `1px solid ${KO.border}`, padding: "12px 24px", borderRadius: 8 }}>NNTrainer</motion.div>
-        <div style={{ width: 40, height: 2, background: KO.textGhost, position: "relative" }}>
-          <motion.div initial={{ width: 0 }} whileInView={{ width: "100%" }} viewport={{ once: true }} transition={{ delay: 0.2, duration: 0.5 }} style={{ position: "absolute", top: 0, left: 0, height: 2, background: KO.accent }} />
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0", alignItems: "center" }}>
+      <div style={{ ...F.eyebrow(10), color: KO.textDim }}>SIMD VECTORIZATION (AVX2 / NEON)</div>
+      <div style={{ display: "flex", gap: 40, alignItems: "center" }}>
+        
+        {/* Matrix */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4 }}>
+          {[...Array(16)].map((_, i) => (
+            <motion.div key={i} animate={{ background: Math.floor(i/4) === step ? KO.accent : KO.textGhost }} style={{ width: 24, height: 24, borderRadius: 4, border: `1px solid ${KO.border}` }} />
+          ))}
         </div>
-        <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} style={{ ...F.btn(12), background: KO.surface, border: `1px solid ${KO.border}`, padding: "12px 24px", borderRadius: 8 }}>Backend Dispatch</motion.div>
-      </div>
-      
-      <div style={{ display: "flex", justifyContent: "center", gap: 64, marginTop: 16 }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-          <motion.div initial={{ opacity: 0, y: -10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }} style={{ ...F.eyebrow(11), color: KO.textDim }}>ARM</motion.div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.6 }} style={{ ...F.btn(11), background: KO.bgSec, padding: "8px 16px", borderRadius: 6 }}>ggml Q4_0</motion.div>
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.7 }} style={{ ...F.btn(11), background: KO.bgSec, padding: "8px 16px", borderRadius: 6 }}>KleidiAI QINT4</motion.div>
+
+        <div style={{ ...F.sub(20), color: KO.textGhost }}>→</div>
+
+        {/* Vector Register */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <div style={{ ...F.eyebrow(10), color: KO.accent }}>4-WIDE VECTOR REGISTER</div>
+          <div style={{ display: "flex", gap: 4, padding: 8, background: KO.surface, border: `2px solid ${KO.accent}`, borderRadius: 8 }}>
+            {[...Array(4)].map((_, i) => (
+              <motion.div key={i} initial={false} animate={{ scale: [1, 1.2, 1], background: [KO.bgSec, KO.accent, KO.accent] }} transition={{ duration: 0.5, times: [0, 0.5, 1] }} style={{ width: 24, height: 24, borderRadius: 4 }} />
+            ))}
           </div>
+          <div style={{ ...F.btn(10), color: KO.textDim }}>FMA Instruction</div>
         </div>
-        <div style={{ width: 1, background: KO.border }}></div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-          <motion.div initial={{ opacity: 0, y: -10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.5 }} style={{ ...F.eyebrow(11), color: KO.textDim }}>AVX2</motion.div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.8 }} style={{ ...F.btn(11), background: KO.bgSec, padding: "8px 16px", borderRadius: 6 }}>ggml Q4_0</motion.div>
-          </div>
-        </div>
+
       </div>
     </div>
   );
 }
-
 function DiagramTrainingFlow() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24, padding: "20px 0" }}>
-      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-        <div style={{ ...F.btn(11), color: KO.textDim, width: 80, textAlign: "right" }}>FORWARD</div>
-        <motion.div initial={{ width: 0 }} whileInView={{ width: 240 }} viewport={{ once: true }} transition={{ duration: 0.6 }} style={{ height: 2, background: KO.textGhost, position: "relative" }}>
-          <div style={{ position: "absolute", right: 0, top: -4, width: 0, height: 0, borderTop: "5px solid transparent", borderBottom: "5px solid transparent", borderLeft: `10px solid ${KO.textGhost}` }} />
-        </motion.div>
-      </div>
-      
-      <div style={{ display: "flex", gap: 32 }}>
-        <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ ...F.btn(12), background: KO.surface, border: `1px dashed ${KO.border}`, padding: "16px 24px", borderRadius: 8, textAlign: "center", width: 140 }}>
-          <div style={{ marginBottom: 4 }}>Q4_0 BASE</div>
-          <div style={{ ...F.eyebrow(10), color: KO.textDim }}>(FROZEN)</div>
-        </motion.div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0" }}>
+      <div style={{ display: "flex", gap: 40 }}>
         
-        <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} style={{ ...F.btn(12), background: KO.surface, border: `1px solid ${KO.accent}`, padding: "16px 24px", borderRadius: 8, textAlign: "center", width: 140 }}>
-          <div style={{ marginBottom: 4 }}>FP32 LoRA</div>
-          <div style={{ ...F.eyebrow(10), color: KO.accent }}>(TRAINABLE)</div>
-        </motion.div>
-      </div>
-      
-      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-        <div style={{ ...F.btn(11), color: KO.accent, width: 80, textAlign: "right" }}>BACKWARD</div>
-        <motion.div initial={{ width: 0 }} whileInView={{ width: 240 }} viewport={{ once: true }} transition={{ delay: 0.4, duration: 0.6 }} style={{ height: 2, background: KO.accent, position: "relative" }}>
-          <div style={{ position: "absolute", left: 0, top: -4, width: 0, height: 0, borderTop: "5px solid transparent", borderBottom: "5px solid transparent", borderRight: `10px solid ${KO.accent}` }} />
-        </motion.div>
-      </div>
-    </div>
-  );
-}
-
-function DiagramQAT() {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "20px 0", alignItems: "center" }}>
-      <div style={{ display: "flex", gap: 40, alignItems: "flex-start" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
-          <div style={{ ...F.eyebrow(11), color: KO.textDim }}>NAÏVE APPROACH</div>
-          <div style={{ ...F.btn(12), background: KO.surface, border: `1px solid ${KO.border}`, padding: "12px", borderRadius: 8, textAlign: "center", width: 140 }}>Train in FP32</div>
-          <div style={{ width: 2, height: 20, background: KO.border }}></div>
-          <div style={{ ...F.btn(12), background: KO.surface, border: `1px solid ${KO.border}`, padding: "12px", borderRadius: 8, textAlign: "center", width: 140 }}>Post-Quantize</div>
-        </div>
-        
-        <div style={{ width: 1, background: KO.border, height: 140 }}></div>
-        
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
-          <div style={{ ...F.eyebrow(11), color: KO.accent }}>OUR QAT APPROACH</div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <div style={{ ...F.btn(11), background: KO.bgSec, padding: "8px 12px", borderRadius: 6, opacity: 0.7 }}>Q4_0 Base</div>
-            <div style={{ ...F.btn(11), background: KO.bgSec, padding: "8px 12px", borderRadius: 6, color: KO.accent }}>FP32 LoRA</div>
+        {/* Causal LM */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+          <div style={{ ...F.eyebrow(10), color: KO.textDim }}>CAUSAL LM</div>
+          <div style={{ display: "flex", gap: 4 }}>
+             <div style={{ width: 12, height: 12, borderRadius: "50%", background: KO.textDim }} />
+             <div style={{ width: 12, height: 12, borderRadius: "50%", background: KO.textDim }} />
+             <div style={{ width: 12, height: 12, borderRadius: "50%", background: KO.textDim }} />
+             <div style={{ width: 12, height: 12, borderRadius: "50%", background: KO.textDim }} />
           </div>
-          <div style={{ width: 2, height: 20, background: KO.accent }}></div>
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} style={{ ...F.btn(12), background: KO.surface, border: `1px solid ${KO.accent}`, padding: "12px", borderRadius: 8, textAlign: "center", width: 180 }}>
-            EMA Scale Tracking<br/><span style={{ ...F.eyebrow(10), color: KO.textDim }}>During Training</span>
-          </motion.div>
+          <div style={{ ...F.btn(10), color: KO.textDim }}>Cross-Entropy Loss</div>
+        </div>
+
+        {/* LoRA */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+          <div style={{ ...F.eyebrow(10), color: KO.accent }}>LoRA</div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+             <div style={{ width: 40, height: 40, background: KO.textGhost, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon2T name="lock" size={16} primary={KO.textDim} secondary="transparent" />
+             </div>
+             <div style={{ ...F.sub(14), color: KO.textDim }}>+</div>
+             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <div style={{ width: 32, height: 16, background: KO.accent, borderRadius: 2 }} />
+                <div style={{ width: 32, height: 16, background: KO.accent, borderRadius: 2 }} />
+             </div>
+          </div>
+          <div style={{ ...F.btn(10), color: KO.textDim }}>Low-Rank Adapters</div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+function DiagramQAT() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setStep(s => (s + 1) % 4), 2500);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+        <div style={{ ...F.eyebrow(10), color: KO.textDim, width: 60 }}>Q4_0<br/>BLOCK</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
+          <div style={{ display: "flex", gap: 2 }}>
+            {[...Array(32)].map((_, i) => (
+              <motion.div key={i} animate={{ background: step >= 1 ? KO.accent : KO.textDim, scaleY: step >= 1 ? 0.6 : 1 }} style={{ flex: 1, height: 16, borderRadius: 2 }} />
+            ))}
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <motion.div animate={{ opacity: step >= 0 ? 1 : 0 }} style={{ ...F.btn(10), color: KO.textDim }}>32 FP32 Values (128 bytes)</motion.div>
+            <motion.div animate={{ opacity: step >= 1 ? 1 : 0 }} style={{ ...F.btn(10), color: KO.accent }}>32 4-bit INTs + 1 FP16 Scale (18 bytes)</motion.div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+        <div style={{ ...F.eyebrow(10), color: KO.textDim, width: 60 }}>EMA<br/>UPDATE</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1, background: KO.surface, border: `1px solid ${KO.border}`, padding: 16, borderRadius: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ ...F.sub(14), fontStyle: "italic", color: KO.textDim }}>S_EMA^(t-1)</span>
+            <motion.div animate={{ x: step >= 2 ? 0 : -20, opacity: step >= 2 ? 1 : 0, color: KO.text }} style={{ ...F.sub(14) }}>+</motion.div>
+            <motion.div animate={{ x: step >= 2 ? 0 : 20, opacity: step >= 2 ? 1 : 0 }} style={{ ...F.sub(14), fontStyle: "italic", color: KO.accent }}>S_batch</motion.div>
+            <motion.div animate={{ opacity: step >= 3 ? 1 : 0, color: KO.text }} style={{ ...F.sub(14) }}>→</motion.div>
+            <motion.div animate={{ scale: step >= 3 ? 1.1 : 1, color: step >= 3 ? KO.accent : KO.textGhost }} style={{ ...F.sub(14), fontStyle: "italic", fontWeight: 600 }}>S_EMA^(t)</motion.div>
+          </div>
+          <div style={{ width: "100%", height: 4, background: KO.bgSec, borderRadius: 2, overflow: "hidden" }}>
+             <motion.div animate={{ width: step === 0 ? "30%" : step === 1 ? "30%" : step === 2 ? "60%" : "50%" }} style={{ height: "100%", background: KO.accent }} transition={{ type: "spring" }} />
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
 function DiagramMemory() {
   const [step, setStep] = useState(0);
   useEffect(() => {
@@ -464,29 +494,54 @@ function DiagramMemory() {
   );
 }
 function DiagramHexagonArch() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setStep(s => (s + 1) % 4), 1500);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "20px 0" }}>
-      <div style={{ ...F.btn(12), background: KO.surface, border: `1px solid ${KO.border}`, padding: "12px 32px", borderRadius: 8, width: 300, textAlign: "center" }}>
-        NNTrainer Layer-wise Orchestration
-      </div>
-      <div style={{ width: 2, height: 20, background: KO.textGhost }}></div>
-      <div style={{ background: KO.surface, border: `1px solid ${KO.accent}`, borderRadius: 12, padding: 24, width: 300, display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ ...F.eyebrow(11), color: KO.accent, textAlign: "center" }}>QUALCOMM HEXAGON NPU</div>
-        <div style={{ display: "flex", gap: 12 }}>
-          <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} style={{ flex: 1, background: KO.bgSec, borderRadius: 8, padding: "16px 12px", textAlign: "center" }}>
-            <div style={{ ...F.btn(12), color: KO.text }}>HMX</div>
-            <div style={{ ...F.eyebrow(10), color: KO.textDim, marginTop: 4 }}>MATRIX</div>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} style={{ flex: 1, background: KO.bgSec, borderRadius: 8, padding: "16px 12px", textAlign: "center" }}>
-            <div style={{ ...F.btn(12), color: KO.text }}>HVX</div>
-            <div style={{ ...F.eyebrow(10), color: KO.textDim, marginTop: 4 }}>VECTOR</div>
-          </motion.div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0" }}>
+      <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+        <div style={{ ...F.eyebrow(10), color: KO.accent, width: 80 }}>NPU DOMAIN</div>
+        <div style={{ flex: 1, display: "flex", gap: 16, background: KO.bgSec, padding: 16, borderRadius: 12, border: `1px solid ${KO.border}` }}>
+          
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ ...F.eyebrow(10), color: KO.textDim }}>VTCM (Fast SRAM)</div>
+            <div style={{ width: "100%", height: 16, background: KO.surface, borderRadius: 4, display: "flex", overflow: "hidden" }}>
+              <motion.div animate={{ width: step >= 0 ? "100%" : "0%" }} style={{ background: KO.textDim, height: "100%" }} transition={{ duration: 0.5 }} />
+            </div>
+          </div>
+
+          <div style={{ width: 1, background: KO.border }}></div>
+
+          <div style={{ flex: 2, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", gap: 16 }}>
+              <div style={{ flex: 1, background: KO.surface, borderRadius: 8, padding: 8, border: `1px solid ${KO.accent}` }}>
+                <div style={{ ...F.btn(10), color: KO.accent, marginBottom: 8 }}>HMX (Matrix)</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2 }}>
+                  {[...Array(16)].map((_, i) => (
+                    <motion.div key={i} animate={{ background: step === 1 || step === 2 ? KO.accent : KO.textGhost }} style={{ width: "100%", height: 8, borderRadius: 2 }} />
+                  ))}
+                </div>
+              </div>
+              <div style={{ flex: 1, background: KO.surface, borderRadius: 8, padding: 8, border: `1px solid ${KO.accent}` }}>
+                <div style={{ ...F.btn(10), color: KO.accent, marginBottom: 8 }}>HVX (Vector)</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  {[...Array(4)].map((_, i) => (
+                    <motion.div key={i} animate={{ background: step === 3 ? KO.accent : KO.textGhost }} style={{ width: "100%", height: 8, borderRadius: 2 }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
+      <div style={{ textAlign: "center", ...F.btn(11), color: KO.textDim }}>Matrix multiply on HMX → Post-processing (Norm/Activation) on HVX</div>
     </div>
   );
 }
-
 function DiagramHybridFail() {
   return (
     <div style={{ position: "relative", width: "100%", padding: "40px 0", display: "flex", flexDirection: "column", gap: 16 }}>
