@@ -270,6 +270,7 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
                       {sec.visual === "snaplite-migration" && <DiagramSnapliteMigration />}
                       {sec.visual === "snaplite-partitioning" && <DiagramSnaplitePartitioning />}
                       {sec.visual === "snaplite-cache" && <DiagramSnapliteCache />}
+                      {sec.visual === "ww-dashboard" && <DiagramWWDashboard />}
                       {sec.visual === "speech-layers" && <DiagramSpeechLayers />}
                       {sec.visual === "nntrainer-cpu-dispatch" && <DiagramCPUPipeline />}
                       {sec.visual === "nntrainer-training-flow" && <DiagramTrainingFlow />}
@@ -1557,3 +1558,63 @@ function DiagramSnapliteCache() {
   );
 }
 
+
+function DiagramWWDashboard() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "20px 0", alignItems: "center", width: "100%" }}>
+      <div style={{ width: "100%", maxWidth: 600, background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 8, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        
+        {/* Toolbar */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderBottom: `1px solid ${KO.border}`, background: KO.surface }}>
+          <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF5F56" }}></div>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FFBD2E" }}></div>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#27C93F" }}></div>
+          </div>
+          <div style={{ ...F.code(10), color: KO.textDim }}>Waveform-Wizard v1.0</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ padding: "2px 6px", background: KO.bgSec, borderRadius: 4, ...F.btn(9), color: KO.textGhost }}>Export SVG</div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", width: "100%", height: 300 }}>
+          {/* Sidebar */}
+          <div style={{ width: 120, borderRight: `1px solid ${KO.border}`, padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ ...F.eyebrow(9), color: KO.textDim, marginBottom: 4 }}>ANALYSIS PANE</div>
+            <div style={{ ...F.btn(10), color: KO.accent, padding: "4px 8px", background: `${KO.accent}11`, borderRadius: 4 }}>Waveform</div>
+            <div style={{ ...F.btn(10), color: KO.accent, padding: "4px 8px", background: `${KO.accent}11`, borderRadius: 4 }}>Spectrogram</div>
+            <div style={{ ...F.btn(10), color: KO.accent, padding: "4px 8px", background: `${KO.accent}11`, borderRadius: 4 }}>Pitch & Formants</div>
+            <div style={{ ...F.btn(10), color: KO.textGhost, padding: "4px 8px", borderRadius: 4 }}>Gammatone</div>
+          </div>
+          
+          {/* Main Views */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: 16, gap: 16 }}>
+            {/* Waveform */}
+            <div style={{ flex: 1, border: `1px solid ${KO.border}`, borderRadius: 4, position: "relative", overflow: "hidden", display: "flex", alignItems: "center" }}>
+               <div style={{ position: "absolute", left: 8, top: 4, ...F.eyebrow(9), color: KO.textDim }}>WAVEFORM</div>
+               <svg width="100%" height="40%" viewBox="0 0 100 20" preserveAspectRatio="none">
+                 <path d="M0,10 Q5,0 10,10 T20,10 T30,10 T40,2 T50,10 T60,18 T70,10 T80,10 T90,5 T100,10" fill="none" stroke={KO.text} strokeWidth="1" />
+               </svg>
+               {/* Vertical Time Cursor */}
+               <motion.div animate={{ x: [0, 300, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} style={{ position: "absolute", width: 1, height: "100%", background: KO.accent, left: 20 }} />
+            </div>
+
+            {/* Spectrogram + Formants */}
+            <div style={{ flex: 2, border: `1px solid ${KO.border}`, borderRadius: 4, position: "relative", overflow: "hidden", background: `linear-gradient(0deg, ${KO.surface}, ${KO.bgSec} 50%, ${KO.surface})` }}>
+               <div style={{ position: "absolute", left: 8, top: 4, ...F.eyebrow(9), color: KO.textDim }}>SPECTROGRAM + FORMANTS</div>
+               {/* Formant Tracks */}
+               <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: "absolute", top: 0, left: 0 }}>
+                 <path d="M0,80 Q20,70 40,80 T80,85 T100,75" fill="none" stroke={KO.accent} strokeWidth="2" strokeDasharray="4 2" />
+                 <path d="M0,50 Q20,40 40,55 T80,50 T100,60" fill="none" stroke="#FF5F56" strokeWidth="2" strokeDasharray="4 2" />
+                 <path d="M0,20 Q20,25 40,15 T80,25 T100,10" fill="none" stroke="#FFBD2E" strokeWidth="2" strokeDasharray="4 2" />
+               </svg>
+               {/* Linked Time Cursor */}
+               <motion.div animate={{ x: [0, 300, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }} style={{ position: "absolute", width: 1, height: "100%", background: KO.accent, left: 20 }} />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style={{ ...F.btn(11), color: KO.textDim }}>Multiple synced analysis panes analyzing standard.wav</div>
+    </div>
+  );
+}

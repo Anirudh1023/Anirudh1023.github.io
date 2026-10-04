@@ -706,21 +706,46 @@ export const siteContent = {
     {
       id: "waveform",
       number: "07",
-      title: "WAVEFORM-WIZARD: A FREE TOOL FOR SPECTRO-TEMPORAL VISUALIZATION OF SPEECH",
-      metadata: "ICASSP 2025 SHOW & TELL",
-      teaser: "I led a team of six undergraduates in building Waveform-Wizard, an open-source Python replacement for our lab’s MATLAB speech-analysis workflow. We brought waveform, spectral, pitch, formant, and other analyses into one application with linked views, multi-file comparison, workflow persistence, and portable installers for Windows and Ubuntu. We presented the tool at ICASSP 2025 Show & Tell.",
+      title: "WAVEFORM-WIZARD",
+      articleTitle: "WAVEFORM-WIZARD",
+      metadata: [
+        "ICASSP 2025 SHOW & TELL",
+        "OPEN-SOURCE SPEECH ANALYSIS AND VISUALIZATION TOOL"
+      ],
+      teaser: "I led a team of six undergraduates in building Waveform-Wizard, a Python-based replacement for our lab's MATLAB speech-analysis workflow. The project brought waveform, spectral, pitch, and formant analyses into a unified application with linked views, multi-file comparison, and portable installers. We presented the tool at ICASSP 2025 Show & Tell.",
       result: "PRESENTED — ICASSP 2025 SHOW & TELL",
       link: "/publications/Icassp_Show_and_tell.pdf",
       article: {
-        intro: "I led six undergraduates in building Waveform-Wizard, an open-source Python replacement for a MATLAB-heavy speech-analysis workflow.",
+        intro: "I led a team of six undergraduates in building Waveform-Wizard, a Python-based replacement for our lab's [MATLAB](#matlab) speech-analysis workflow. The goal was to make the analysis stack easier to use, extend, and distribute without requiring a MATLAB license.\n\nThe system provides waveform analysis, [zero-time windowing spectrograms](#zero-time-windowing-spectrograms), [spectral flatness](#spectral-flatness), [S-transform](#s-transform), [Constant-Q](#constant-q) analysis, [formant](#formant) visualization, [pitch](#pitch) analysis, [Gammatone](#gammatone) analysis, and [voice activity detection](#voice-activity-detection).\n\nIt also includes multiple-file comparison, dynamically linked analysis panes, save/resume via a custom workflow format, PDF/PNG/SVG export, and automated Windows and Ubuntu packaging.",
         sections: [
           {
-            type: "paragraph",
-            content: "The project rebuilt the analysis stack around Python, NumPy, SciPy, LibROSA and PyQt5, adding waveform, zero-time windowing, spectral flatness, S-transform, Constant-Q, formant, pitch, Gammatone and VAD analysis in a unified application."
+            type: "heading",
+            content: "ENGINEERING"
           },
           {
             type: "paragraph",
-            content: "The tool also supports multi-file comparison, dynamically linked analysis panes, save/resume through a custom workflow format, export to PDF/PNG/SVG, and packaging for Windows and Ubuntu with GitHub Actions."
+            content: "The project transitioned the lab's workflow from MATLAB into a standalone Python application using NumPy, [SciPy](#scipy), [LibROSA](#librosa), and a [PyQt5](#pyqt5) graphical interface. This involved carefully mapping existing MATLAB functionality to their Python equivalents and implementing custom signal processing routines where direct library replacements were unavailable."
+          },
+          {
+            type: "figure",
+            caption: "Waveform-Wizard Interactive Dashboard",
+            visual: "ww-dashboard"
+          },
+          {
+            type: "heading",
+            content: "TEAM AND DELIVERY"
+          },
+          {
+            type: "paragraph",
+            content: "I led a team of six undergraduate researchers in developing and packaging the application. We successfully presented the resulting tool at the ICASSP 2025 Show & Tell session. The source code and our presentation details are available through the project links."
+          },
+          {
+            type: "heading",
+            content: "CONCLUSION"
+          },
+          {
+            type: "paragraph",
+            content: "The project gave me experience turning an internal research workflow into a reusable software tool, including interface design, analysis integration, packaging, and cross-platform delivery."
           }
         ]
       }

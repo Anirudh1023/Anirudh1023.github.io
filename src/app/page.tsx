@@ -8,6 +8,19 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Icon2T } from "@/components/knockout/icons/Icons2T";
 
 const TOOLTIPS: Record<string, string> = {
+  "MATLAB": "A proprietary multi-paradigm programming language and numeric computing environment widely used in academia.",
+  "PyQt5": "A comprehensive set of Python bindings for the Qt v5 application framework, used to build the GUI.",
+  "SciPy": "An open-source Python library used for scientific computing and technical computing.",
+  "LibROSA": "A Python package for music and audio analysis.",
+  "zero-time windowing spectrograms": "A technique for producing spectrograms with extremely high temporal resolution.",
+  "spectral flatness": "A measure used in digital signal processing to characterize an audio spectrum.",
+  "S-transform": "A time-frequency analysis technique similar to the Short-Time Fourier Transform but with a frequency-dependent window.",
+  "Constant-Q": "A transform that spaces frequency bins logarithmically, closely mirroring human hearing.",
+  "formant": "A concentration of acoustic energy around a particular frequency in the speech wave.",
+  "pitch": "The fundamental frequency of the speech signal, corresponding to perceived vocal pitch.",
+  "Gammatone": "A filter bank model designed to approximate the frequency filtering performed by the human ear.",
+  "voice activity detection": "An algorithm used to detect the presence or absence of human speech in an audio segment.",
+
   "EMA": "Exponential Moving Average — used here to track blockwise quantization scales smoothly over training steps.",
   "DMA": "Direct Memory Access — allows the NPU to fetch tensor data independently of the CPU.",
 
