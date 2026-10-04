@@ -6,7 +6,7 @@ export const siteContent = {
     heroParagraphs: [
       "I’m a Machine Learning Engineer at [Samsung Research India](https://research.samsung.com/sri), where I work on making machine learning more efficient across training, inference, and systems. My work spans on-device LLMs, heterogeneous execution, quantization, memory-efficient training, continual adaptation, and adaptive inference. More broadly, I’m interested in understanding what information, computation, and state a model actually needs for a task, and how that work can be reduced, reused, or adapted as models and workloads change.",
       "I’ve explored these questions at different levels of the stack: from representations and computation depth to optimization, memory, runtimes, scheduling, and accelerator execution. More recently, I’ve also been studying how computation can be reused across models during inference and how models can adapt their computation to the workload. These problems have led me toward a broader interest in designing ML algorithms and systems together rather than treating model efficiency and system efficiency as separate problems.",
-      "I first became interested in these questions through speech research at [IIIT Hyderabad](https://www.iiit.ac.in/). In Prof. Anil Kumar Vuppala’s Speech Processing Lab, I studied how different representations and intermediate layers affected task performance, finding that more information and deeper computation were not always more useful. That perspective has stayed with me as my work has moved from speech representations to model optimization, efficient execution, and adaptive ML systems."
+      "I first became interested in these questions through speech research at [IIIT Hyderabad](https://www.iiit.ac.in/). In Prof. Anil Kumar Vuppala’s Speech Processing Lab, I started by asking what information a task actually needs and how much computation is necessary to extract it. That perspective has stayed with me as my work has moved into production runtimes, training systems, hardware-constrained optimization, and hybrid execution. At every layer, the core question remains the same: how do we identify the work that is actually necessary, and how do we eliminate the rest?"
     ],
     links: {
       email: "mailto:anirudhnarayana7@gmail.com",
@@ -366,7 +366,7 @@ export const siteContent = {
           },
           {
             type: "paragraph",
-            content: "Deploying the optimization on real NPU hardware exposed constraints that GPU simulation did not show. Full-rank perturbations were unsafe at the accelerator dispatch level. Rank changed the relative efficiency of CPU and NPU execution. Subspace refresh had to be reformulated around batched accelerator-friendly computation. The resulting system reached 92.0% SST-2 accuracy on real Hexagon hardware, close to the 92.7% full-LoRA baseline, while showing that the hardware affected not only execution strategy but the optimization representation itself.\\n\\nThis work solves the backward-state memory constraint. A separate challenge in heterogeneous inference is how to efficiently reuse context when computation moves between models. This led to my work on [CROSS-VOCABULARY SPECULATIVE DECODING](#hybrid)."
+            content: "Deploying the optimization on real NPU hardware exposed constraints that GPU simulation did not show. Full-rank perturbations were unsafe at the accelerator dispatch level. Rank changed the relative efficiency of CPU and NPU execution. Subspace refresh had to be reformulated around batched accelerator-friendly computation. The resulting system reached 92.0% SST-2 accuracy on real Hexagon hardware, close to the 92.7% full-LoRA baseline, while showing that the hardware affected not only execution strategy but the optimization representation itself.\\n\\nBy redesigning the optimization around the hardware, we eliminated the backward state entirely. But whether we are training or inferencing on a single device, we are still restricted by its local compute capacity. The next step was asking whether we could break beyond a single device: when a local model reaches its limits and escalates to a larger cloud model, can we reuse the computation it has already performed? This led to my work on [CROSS-VOCABULARY SPECULATIVE DECODING](#hybrid)."
           }
         ]
       }
@@ -513,7 +513,7 @@ export const siteContent = {
           },
           {
             type: "paragraph",
-            content: "The main result is not only that speculative decoding can accelerate a larger model. In a hybrid system, the same verification operation can also serve as the transfer mechanism between models. This allows computation already performed by the local model to remain useful after escalation, avoiding a separate context catch-up stage. The current results establish the mechanism on cloud GPUs; the remaining question is how much of that benefit survives when the drafter, network, and target model all operate under real deployment constraints."
+            content: "The main result is not only that speculative decoding can accelerate a larger model. In a hybrid system, the same verification operation can also serve as the transfer mechanism between models. This allows computation already performed by the local model to remain useful after escalation, avoiding a separate context catch-up stage. The current results establish the mechanism on cloud GPUs; the remaining question is how much of that benefit survives when the drafter, network, and target model all operate under real deployment constraints.\n\nFrom speech representations to speculative decoding, the underlying thread remains the same: by understanding exactly what information, state, and computation an ML task requires, we can design systems and algorithms that eliminate everything else."
           }
         ]
       }
@@ -645,13 +645,34 @@ export const siteContent = {
           },
           {
             type: "paragraph",
-            content: "SnapLite taught me that efficient model execution is not only a property of the model or the accelerator. Production deployment also depends on how graphs are partitioned, how artifacts are compiled and reused, how backends are selected, and how the runtime handles unsupported operations and failures.\n\nThe LiteRT migration brought these concerns under a more unified execution framework while preserving Samsung-specific optimizations and deployment behavior across CPUs, GPUs, and NPUs."
+            content: "SnapLite taught me that efficient model execution is not only a property of the model or the accelerator. Production deployment also depends on how graphs are partitioned, how artifacts are compiled and reused, how backends are selected, and how the runtime handles unsupported operations and failures.\n\nThe LiteRT migration brought these concerns under a more unified execution framework while preserving Samsung-specific optimizations and deployment behavior across CPUs, GPUs, and NPUs.\n\nSnapLite solved efficient execution for static inference models, but deploying training workloads introduces an entirely new constraint: maintaining backward state. This realization motivated my work on [NNTRAINER](#nntrainer)."
           }
         ]
       }
     }
   ],
   researchFoundations: [
+    {
+      id: "wesper",
+      number: "06",
+      title: "WHISPERED SPEECH REPRESENTATIONS (WESPER)",
+      metadata: "IIIT HYDERABAD",
+      teaser: "I reproduced WESPER, a whispered-to-normal speech conversion system built on HuBERT, and replaced its MFCC targets with SFCC to retain more information from whispered and noisy speech. Smoothing and component selection made the larger representation practical, improving results by 10–25% at low SNR without increasing model capacity. It was my first experience seeing that changing what information a model receives can be more effective than simply making the model larger.",
+      result: "10–25% IMPROVEMENT",
+      article: {
+        intro: "I reproduced WESPER, a whispered-to-normal speech conversion system built around self-supervised HuBERT representations and downstream synthesis.",
+        sections: [
+          {
+            type: "paragraph",
+            content: "The original training used MFCC targets; I replaced them with SFCC targets to preserve richer information in whispered and noisy speech, then used smoothing and component selection to make the higher-dimensional representation practical."
+          },
+          {
+            type: "paragraph",
+            content: "The takeaway: changing what information a model receives can sometimes solve a problem before adding model capacity. This led me to ask the inverse question: if we already have a large model, how much of its computation does a task actually need? This led to my work on early-exit representations in [CLASSIFICATION OF TYPICAL AND ATYPICAL DISFLUENCIES](#speech-reps)."
+          }
+        ]
+      }
+    },
     {
       id: "speech-reps",
       number: "05",
@@ -669,33 +690,12 @@ export const siteContent = {
           },
           {
             type: "paragraph",
-            content: "HuBERT's fifth layer reached a peak F1 of 0.97 and outperformed the final representation, showing that useful task information can emerge well before the encoder's endpoint. Later layers are not automatically better for every task. The work also involved IIITH-TISA, a 10-hour Indian-English dataset containing recordings from 30 persons who stutter and 3,251 annotated clips."
+            content: "HuBERT's fifth layer reached a peak F1 of 0.97 and outperformed the final representation, showing that useful task information can emerge well before the encoder's endpoint. Later layers are not automatically better for every task. The work also involved IIITH-TISA, a 10-hour Indian-English dataset containing recordings from 30 persons who stutter and 3,251 annotated clips.\n\nOnce we know what computation a model actually needs, the next challenge is executing that computation reliably across diverse hardware. This engineering reality drove my work on the [SNAPLITE RUNTIME](#snaplite)."
           },
           {
             type: "figure",
             caption: "Layer-wise performance: Peak at Layer 5",
             visual: "speech-layers"
-          }
-        ]
-      }
-    },
-    {
-      id: "wesper",
-      number: "06",
-      title: "WHISPERED SPEECH REPRESENTATIONS (WESPER)",
-      metadata: "IIIT HYDERABAD",
-      teaser: "I reproduced WESPER, a whispered-to-normal speech conversion system built on HuBERT, and replaced its MFCC targets with SFCC to retain more information from whispered and noisy speech. Smoothing and component selection made the larger representation practical, improving results by 10–25% at low SNR without increasing model capacity. It was my first experience seeing that changing what information a model receives can be more effective than simply making the model larger.",
-      result: "10–25% IMPROVEMENT",
-      article: {
-        intro: "I reproduced WESPER, a whispered-to-normal speech conversion system built around self-supervised HuBERT representations and downstream synthesis.",
-        sections: [
-          {
-            type: "paragraph",
-            content: "The original training used MFCC targets; I replaced them with SFCC targets to preserve richer information in whispered and noisy speech, then used smoothing and component selection to make the higher-dimensional representation practical."
-          },
-          {
-            type: "paragraph",
-            content: "The takeaway: representation design can improve performance before adding model complexity."
           }
         ]
       }
