@@ -1,10 +1,10 @@
 export const siteContent = {
   identity: {
     name: "ANIRUDH BOCHA",
-    heroEyebrow: "SAMSUNG RESEARCH INDIA · ML SYSTEMS",
-    heroHeadline: "EFFICIENT MACHINE LEARNING SYSTEMS.",
+    heroEyebrow: "SAMSUNG RESEARCH, BANGALORE · EFFICIENT ML",
+    heroHeadline: "ANIRUDH BOCHA",
     heroParagraphs: [
-      "I’m a Machine Learning Engineer at [Samsung Research India](https://research.samsung.com/sri), where I work on making machine learning more efficient across training, inference, and systems. My work spans on-device LLMs, heterogeneous execution, quantization, memory-efficient training, continual adaptation, and adaptive inference. More broadly, I’m interested in understanding what information, computation, and state a model actually needs for a task, and how that work can be reduced, reused, or adapted as models and workloads change.",
+      "I’m a Machine Learning Engineer at [Samsung Research India](https://research.samsung.com/srib), where I work on making machine learning more efficient across training, inference, and systems. My work spans on-device LLMs, heterogeneous execution, quantization, memory-efficient training, continual adaptation, and adaptive inference across cloud and device. More broadly, I’m interested in understanding what information, computation, and state a model actually needs for a task, and how that work can be reduced, reused, or adapted as models and workloads change.",
       "I’ve explored these questions at different levels of the stack: from representations and computation depth to optimization, memory, runtimes, scheduling, and accelerator execution. More recently, I’ve also been studying how computation can be reused across models during inference and how models can adapt their computation to the workload. These problems have led me toward a broader interest in designing ML algorithms and systems together rather than treating model efficiency and system efficiency as separate problems.",
       "I first became interested in these questions through speech research at [IIIT Hyderabad](https://www.iiit.ac.in/). In Prof. Anil Kumar Vuppala’s Speech Processing Lab, I started by asking what information a task actually needs and how much computation is necessary to extract it. That perspective has stayed with me as my work has moved into production runtimes, training systems, hardware-constrained optimization, and hybrid execution. At every layer, the core question remains the same: how do we identify the work that is actually necessary, and how do we eliminate the rest?"
     ],
@@ -33,7 +33,7 @@ export const siteContent = {
         { value: "3 GB → <1 GB", label: "MEMORY PIPELINE REDUCTION" },
         { value: "5×", label: "TRAINING ACCELERATION (CPU-NPU HYBRID)" }
       ],
-            article: {
+      article: {
         intro: "NNTrainer is Samsung’s open-source framework for on-device training and inference. I joined the project through Samsung Research India and worked with Samsung Research Korea on extending it toward causal language model fine-tuning. My work covered the CPU execution path, quantized model support, causal-language-model training, parameter-efficient fine-tuning, memory reduction, and eventually NPU execution for the training workload.\n\nThe project progressed through two main stages. First, I helped make Qwen3-class fine-tuning practical on the CPU under the memory and compute constraints of an on-device environment. I then extended the execution path to Qualcomm’s mobile NPU, which required changes to how computation was scheduled, transferred, and executed rather than simply moving individual operators to the accelerator.",
         sections: [
           {
@@ -237,7 +237,7 @@ export const siteContent = {
         { value: "9.1×", label: "subspace-refresh speedup" },
         { value: "10.5×", label: "steady-state speedup" }
       ],
-            article: {
+      article: {
         intro: "Qwen3-0.6B is being fine-tuned directly on Qualcomm Hexagon NPU hardware. Mobile NPU execution is inherently inference-oriented, meaning conventional backpropagation does not fit the target execution model. Zeroth-order optimization provides a forward-only training path that aligns with accelerator capabilities. This project studies applying a learned low-rank subspace directly to the model's real weights to make on-device zeroth-order optimization both representable and safe.",
         sections: [
           {
@@ -376,34 +376,38 @@ export const siteContent = {
       number: "03",
       category: "CURRENT RESEARCH",
       title: "CROSS-VOCABULARY SPECULATIVE DECODING",
-      articleTitle: "CROSS-VOCABULARY SPECULATIVE DECODING AS BOTH ACCELERATOR AND HANDOFF MECHANISM",
+      articleTitle: "HYBRID LOCAL–CLOUD LLM INFERENCE",
       metadata: [
         "Cloud GPU",
         "1.394× wall-clock speedup",
         "2.797× server compute reduction"
       ],
-      heroQuestion: "How can computation already performed by a small device model remain useful when control moves to a larger model?",
-      homepageSummary: "A small model can handle easier requests locally while a larger server model takes over when more capability is needed, but a conventional handoff throws away computation the smaller model has already performed. I use speculative decoding itself as the handoff: the local model’s draft is translated into the larger model’s vocabulary and verified in a single batched pass, allowing the larger model to reuse the work instead of starting from the full context again. In the current cloud-GPU setup, this reduced wall-clock time by 1.394× and server compute by 2.797× without changing the output under greedy decoding.",
+      heroQuestion: "Can the computation already performed by the smaller model be made useful to the larger model at handoff, rather than discarding that work and rebuilding the larger model's context?",
+      homepageSummary: "A hybrid LLM system can keep a small model on the user's device for low-cost responses while invoking a larger server model when greater capability is needed. In a multi-turn interaction, however, switching models introduces a state-management problem: the model taking control may not contain the KV state accumulated by the model that was previously active. A conventional handoff can therefore require the larger model to process the conversation context again before it can continue generation. This project explores whether the work already performed by the local model can instead participate directly in that handoff. The current approach uses cross-vocabulary speculative decoding. The local model generates a draft, the draft is translated into the server model's vocabulary, and the larger model verifies it in a batched forward pass. The experiment is whether that verification process can simultaneously function as the large model's transition into the conversation.",
       metrics: [
         { value: "1.394×", label: "WALL-CLOCK SPEEDUP" },
         { value: "2.797×", label: "SERVER-COMPUTE REDUCTION" },
         { value: "0", label: "QUALITY COST (GREEDY)" }
       ],
-            article: {
-        intro: "A small language model can handle many requests locally at low cost, while a larger model can provide additional capability when a request requires it. The difficult case is a mid-conversation handoff: the small model may already have generated part of the response, but a conventional escalation asks the large model to start again from the full conversation context.\n\nThis project uses cross-vocabulary speculative decoding to make the handoff itself part of the acceleration mechanism. The small model's output becomes a draft, the draft is translated into the larger model's token space, and the larger model verifies it in one batched forward pass. Under greedy decoding, rejected tokens are replaced by the large model's own choice, so the final output is identical to ordinary generation by the large model.\n\nThe current system reduces wall-clock decoding time by 1.394× and server compute by 2.797× in the measured cloud-GPU setup.",
+      article: {
+        intro: "A hybrid LLM system can keep a small model on the user's device for low-cost responses while invoking a larger server model when greater capability is needed. In a multi-turn interaction, however, switching models introduces a state-management problem: the model taking control may not contain the [KV cache](#kv-cache) accumulated by the model that was previously active.\n\nA conventional handoff can therefore require the larger model to process the conversation context again before it can continue generation. This project explores whether the work already performed by the local model can instead participate directly in that handoff.\n\nThe current approach uses [cross-vocabulary](#cross-vocabulary) [speculative decoding](#speculative-decoding). The local model generates a draft, the draft is translated into the server model's vocabulary, and the larger model verifies it in a batched forward pass. The experiment is whether that [verification](#verification) process can simultaneously function as the large model's transition into the conversation.\n\nThe current results show a 1.394× wall-clock speedup and a 2.797× server-compute reduction with zero quality cost under [greedy decoding](#greedy-decoding). Current experiments use cloud GPUs; real mobile-hardware validation remains future work.",
         sections: [
           {
             type: "heading",
-            content: "Hybrid Local–Cloud Model Architecture"
+            content: "Hybrid Local–Cloud Model Handoff"
           },
           {
             type: "paragraph",
-            content: "The system uses a small model on the local device for cheap, always-available generation, and a larger server model for complex turns. A router decides whether to keep the turn local or escalate. The current prototype contains four conceptual components: turn-level routing, cross-vocabulary handoff, context reuse, and partial mid-turn correction. However, the core validated contribution of this work is the cross-vocabulary speculative decoding handoff mechanism itself."
+            content: "The system combines a small local model and a large server model. The small model handles ordinary turns. A routing mechanism can decide when a turn should escalate. When escalation occurs, the important question is not simply 'Which model should answer?' It is: 'How much of the computation already performed by the current model can remain useful after the switch?'"
+          },
+          {
+            type: "paragraph",
+            content: "In a conventional approach, the model taking control must rebuild the state. This requires sending the context and executing a large-model [prefill](#prefill) to construct the large-model KV cache before it can continue."
           },
           {
             type: "figure",
-            caption: "Local Model to Server Model Handoff",
-            visual: "hybrid-handoff"
+            caption: "Model Switching and the Handoff Cost",
+            visual: "hybrid-handoff-cost"
           },
           {
             type: "heading",
@@ -411,51 +415,38 @@ export const siteContent = {
           },
           {
             type: "paragraph",
-            content: "Standard speculative decoding assumes the draft and target model share a compatible tokenization scheme. In this hybrid system, the small model tokenizer and the large model tokenizer are different, so token IDs cannot be compared directly. We solve this using cross-vocabulary translation through two mechanisms:\n\n1. **Direct token mapping**: A static mapping built from vocabulary overlap, which incurs no per-token model inference cost.\n2. **N-gram merge cache**: When a run of draft tokens has no direct 1:1 mapping, the tokens are decoded to text, re-encoded using the target tokenizer, and cached for future reuse.\n\nIn measured conversations, 98.3% of tokens resolved through direct mapping, and the remaining mapped runs achieved 86.6% reuse once the cache was populated."
+            content: "The local model has already generated tokens. Instead of discarding those tokens when escalating, we use them as the speculative draft. The large model verifies that draft. The difficulty is that the two models generally use different [tokenizer](#tokenizer) schemes, so the [draft model](#draft-model) token IDs and [target model](#target-model) token IDs are not directly comparable.\n\nThe draft must first be translated into the target model's vocabulary. We use [direct token mapping](#direct-token-mapping) for overlapping tokens, and an [n-gram cache](#n-gram-cache) that decodes, re-tokenizes, and caches unmapped token runs. A measured conversation resolved 98.3% of tokens through direct mapping."
           },
           {
             type: "figure",
-            caption: "Cross-Vocabulary Token Translation",
-            visual: "hybrid-tokenizers"
+            caption: "Cross-Vocabulary Translation",
+            visual: "hybrid-translation"
           },
           {
             type: "heading",
-            content: "Model Handoff Through Verification"
+            content: "Speculative Verification as the Handoff Mechanism"
           },
           {
             type: "paragraph",
-            content: "The small model generates a draft for the current turn. The translated draft is passed to the large model, which verifies the candidate sequence in one batched forward pass. Under greedy verification, matching tokens are accepted, the first mismatch is replaced with the large model's own token, and subsequent tokens are discarded. The large model then continues from the corrected position.\n\nThis verification operation is simultaneously speculative acceleration and model handoff. There is no separate catch-up pass."
+            content: "The core mechanism executes as follows: the small model generates the draft, the draft is translated into the target vocabulary, and the large model verifies the entire candidate sequence in one batched forward pass. Matching tokens are accepted. At the first mismatch, the large model's own token is used, and subsequent tokens are discarded. The large model then continues generation.\n\nThe key conceptual point is that the verification pass is also the handoff. There is no independent 'catch-up' generation stage. The large model has processed the small model's generated continuation as part of verification."
           },
           {
             type: "figure",
-            caption: "Draft, Verify, and Handoff Pipeline",
-            visual: "hybrid-verify"
+            caption: "Verification as the Handoff Mechanism",
+            visual: "hybrid-draft-handoff"
           },
           {
             type: "heading",
-            content: "Greedy Verification and Output Equivalence"
+            content: "KV-State Continuity Across Model Switching"
           },
           {
             type: "paragraph",
-            content: "Under greedy decoding, the target model's distribution selects one deterministic next token. If the draft token equals the target's argmax, it is accepted; otherwise, it is replaced with the target argmax. This guarantees zero quality cost under greedy verification. The final output is forced to be identical to what the target model would have produced without speculative drafting.\n\nEmpirical validation supports this theoretical guarantee: in testing, the small-model-alone achieved an F1 of 0.051, the target model alone achieved 0.182, and the SD handoff matched it at 0.186."
+            content: "During verification, the large model processes the candidate sequence. Therefore the verification computation also establishes the large model's KV state for the accepted context. When the large model continues generation, that state is available. Similarly, the small model already has the accepted tokens in its own state, allowing the system to move back toward the local model without rebuilding everything from scratch.\n\nThe project measured realistic warm/cold KV-cache behavior with an approximately 1.307× average speedup."
           },
           {
             type: "figure",
-            caption: "Greedy Verification Logic",
-            visual: "hybrid-greedy"
-          },
-          {
-            type: "heading",
-            content: "KV-Cache Continuity Across Model Handoff"
-          },
-          {
-            type: "paragraph",
-            content: "When the large model verifies the small model's draft, it has already processed the conversation context required for that verification. Therefore, the verification step also builds the large model's KV state. When control moves to the large model, there is no additional full-context re-ingestion step. The current prototype measured realistic long-context behavior and obtained an approximately 1.307× average speedup for warm/cold KV-cache reuse experiments."
-          },
-          {
-            type: "figure",
-            caption: "KV Cache State Continuity",
-            visual: "hybrid-kv-cache"
+            caption: "KV Cache Continuity Across Handoff",
+            visual: "hybrid-kv-continuity"
           },
           {
             type: "heading",
@@ -463,33 +454,54 @@ export const siteContent = {
           },
           {
             type: "result-table",
-            content: "1.394×\\nWall-clock speedup versus greedy target generation\\n\\n2.797×\\nServer compute reduction (11.2 s → 4.0 s decode time)\\n\\n0\\nQuality cost under greedy verification"
-          },
-          {
-            type: "figure",
-            caption: "Sources of Execution Speedup",
-            visual: "hybrid-speedup"
-          },
-          {
-            type: "heading",
-            content: "Current System Status"
+            content: "1.394×\nWall-clock speedup\n\n2.797×\nServer-compute reduction\n\n0\nQuality cost under greedy verification"
           },
           {
             type: "paragraph",
-            content: "The cross-vocabulary speculative decoding mechanism works, greedy verification provides provable output equivalence, and both the 1.394× wall-clock speedup and 2.797× server-compute reduction have been measured. Multi-turn escalation and de-escalation have been tested, and KV-cache reuse has been validated at realistic context lengths.\n\nHowever, real mobile-device validation, deployment router calibration, full context-reuse integration, the complete four-component end-to-end system, and additional domain validation remain in progress."
-          },
-          {
-            type: "heading",
-            content: "Ongoing Work"
-          },
-          {
-            type: "paragraph",
-            content: "The major open directions include:\n\n1. **Context reuse**: The current system uses training-free cache/context mechanisms as the default. More aggressive learned compression remains an escalation path.\n2. **Domain-adaptive drafting**: Online drafter training produced a real improvement (+5.4% tok/call) on structured/repetitive GSM8K-style workloads, but was neutral or negative on open conversational Q&A. The usefulness of reuse mechanisms depends strongly on workload structure.\n3. **Real device deployment**: The most important remaining systems validation is running the entire hybrid inference path with a genuinely mobile drafter and real network conditions."
+            content: "The server-side compute result corresponds to a reduction from 11.2 s to 4.0 s for the measured decode computation. Server-compute reduction is independent of network latency because it measures expensive target-model forward computation."
           },
           {
             type: "figure",
-            caption: "Domain Dependence of Drafting",
-            visual: "hybrid-domain"
+            caption: "Reduced Server Computation",
+            visual: "hybrid-server-saved"
+          },
+          {
+            type: "heading",
+            content: "Greedy Verification and Output Equivalence"
+          },
+          {
+            type: "paragraph",
+            content: "If the draft token matches the target's greedy token, we accept it. Otherwise we replace it with the target's own choice. Therefore the final greedy output is forced to match ordinary greedy target decoding. An empirical sanity check confirmed this: the small model alone achieved 0.051 F1, target generation achieved 0.182 F1, and the speculative handoff achieved 0.186 F1. The deterministic decoding rule guarantees zero quality cost."
+          },
+          {
+            type: "figure",
+            caption: "Greedy Verification Logic",
+            visual: "hybrid-greedy-math"
+          },
+          {
+            type: "heading",
+            content: "Current System"
+          },
+          {
+            type: "paragraph",
+            content: "The established results are that the cross-vocabulary speculative handoff mechanism works, greedy verification preserves target output by construction, and the speedup (1.394×) and compute reduction (2.797×) have been measured on cloud GPUs. Realistic KV-cache reuse was measured at ~1.307×, and multi-turn escalation/de-escalation behavior has been tested.\n\nNot yet established: complete real-mobile deployment, final router calibration, fully integrated end-to-end four-component system, and broad evaluation across workload types."
+          },
+          {
+            type: "heading",
+            content: "Ongoing Research Directions"
+          },
+          {
+            type: "paragraph",
+            content: "**Adaptive Draft Depth**: I am exploring whether the small model needs to execute its full computation before handoff. Can a shallower draft computation provide enough useful information to trigger an efficient handoff? The goal is to reduce unnecessary draft computation while preserving useful handoff work.\n\n**Diffusion Drafting**: I am exploring replacing the [autoregressive decoding](#autoregressive-decoding) drafter with [diffusion drafting](#diffusion-drafting). The research question is how reducing the number of refinement steps affects the quality and efficiency of the handoff, and how refinement depth interacts with the point at which the system hands control to the autoregressive target.\n\n**Adaptive Handoff**: The broader system direction is to make the amount of draft computation depend on the request and the expected benefit of escalation. An easy request would see more local computation, while a hard request would see an earlier handoff."
+          },
+          {
+            type: "figure",
+            caption: "Adaptive Handoff Computation",
+            visual: "hybrid-adaptive-depth"
+          },
+          {
+            type: "paragraph",
+            content: "Finally, experiments showed that reuse and adaptation mechanisms may depend strongly on workload structure. Online drafter training produced a confirmed +5.4% tok/call improvement under the matched GSM8K experiment, but did not help open conversational Q&A because the domain has relatively little literal repetition."
           },
           {
             type: "heading",
@@ -497,15 +509,7 @@ export const siteContent = {
           },
           {
             type: "paragraph",
-            content: "Current timing experiments use cloud GPUs; real phone execution is not yet measured. Network latency is modeled rather than measured on a live deployment. The complete four-component system has not yet been assembled, and the router deployment threshold remains unresolved."
-          },
-          {
-            type: "heading",
-            content: "Selected Engineering Discoveries"
-          },
-          {
-            type: "paragraph",
-            content: "Early measurements were substantially slower because the target model was split across GPUs. Profiling showed approximately 94% of per-call time was outside the expected drafting/translation path. Single-GPU placement restored the intended performance range.\n\nAdditionally, several early improvements disappeared after correcting confounds involving drafting policy and data leakage. The primary engineering lesson was that tok/call is not a substitute for wall-clock measurement."
+            content: "Current timing uses cloud GPUs; real mobile-device drafter execution is not yet measured. Network latency is estimated rather than measured in a real deployment. The complete four-component system has not yet been assembled, router deployment calibration remains open, and context-reuse mechanisms may be workload dependent."
           },
           {
             type: "heading",
@@ -513,7 +517,7 @@ export const siteContent = {
           },
           {
             type: "paragraph",
-            content: "The main result is not only that speculative decoding can accelerate a larger model. In a hybrid system, the same verification operation can also serve as the transfer mechanism between models. This allows computation already performed by the local model to remain useful after escalation, avoiding a separate context catch-up stage. The current results establish the mechanism on cloud GPUs; the remaining question is how much of that benefit survives when the drafter, network, and target model all operate under real deployment constraints.\n\nFrom speech representations to speculative decoding, the underlying thread remains the same: by understanding exactly what information, state, and computation an ML task requires, we can design systems and algorithms that eliminate everything else."
+            content: "The current results show that speculative decoding can serve not only as an acceleration mechanism but also as a mechanism for transferring computation from a local model to a larger server model. Instead of discarding the local model's work when control changes, the large model can verify that work as part of its own forward execution.\n\nThe current implementation establishes this mechanism on cloud GPUs. The next question is how little computation the local model needs to perform before the handoff becomes useful, and whether alternative drafting mechanisms such as shallow autoregressive execution or diffusion refinement can make that transfer more efficient.\n\nFrom speech representations to speculative decoding, the underlying thread remains the same: by understanding exactly what information, state, and computation an ML task requires, we can design systems and algorithms that eliminate everything else."
           }
         ]
       }

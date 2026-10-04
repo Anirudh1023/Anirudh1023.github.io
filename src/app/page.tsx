@@ -43,7 +43,7 @@ const TOOLTIPS: Record<string, string> = {
   "checkpointing": "Saving intermediate activations during the forward pass to save memory, recomputing the rest during the backward pass.",
   "selective recomputation": "Strategically recomputing only specific operations during the backward pass to balance memory and compute.",
   "memory-mapped storage": "Mapping files or devices into memory to handle large tensors without loading them entirely into RAM.",
-  "prefill": "The initial phase of LLM generation where the entire input prompt is processed in parallel.",
+  "prefill": "The initial phase of LLM generation where the entire input prompt is processed in parallel to establish the KV cache.",
   "backpropagation": "The algorithm used to calculate gradients of the loss function with respect to the model's weights.",
   "Progressive LoRA": "A technique to dynamically adjust the computational budget of LoRA training based on runtime conditions.",
   "SIMD": "Single Instruction, Multiple Data — hardware instructions that perform the same operation on multiple data points simultaneously.",
@@ -53,7 +53,6 @@ const TOOLTIPS: Record<string, string> = {
   "ggml": "A tensor library designed for ML inference on commodity hardware.",
   "KleidiAI": "ARM's suite of AI technology for optimized execution on ARM architecture.",
   "QINT4": "A 4-bit integer quantization format.",
-
 
   "Q4_0": "Blockwise 4-bit weight quantization format used by the deployment model.",
   "QAT": "Quantization-aware training: training while modeling the quantization behavior used at deployment.",
@@ -67,7 +66,19 @@ const TOOLTIPS: Record<string, string> = {
 
   "speculative decoding": "A decoding method where a smaller model proposes tokens that a larger model verifies.",
   "cross-vocabulary": "Mapping tokens or text across models that do not share the same tokenizer.",
+  "tokenizer": "The algorithm and vocabulary used to convert text into the integer IDs processed by a model.",
+  "KV cache": "Key-Value cache: stored intermediate state from previous tokens to avoid recomputing the entire sequence context during generation.",
+  "draft model": "The smaller, faster model used to generate speculative candidate tokens.",
+  "target model": "The larger, more capable model used to verify the draft tokens.",
   "greedy decoding": "Selecting the single most probable token at each step.",
+  "verification": "The process where the large model evaluates the draft sequence in a single batched forward pass.",
+  "direct token mapping": "A static dictionary mapping identical string tokens from the draft tokenizer to the target tokenizer.",
+  "n-gram cache": "A dynamic cache that stores the target-tokenization of multi-token sequences that lack a direct 1:1 mapping.",
+  "LinUCB": "Linear Upper Confidence Bound: an algorithm used for contextual bandit problems.",
+  "contextual bandit": "A machine learning framework where an agent chooses actions based on context to maximize a reward.",
+  "diffusion drafting": "Generating draft tokens using a continuous diffusion process rather than discrete autoregressive prediction.",
+  "autoregressive decoding": "Generating text sequentially by predicting the next token conditioned on all previous tokens.",
+
   "LiteRT": "Google's on-device inference runtime used here as the common execution path across accelerator backends.",
   "HMX": "Qualcomm Hexagon matrix accelerator used for high-throughput matrix computation.",
   "HVX": "Qualcomm Hexagon vector processing architecture.",
@@ -95,24 +106,8 @@ const TOOLTIPS: Record<string, string> = {
   "MFCC": "Mel-frequency cepstral coefficients, a traditional compact representation of speech acoustics.",
   "SFCC": "Subband-based cepstral representation used here to retain more acoustic information in whispered/noisy speech.",
   "IIITH-TISA": "10-hour Indian-English stuttered-speech corpus.",
-  "NNTrainer": "Samsung's open-source on-device Gen AI runtime.",
-
-  
-  "tokenizer": "A system that converts raw text into a sequence of discrete token IDs for model processing.",
-  "KV cache": "Key-Value cache — stored intermediate states from past tokens, allowing the model to avoid recomputing previous context.",
-  "KV-cache reuse": "Transferring or retaining KV states to avoid costly prefill computation.",
-  "draft model": "The smaller, faster model that proposes candidate tokens.",
-  "target model": "The larger, more capable model that verifies proposed tokens.",
-  "candidate sequence": "The sequence of tokens proposed by the draft model.",
-  "direct token mapping": "A static 1:1 translation for tokens that exist identically in both vocabularies.",
-  "n-gram merge cache": "A dynamic cache that stores translations for multi-token sequences.",
-  "LinUCB": "A contextual bandit algorithm used to select when to enable speculative drafting.",
-  "contextual bandit": "A learning framework that balances exploration and exploitation based on context features.",
-  "reverse KL": "Reverse Kullback-Leibler divergence — an alignment objective used during drafter training.",
-  "forward KL": "Forward Kullback-Leibler divergence — a loss objective matching draft distributions to the target.",
-  "server compute": "The total amount of GPU execution time required on the server side.",
-  "verification": "The operation where the target model evaluates all draft tokens in a single forward pass."
-};
+  "NNTrainer": "Samsung's open-source on-device Gen AI runtime."
+};;
 
 function renderTextWithTooltips(text: string) {
   const keys = Object.keys(TOOLTIPS).sort((a, b) => b.length - a.length);

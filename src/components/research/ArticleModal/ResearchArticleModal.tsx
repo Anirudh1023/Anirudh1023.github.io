@@ -268,13 +268,13 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
                       {sec.visual === "zo-refresh" && <DiagramZORefresh />}
                       {sec.visual === "zo-results" && <DiagramZOResults />}
                       {sec.visual === "zo-continual" && <DiagramZOContinual />}
-                      {sec.visual === "hybrid-handoff" && <DiagramHybridHandoff />}
-                      {sec.visual === "hybrid-tokenizers" && <DiagramHybridTokenizers />}
-                      {sec.visual === "hybrid-verify" && <DiagramHybridVerify />}
-                      {sec.visual === "hybrid-greedy" && <DiagramHybridGreedy />}
-                      {sec.visual === "hybrid-kv-cache" && <DiagramHybridKVCache />}
-                      {sec.visual === "hybrid-speedup" && <DiagramHybridSpeedup />}
-                      {sec.visual === "hybrid-domain" && <DiagramHybridDomain />}
+                      {sec.visual === "hybrid-handoff-cost" && <DiagramHybridHandoffCost />}
+                      {sec.visual === "hybrid-translation" && <DiagramHybridTranslation />}
+                      {sec.visual === "hybrid-draft-handoff" && <DiagramHybridDraftHandoff />}
+                      {sec.visual === "hybrid-kv-continuity" && <DiagramHybridKVContinuity />}
+                      {sec.visual === "hybrid-server-saved" && <DiagramHybridServerSaved />}
+                      {sec.visual === "hybrid-greedy-math" && <DiagramHybridGreedyMath />}
+                      {sec.visual === "hybrid-adaptive-depth" && <DiagramHybridAdaptiveDepth />}
                       {sec.visual === "snaplite-unified" && <DiagramSnapliteUnified />}
                       {sec.visual === "snaplite-migration" && <DiagramSnapliteMigration />}
                       {sec.visual === "snaplite-partitioning" && <DiagramSnaplitePartitioning />}
@@ -1049,323 +1049,277 @@ function DiagramZOContinual() {
 }
 
 
-function DiagramHybridHandoff() {
-  const [step, setStep] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setStep(s => (s + 1) % 4), 2000);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0", height: 260, alignItems: "center" }}>
-      <div style={{ display: "flex", gap: 8 }}>
-        <div style={{ ...F.btn(11), color: KO.text, background: KO.bgSec, padding: "4px 8px", borderRadius: 4 }}>User Request</div>
-      </div>
-      
-      <div style={{ display: "flex", width: "100%", justifyContent: "space-around", alignItems: "center", position: "relative" }}>
-        
-        {/* Local Model */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, zIndex: 2 }}>
-          <div style={{ ...F.eyebrow(10), color: KO.textDim }}>LOCAL (Small)</div>
-          <motion.div animate={{ borderColor: step < 2 ? KO.accent : KO.border }} style={{ width: 100, height: 60, background: KO.surface, borderRadius: 8, border: `1px solid ${KO.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ ...F.btn(12), color: step < 2 ? KO.accent : KO.textDim }}>Drafting</span>
-          </motion.div>
-          <div style={{ display: "flex", gap: 4, height: 20 }}>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: step >= 0 ? 1 : 0 }} style={{ width: 12, height: 12, background: KO.textGhost, borderRadius: "50%" }} />
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: step >= 1 ? 1 : 0 }} style={{ width: 12, height: 12, background: KO.textGhost, borderRadius: "50%" }} />
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: step >= 1 ? 1 : 0 }} style={{ width: 12, height: 12, background: KO.textGhost, borderRadius: "50%" }} />
-          </div>
-        </div>
-
-        {/* Router / Handoff */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, zIndex: 1 }}>
-          <motion.div animate={{ y: step === 2 ? 0 : 20, opacity: step >= 2 ? 1 : 0 }} style={{ ...F.eyebrow(10), color: KO.accent }}>ESCALATION</motion.div>
-          <div style={{ width: 100, height: 2, background: KO.border, position: "relative" }}>
-            <motion.div animate={{ width: step >= 2 ? "100%" : "0%" }} style={{ height: "100%", background: KO.accent, position: "absolute" }} />
-          </div>
-          <motion.div animate={{ opacity: step >= 2 ? 1 : 0, y: step === 2 ? 0 : -20 }} style={{ display: "flex", gap: 4 }}>
-            <div style={{ width: 12, height: 12, background: KO.textGhost, borderRadius: "50%" }} />
-            <div style={{ width: 12, height: 12, background: KO.textGhost, borderRadius: "50%" }} />
-            <div style={{ width: 12, height: 12, background: KO.textGhost, borderRadius: "50%" }} />
-          </motion.div>
-          <motion.div animate={{ opacity: step >= 2 ? 1 : 0 }} style={{ ...F.btn(10), color: KO.textDim }}>Tokens Preserved</motion.div>
-        </div>
-
-        {/* Server Model */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, zIndex: 2 }}>
-          <div style={{ ...F.eyebrow(10), color: KO.textDim }}>SERVER (Large)</div>
-          <motion.div animate={{ borderColor: step >= 2 ? KO.accent : KO.border }} style={{ width: 140, height: 80, background: KO.surface, borderRadius: 8, border: `1px solid ${KO.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ ...F.btn(12), color: step >= 2 ? KO.accent : KO.textDim }}>Verification / Gen</span>
-          </motion.div>
-          <div style={{ display: "flex", gap: 4, height: 20 }}>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: step >= 3 ? 1 : 0 }} style={{ width: 12, height: 12, background: KO.textGhost, borderRadius: "50%" }} />
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: step >= 3 ? 1 : 0 }} style={{ width: 12, height: 12, background: KO.accent, borderRadius: "50%" }} />
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: step >= 3 ? 1 : 0 }} style={{ width: 12, height: 12, background: KO.accent, borderRadius: "50%" }} />
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-}
-
-function DiagramHybridTokenizers() {
-  const [step, setStep] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setStep(s => (s + 1) % 4), 2500);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0", height: 200, justifyContent: "center" }}>
-      
-      <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-        <div style={{ width: 120, ...F.eyebrow(10), color: KO.textDim, textAlign: "right" }}>SMALL TOKENIZER</div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <div style={{ ...F.btn(12), background: KO.bgSec, padding: "8px 12px", borderRadius: 4 }}>"The"</div>
-          <div style={{ ...F.btn(12), background: KO.bgSec, padding: "8px 12px", borderRadius: 4 }}>" model"</div>
-          <div style={{ ...F.btn(12), background: KO.bgSec, padding: "8px 12px", borderRadius: 4 }}>" is"</div>
-          <div style={{ ...F.btn(12), background: KO.bgSec, padding: "8px 12px", borderRadius: 4 }}>" fast"</div>
-        </div>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 32, height: 40 }}>
-        <div style={{ width: 120 }}></div>
-        <div style={{ display: "flex", flex: 1, gap: 16 }}>
-          
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 100 }}>
-            <motion.div animate={{ height: step >= 1 ? 24 : 0, opacity: step >= 1 ? 1 : 0 }} style={{ width: 2, background: KO.border, overflow: "hidden" }} />
-            <motion.div animate={{ opacity: step >= 1 ? 1 : 0 }} style={{ ...F.btn(10), color: KO.textGhost, whiteSpace: "nowrap" }}>Direct Map (98.3%)</motion.div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
-            <motion.div animate={{ height: step >= 2 ? 24 : 0, opacity: step >= 2 ? 1 : 0 }} style={{ width: 2, background: KO.accent, overflow: "hidden" }} />
-            <motion.div animate={{ opacity: step >= 2 ? 1 : 0 }} style={{ ...F.btn(10), color: KO.accent, whiteSpace: "nowrap", textAlign: "center" }}>
-              Decode → Text → Re-encode<br/>(N-gram Merge Cache)
-            </motion.div>
-          </div>
-
-        </div>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-        <div style={{ width: 120, ...F.eyebrow(10), color: KO.textDim, textAlign: "right" }}>LARGE TOKENIZER</div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <motion.div animate={{ opacity: step >= 1 ? 1 : 0 }} style={{ ...F.btn(12), background: KO.surface, border: `1px solid ${KO.border}`, padding: "8px 12px", borderRadius: 4 }}>"The"</motion.div>
-          <motion.div animate={{ opacity: step >= 1 ? 1 : 0 }} style={{ ...F.btn(12), background: KO.surface, border: `1px solid ${KO.border}`, padding: "8px 12px", borderRadius: 4 }}>" model"</motion.div>
-          <motion.div animate={{ opacity: step >= 3 ? 1 : 0, borderColor: step >= 3 ? KO.accent : KO.border }} style={{ ...F.btn(12), background: KO.surface, border: `1px solid ${KO.border}`, padding: "8px 12px", borderRadius: 4 }}>" is fast"</motion.div>
-        </div>
-      </div>
-
-    </div>
-  );
-}
-
-function DiagramHybridVerify() {
-  const [step, setStep] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setStep(s => (s + 1) % 6), 1500);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "40px 0", alignItems: "center", height: 220 }}>
-      
-      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-        <div style={{ ...F.eyebrow(10), color: KO.textDim, width: 80, textAlign: "right" }}>DRAFT (Small)</div>
-        <div style={{ display: "flex", gap: 8 }}>
-          {['A', 'B', 'C', 'D', 'E'].map((char, i) => (
-            <div key={i} style={{ width: 40, height: 40, background: KO.bgSec, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", ...F.code(14) }}>{char}</div>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-        <div style={{ ...F.eyebrow(10), color: KO.accent, width: 80, textAlign: "right" }}>VERIFY (Large)</div>
-        <div style={{ display: "flex", gap: 8 }}>
-          {['A', 'B', 'C', 'D', 'E'].map((char, i) => (
-            <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-              <motion.div animate={{ opacity: step > i ? 1 : 0, scale: step > i ? 1 : 0.8 }} style={{ width: 40, height: 40, background: step > 3 && i >= 3 ? (i === 3 ? KO.surface : 'transparent') : KO.surface, border: `1px solid ${step > 3 && i >= 3 ? (i === 3 ? KO.accent : 'transparent') : KO.border}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", ...F.code(14), color: step > 3 && i >= 3 ? (i === 3 ? KO.accent : 'transparent') : KO.text }}>
-                {step > 3 && i === 3 ? "D'" : (step > 3 && i > 3 ? "" : char)}
-              </motion.div>
-              <motion.div animate={{ opacity: step > i ? 1 : 0 }} style={{ ...F.code(12), color: step > 3 && i >= 3 ? '#FF4444' : '#27C93F' }}>
-                {step > 3 && i >= 3 ? (i === 3 ? '✗' : '—') : '✓'}
-              </motion.div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <motion.div animate={{ opacity: step === 5 ? 1 : 0 }} style={{ ...F.btn(12), color: KO.accent }}>
-        Large model becomes active generator starting at D'
-      </motion.div>
-
-    </div>
-  );
-}
-
-function DiagramHybridGreedy() {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 40, padding: "20px 0", alignItems: "center" }}>
-      
-      <div style={{ background: KO.surface, border: `1px solid ${KO.border}`, padding: "16px 24px", borderRadius: 8, display: "flex", alignItems: "center", gap: 12 }}>
-        <span style={{ ...F.sub(20), fontStyle: "italic" }}>accept</span>
-        <span style={{ ...F.sub(20) }}>⇔</span>
-        <span style={{ ...F.sub(20), fontStyle: "italic" }}>draft token = argmax p_target</span>
-      </div>
-
-      <div style={{ display: "flex", gap: 40 }}>
-        
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
-          <div style={{ ...F.eyebrow(10), color: '#27C93F' }}>MATCH = ACCEPT</div>
-          <div style={{ width: 140, height: 100, background: KO.bgSec, borderRadius: 8, position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", bottom: 0, left: 20, width: 20, height: "20%", background: KO.border }} />
-            <div style={{ position: "absolute", bottom: 0, left: 50, width: 40, height: "80%", background: '#27C93F' }} />
-            <div style={{ position: "absolute", bottom: 0, left: 100, width: 20, height: "30%", background: KO.border }} />
-          </div>
-          <div style={{ ...F.btn(11), color: KO.textDim }}>Draft proposed Argmax</div>
-        </div>
-
-        <div style={{ width: 1, background: KO.border, height: 140 }}></div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
-          <div style={{ ...F.eyebrow(10), color: '#FF4444' }}>MISMATCH = REPLACE</div>
-          <div style={{ width: 140, height: 100, background: KO.bgSec, borderRadius: 8, position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", bottom: 0, left: 20, width: 20, height: "20%", background: '#FF4444' }} />
-            <div style={{ position: "absolute", bottom: 0, left: 50, width: 40, height: "80%", background: KO.accent }} />
-            <div style={{ position: "absolute", bottom: 0, left: 100, width: 20, height: "30%", background: KO.border }} />
-          </div>
-          <div style={{ ...F.btn(11), color: KO.textDim }}>Substitute with Target Argmax</div>
-        </div>
-
-      </div>
-    </div>
-  );
-}
-
-function DiagramHybridKVCache() {
-  const [step, setStep] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setStep(s => (s + 1) % 4), 2000);
-    return () => clearInterval(timer);
-  }, []);
-
+function DiagramHybridHandoffCost() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "20px 0" }}>
-      
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ width: 120, ...F.eyebrow(10), color: KO.textDim }}>SMALL KV CACHE</div>
-        <div style={{ flex: 1, height: 24, background: KO.bgSec, borderRadius: 4, display: "flex" }}>
-          <motion.div animate={{ width: step >= 0 ? "40%" : "0%" }} style={{ height: "100%", background: KO.textGhost, borderRadius: 4 }} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: KO.text }}>MULTI-TURN MODEL SWITCHING</div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ padding: "6px 12px", background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 16, fontSize: "0.8rem", color: KO.textDim }}>Turn 1 (Small)</div>
+          <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
+          <div style={{ padding: "6px 12px", background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 16, fontSize: "0.8rem", color: KO.textDim }}>Turn 2 (Small)</div>
+          <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
+          <div style={{ padding: "6px 12px", background: KO.bgSec, border: `1px solid ${KO.accent}`, borderRadius: 16, fontSize: "0.8rem", color: KO.accent, fontWeight: 700 }}>Escalate</div>
         </div>
       </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ width: 120, ...F.eyebrow(10), color: KO.accent }}>ESCALATION (Draft)</div>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 4 }}>
-          <motion.div animate={{ opacity: step >= 1 ? 1 : 0 }} style={{ width: 16, height: 16, background: KO.textGhost, borderRadius: "50%" }} />
-          <motion.div animate={{ opacity: step >= 1 ? 1 : 0 }} style={{ width: 16, height: 16, background: KO.textGhost, borderRadius: "50%" }} />
-          <motion.div animate={{ opacity: step >= 1 ? 1 : 0 }} style={{ width: 16, height: 16, background: KO.textGhost, borderRadius: "50%" }} />
-          <motion.div animate={{ opacity: step >= 1 ? 1 : 0 }} style={{ ...F.btn(10), color: KO.textDim, marginLeft: 8 }}>Forward pass populates Large KV</motion.div>
-        </div>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ width: 120, ...F.eyebrow(10), color: KO.textDim }}>LARGE KV CACHE</div>
-        <div style={{ flex: 1, height: 24, background: KO.bgSec, borderRadius: 4, display: "flex" }}>
-          <motion.div animate={{ width: step >= 2 ? "40%" : "0%" }} style={{ height: "100%", background: KO.accent, borderRadius: 4, opacity: 0.6 }} />
-          <motion.div animate={{ width: step >= 3 ? "20%" : "0%" }} style={{ height: "100%", background: KO.accent, borderRadius: 4 }} />
-        </div>
-      </div>
-
-      <div style={{ textAlign: "center", ...F.btn(11), color: KO.textDim, marginTop: 16 }}>
-        No full-context re-ingestion required.
-      </div>
-    </div>
-  );
-}
-
-function DiagramHybridSpeedup() {
-  const [step, setStep] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setStep(s => (s + 1) % 3), 2000);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0" }}>
       
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <div style={{ ...F.eyebrow(10), color: KO.textDim }}>BASELINE (Target Only)</div>
-        <div style={{ display: "flex", gap: 2 }}>
-          {[...Array(20)].map((_, i) => (
-            <div key={i} style={{ flex: 1, height: 16, background: KO.textGhost, borderRadius: 2 }} />
-          ))}
-        </div>
-        <div style={{ ...F.btn(10), color: KO.textDim }}>Many expensive forward passes</div>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <div style={{ ...F.eyebrow(10), color: KO.accent }}>HYBRID (SD Handoff)</div>
-        <div style={{ display: "flex", gap: 2 }}>
-          {/* Batched verify replaces several forward passes */}
-          <motion.div animate={{ flex: step >= 1 ? 5 : 1 }} style={{ height: 16, background: KO.accent, borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <motion.span animate={{ opacity: step >= 1 ? 1 : 0 }} style={{ ...F.btn(10), color: KO.surface }}>Batched</motion.span>
-          </motion.div>
-          
-          <motion.div animate={{ flex: step >= 2 ? 4 : 1 }} style={{ height: 16, background: KO.accent, borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <motion.span animate={{ opacity: step >= 2 ? 1 : 0 }} style={{ ...F.btn(10), color: KO.surface }}>Batched</motion.span>
-          </motion.div>
-          
-          <div style={{ flex: 1, height: 16, background: KO.accent, borderRadius: 2 }} />
-          <div style={{ flex: 1, height: 16, background: KO.accent, borderRadius: 2 }} />
-          
-          {/* Empty space representing saved compute */}
-          <div style={{ flex: 9, height: 16, background: "transparent", border: `1px dashed ${KO.border}`, borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <motion.span animate={{ opacity: step >= 2 ? 1 : 0 }} style={{ ...F.btn(10), color: KO.accent }}>Compute Saved (2.797×)</motion.span>
+        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: KO.text }}>THE STATE PROBLEM (CONVENTIONAL HANDOFF)</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 16, background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "0.8rem", color: KO.textDim, width: 80 }}>Small Model</span>
+            <div style={{ flex: 1, display: "flex", gap: 4 }}>
+              {[1,2,3,4,5].map(i => <div key={i} style={{ height: 24, flex: 1, background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", color: KO.textDim }}>KV State {i}</div>)}
+            </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", transform: "rotate(90deg)", marginRight: 60 }}><Icon2T name="arrow" size={16} primary={KO.accent} secondary="transparent" /></div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "0.8rem", color: KO.textDim, width: 80 }}>Large Model</span>
+            <div style={{ flex: 1, display: "flex", gap: 4 }}>
+              <motion.div initial={{ opacity: 0.3 }} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 2 }} style={{ height: 24, flex: 1, background: "rgba(255,100,100,0.1)", border: "1px dashed rgba(255,100,100,0.5)", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", color: "#ff6464" }}>Missing KV State</motion.div>
+            </div>
           </div>
         </div>
       </div>
-
+      
+      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+        <div style={{ padding: "8px 12px", background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 6, fontSize: "0.8rem", color: KO.textDim }}>Send Context</div>
+        <Icon2T name="arrow" size={16} primary={KO.textDim} secondary="transparent" />
+        <div style={{ padding: "8px 12px", background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 6, fontSize: "0.8rem", color: KO.textDim }}>Large-Model Prefill</div>
+        <Icon2T name="arrow" size={16} primary={KO.textDim} secondary="transparent" />
+        <div style={{ padding: "8px 12px", background: "rgba(250, 179, 135, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 6, fontSize: "0.8rem", color: KO.accent, fontWeight: 700 }}>Repeated Computation</div>
+      </div>
     </div>
   );
 }
 
-function DiagramHybridDomain() {
+function DiagramHybridTranslation() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0", alignItems: "center" }}>
-      
-      <div style={{ display: "flex", gap: 40 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "20px 0" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 16, alignItems: "center" }}>
+        <div style={{ padding: 16, background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 8, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, color: KO.textDim, textTransform: "uppercase" }}>Small Tokenizer</div>
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            <div style={{ padding: "4px 8px", background: KO.bgSec, borderRadius: 4, fontSize: "0.8rem", color: KO.text, fontFamily: "monospace" }}>Hello</div>
+            <div style={{ padding: "4px 8px", background: KO.bgSec, borderRadius: 4, fontSize: "0.8rem", color: KO.text, fontFamily: "monospace" }}>world</div>
+            <div style={{ padding: "4px 8px", background: KO.bgSec, borderRadius: 4, fontSize: "0.8rem", color: KO.text, fontFamily: "monospace" }}>!</div>
+          </div>
+        </div>
         
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center", width: 180 }}>
-          <div style={{ ...F.eyebrow(11), color: KO.textDim }}>OPEN CONVERSATION Q&A</div>
-          <div style={{ width: 140, height: 100, background: KO.bgSec, borderRadius: 8, padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ width: "100%", height: 8, background: KO.textGhost, borderRadius: 4 }} />
-            <div style={{ width: "80%", height: 8, background: KO.textGhost, borderRadius: 4 }} />
-            <div style={{ width: "90%", height: 8, background: KO.textGhost, borderRadius: 4 }} />
-            <div style={{ width: "60%", height: 8, background: KO.textGhost, borderRadius: 4 }} />
+        <Icon2T name="arrow" size={24} primary={KO.textDim} secondary="transparent" />
+        
+        <div style={{ padding: 16, background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 8, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, color: KO.textDim, textTransform: "uppercase" }}>Large Tokenizer</div>
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            <div style={{ padding: "4px 8px", background: "rgba(250, 179, 135, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 4, fontSize: "0.8rem", color: KO.accent, fontFamily: "monospace" }}>Hell</div>
+            <div style={{ padding: "4px 8px", background: "rgba(250, 179, 135, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 4, fontSize: "0.8rem", color: KO.accent, fontFamily: "monospace" }}>o world!</div>
           </div>
-          <div style={{ ...F.btn(11), color: KO.textDim, textAlign: "center" }}>Low Repetition<br/>Training Benefit Weak</div>
         </div>
-
-        <div style={{ width: 1, background: KO.border, height: 160 }}></div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center", width: 180 }}>
-          <div style={{ ...F.eyebrow(11), color: KO.accent }}>STRUCTURED / GSM8K</div>
-          <div style={{ width: 140, height: 100, background: KO.bgSec, borderRadius: 8, padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ width: "100%", height: 8, background: KO.accent, borderRadius: 4 }} />
-            <div style={{ width: "60%", height: 8, background: KO.border, borderRadius: 4 }} />
-            <div style={{ width: "100%", height: 8, background: KO.accent, borderRadius: 4 }} />
-            <div style={{ width: "80%", height: 8, background: KO.border, borderRadius: 4 }} />
-          </div>
-          <div style={{ ...F.btn(11), color: KO.text, textAlign: "center" }}>High Pattern Reuse<br/>+5.4% tok/call</div>
+      </div>
+      
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: 16, border: `1px solid ${KO.border}`, borderRadius: 8 }}>
+        <div style={{ fontSize: "0.8rem", fontWeight: 700, color: KO.text }}>CROSS-VOCABULARY RESOLUTION</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ flex: 1, padding: "8px", background: KO.bgSec, borderRadius: 4, fontSize: "0.8rem", color: KO.textDim, textAlign: "center" }}>1. Direct Token Mapping (98.3%)</div>
+          <div style={{ flex: 1, padding: "8px", background: "rgba(250, 179, 135, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 4, fontSize: "0.8rem", color: KO.accent, textAlign: "center" }}>2. N-gram Merge Cache</div>
         </div>
-
+        <div style={{ fontSize: "0.75rem", color: KO.textDim, textAlign: "center" }}>Unmapped run → decode to text → target tokenize → cache</div>
       </div>
     </div>
   );
 }
 
+function DiagramHybridDraftHandoff() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "20px 0" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ fontSize: "0.75rem", fontWeight: 700, color: KO.textDim }}>1. SMALL MODEL GENERATES DRAFT</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {['A', 'B', 'C', 'D', 'E'].map((t,i) => <div key={i} style={{ width: 32, height: 32, background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: KO.text }}>{t}</div>)}
+        </div>
+      </div>
+      
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", transform: "rotate(90deg)" }}><Icon2T name="arrow" size={16} primary={KO.textDim} secondary="transparent" /></div>
+        <span style={{ fontSize: "0.8rem", color: KO.textDim }}>Cross-vocabulary translation</span>
+      </div>
+      
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ fontSize: "0.75rem", fontWeight: 700, color: KO.accent }}>2. LARGE MODEL VERIFIES (THE HANDOFF)</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ position: "relative", width: 32, height: 32, background: "rgba(80, 250, 123, 0.1)", border: "1px solid #50fa7b", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: "#50fa7b" }}>A<div style={{position: "absolute", top: -8, right: -8, fontSize: "0.6rem"}}>✓</div></div>
+          <div style={{ position: "relative", width: 32, height: 32, background: "rgba(80, 250, 123, 0.1)", border: "1px solid #50fa7b", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: "#50fa7b" }}>B<div style={{position: "absolute", top: -8, right: -8, fontSize: "0.6rem"}}>✓</div></div>
+          <div style={{ position: "relative", width: 32, height: 32, background: "rgba(80, 250, 123, 0.1)", border: "1px solid #50fa7b", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: "#50fa7b" }}>C<div style={{position: "absolute", top: -8, right: -8, fontSize: "0.6rem"}}>✓</div></div>
+          <div style={{ position: "relative", width: 32, height: 32, background: "rgba(255, 100, 100, 0.1)", border: "1px solid #ff6464", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: "#ff6464", textDecoration: "line-through" }}>D<div style={{position: "absolute", top: -8, right: -8, fontSize: "0.6rem"}}>✗</div></div>
+          <div style={{ position: "relative", width: 32, height: 32, background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: KO.textDim, opacity: 0.5 }}>E<div style={{position: "absolute", top: -8, right: -8, fontSize: "0.6rem"}}>-</div></div>
+        </div>
+      </div>
+      
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", transform: "rotate(90deg)" }}><Icon2T name="arrow" size={16} primary={KO.textDim} secondary="transparent" /></div>
+        <span style={{ fontSize: "0.8rem", color: KO.textDim }}>Discard E, replace D with target's token D'</span>
+      </div>
+      
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ fontSize: "0.75rem", fontWeight: 700, color: KO.textDim }}>3. LARGE MODEL NOW CONTINUES</div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ width: 32, height: 32, background: "rgba(80, 250, 123, 0.1)", border: "1px solid #50fa7b", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: "#50fa7b" }}>A</div>
+          <div style={{ width: 32, height: 32, background: "rgba(80, 250, 123, 0.1)", border: "1px solid #50fa7b", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: "#50fa7b" }}>B</div>
+          <div style={{ width: 32, height: 32, background: "rgba(80, 250, 123, 0.1)", border: "1px solid #50fa7b", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: "#50fa7b" }}>C</div>
+          <div style={{ width: 32, height: 32, background: "rgba(250, 179, 135, 0.2)", border: `1px solid ${KO.accent}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: KO.accent }}>D'</div>
+          <div style={{ width: 32, height: 32, border: `1px dashed ${KO.border}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: KO.textDim }}>...</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DiagramHybridKVContinuity() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "20px 0" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: KO.textDim }}>CONVENTIONAL HANDOFF TIMELINE</div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", opacity: 0.7 }}>
+          <div style={{ padding: "6px 12px", background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 4, fontSize: "0.75rem", color: KO.text }}>Small Model</div>
+          <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
+          <div style={{ padding: "6px 12px", background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 4, fontSize: "0.75rem", color: KO.textDim }}>Switch</div>
+          <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
+          <div style={{ padding: "6px 12px", background: "rgba(255,100,100,0.1)", border: "1px solid #ff6464", borderRadius: 4, fontSize: "0.75rem", color: "#ff6464" }}>Resend Context</div>
+          <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
+          <div style={{ padding: "6px 12px", background: "rgba(255,100,100,0.1)", border: "1px solid #ff6464", borderRadius: 4, fontSize: "0.75rem", color: "#ff6464" }}>Large Prefill</div>
+          <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
+          <div style={{ padding: "6px 12px", background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 4, fontSize: "0.75rem", color: KO.text }}>Large KV Cache</div>
+        </div>
+      </div>
+      
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: KO.accent }}>PROPOSED HANDOFF TIMELINE</div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ padding: "6px 12px", background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 4, fontSize: "0.75rem", color: KO.text }}>Small Model</div>
+          <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
+          <div style={{ padding: "6px 12px", background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 4, fontSize: "0.75rem", color: KO.textDim }}>Draft</div>
+          <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
+          <div style={{ padding: "6px 12px", background: "rgba(80,250,123,0.1)", border: "1px solid #50fa7b", borderRadius: 4, fontSize: "0.75rem", color: "#50fa7b" }}>Large Verifies</div>
+          <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
+          <div style={{ padding: "6px 12px", background: "rgba(250, 179, 135, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 4, fontSize: "0.75rem", color: KO.accent, fontWeight: 700 }}>Large KV State Established</div>
+          <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
+          <div style={{ padding: "6px 12px", background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 4, fontSize: "0.75rem", color: KO.text }}>Continue</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DiagramHybridServerSaved() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "20px 0" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ fontSize: "0.75rem", fontWeight: 700, color: KO.textDim }}>BASELINE: LARGE MODEL ONLY</div>
+        <div style={{ display: "flex", gap: 4 }}>
+          {[1,2,3,4,5].map(i => <div key={i} style={{ padding: "6px", background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 4, fontSize: "0.7rem", color: KO.textDim }}>Forward</div>)}
+        </div>
+      </div>
+      
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ fontSize: "0.75rem", fontWeight: 700, color: KO.accent }}>HYBRID PATH (SPECULATIVE VERIFICATION)</div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, background: KO.surface, padding: 8, borderRadius: 6, border: `1px dashed ${KO.border}` }}>
+            <div style={{ fontSize: "0.7rem", color: KO.textDim }}>Small Model</div>
+            <div style={{ display: "flex", gap: 4 }}>
+              {[1,2,3,4].map(i => <div key={i} style={{ padding: "4px", background: KO.bgSec, borderRadius: 2, fontSize: "0.6rem", color: KO.textDim }}>Draft {i}</div>)}
+            </div>
+          </div>
+          <Icon2T name="arrow" size={16} primary={KO.textDim} secondary="transparent" />
+          <div style={{ padding: "12px", background: "rgba(250, 179, 135, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 6, fontSize: "0.8rem", color: KO.accent, fontWeight: 700 }}>
+            Large Model Verifies 4 Tokens
+          </div>
+        </div>
+      </div>
+      
+      <div style={{ padding: 16, background: "rgba(80, 250, 123, 0.05)", border: "1px solid #50fa7b", borderRadius: 8, textAlign: "center" }}>
+        <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "#50fa7b" }}>2.797×</div>
+        <div style={{ fontSize: "0.8rem", color: KO.text }}>Server-compute reduction (11.2 s → 4.0 s)</div>
+      </div>
+    </div>
+  );
+}
+
+function DiagramHybridGreedyMath() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "20px 0" }}>
+      <div style={{ padding: 16, background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 8 }}>
+        <div style={{ fontSize: "0.8rem", fontWeight: 700, color: KO.text, marginBottom: 12 }}>TARGET MODEL PROBABILITY DISTRIBUTION</div>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 80, borderBottom: `1px solid ${KO.border}`, paddingBottom: 8 }}>
+          <div style={{ width: 32, height: "20%", background: KO.bgSec, borderRadius: "4px 4px 0 0" }}></div>
+          <div style={{ width: 32, height: "40%", background: KO.bgSec, borderRadius: "4px 4px 0 0" }}></div>
+          <div style={{ width: 32, height: "15%", background: KO.bgSec, borderRadius: "4px 4px 0 0" }}></div>
+          <div style={{ position: "relative", width: 40, height: "90%", background: "rgba(250, 179, 135, 0.2)", border: `1px solid ${KO.accent}`, borderBottom: "none", borderRadius: "4px 4px 0 0", display: "flex", justifyContent: "center" }}>
+            <div style={{ position: "absolute", top: -20, fontSize: "0.7rem", color: KO.accent, fontWeight: 700 }}>argmax</div>
+          </div>
+          <div style={{ width: 32, height: "10%", background: KO.bgSec, borderRadius: "4px 4px 0 0" }}></div>
+        </div>
+      </div>
+      
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ padding: 12, background: "rgba(80, 250, 123, 0.05)", border: "1px solid rgba(80, 250, 123, 0.3)", borderRadius: 6 }}>
+          <div style={{ fontSize: "0.8rem", fontFamily: "monospace", color: "#50fa7b", marginBottom: 8 }}>draft == argmax</div>
+          <div style={{ fontSize: "0.85rem", fontWeight: 700, color: KO.text }}>ACCEPT TOKEN</div>
+        </div>
+        <div style={{ padding: 12, background: "rgba(255, 100, 100, 0.05)", border: "1px solid rgba(255, 100, 100, 0.3)", borderRadius: 6 }}>
+          <div style={{ fontSize: "0.8rem", fontFamily: "monospace", color: "#ff6464", marginBottom: 8 }}>draft != argmax</div>
+          <div style={{ fontSize: "0.85rem", fontWeight: 700, color: KO.text }}>REPLACE TOKEN</div>
+        </div>
+      </div>
+      
+      <div style={{ padding: 12, background: KO.bgSec, borderRadius: 6, textAlign: "center", fontFamily: "monospace", fontSize: "0.85rem", color: KO.textDim }}>
+        accept ⇔ draft_token = argmax p_target(token)
+      </div>
+    </div>
+  );
+}
+
+function DiagramHybridAdaptiveDepth() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "20px 0" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: KO.textDim, fontWeight: 700 }}>
+          <span>Draft Computation Depth</span>
+          <span>Handoff Point</span>
+        </div>
+        
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 60, fontSize: "0.8rem", color: KO.text }}>Shallow</div>
+          <div style={{ flex: 1, position: "relative", height: 24, background: KO.bgSec, borderRadius: 12, overflow: "hidden" }}>
+            <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "30%", background: KO.accent, opacity: 0.5 }}></div>
+          </div>
+          <div style={{ padding: "4px 8px", background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 4, fontSize: "0.7rem", color: KO.textDim }}>Early Handoff</div>
+        </div>
+        
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 60, fontSize: "0.8rem", color: KO.text }}>Medium</div>
+          <div style={{ flex: 1, position: "relative", height: 24, background: KO.bgSec, borderRadius: 12, overflow: "hidden" }}>
+            <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "60%", background: KO.accent, opacity: 0.7 }}></div>
+          </div>
+          <div style={{ padding: "4px 8px", background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 4, fontSize: "0.7rem", color: KO.textDim }}>Standard</div>
+        </div>
+        
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 60, fontSize: "0.8rem", color: KO.text }}>Deep</div>
+          <div style={{ flex: 1, position: "relative", height: 24, background: KO.bgSec, borderRadius: 12, overflow: "hidden" }}>
+            <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "95%", background: KO.accent, opacity: 0.9 }}></div>
+          </div>
+          <div style={{ padding: "4px 8px", background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 4, fontSize: "0.7rem", color: KO.textDim }}>Late Handoff</div>
+        </div>
+      </div>
+      
+      <div style={{ fontSize: "0.8rem", color: KO.textDim, textAlign: "center", fontStyle: "italic" }}>
+        The amount of computation before handoff itself can become adaptive based on the request difficulty.
+      </div>
+    </div>
+  );
+}
 
 function DiagramSnapliteUnified() {
   const [step, setStep] = useState(0);
