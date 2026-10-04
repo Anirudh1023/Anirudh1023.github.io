@@ -26,35 +26,194 @@ export const siteContent = {
       metadata: [
         "SAMSUNG RESEARCH"
       ],
+      codeLink: "https://github.com/b-saianirud/nntrainer/tree/LoRA",
       heroQuestion: "How does execution scheduling and memory design impact on-device training efficiency?",
       homepageSummary: "I extended Samsung’s open-source NNTrainer framework toward causal-LLM fine-tuning on mobile devices. I added the CPU-side support needed for Qwen3-class models, including quantized Q4_0 execution, LoRA and multi-batch training, quantization-aware training, and memory-saving techniques that brought a roughly 3 GB model’s resident training footprint below 1 GB. I then extended the training path to the mobile NPU; an initial hybrid design was bottlenecked by CPU–NPU synchronization, so I redesigned execution around asynchronous layer submission and accelerator-resident data, bringing prefill to roughly 5× the CPU baseline.",
       metrics: [
         { value: "3 GB → <1 GB", label: "MEMORY PIPELINE REDUCTION" },
-        { value: "5×", label: "PREFILL ACCELERATION" }
+        { value: "5×", label: "TRAINING ACCELERATION (CPU-NPU HYBRID)" }
       ],
-      article: {
-        intro: "I worked on on-device parameter-efficient fine-tuning for foundation models, extending NNTrainer toward causal-LLM training and multi-batch execution across heterogeneous backends.",
+            article: {
+        intro: "NNTrainer is Samsung’s open-source framework for on-device training and inference. I joined the project through Samsung Research India and worked with Samsung Research Korea on extending it toward causal language model fine-tuning. My work covered the CPU execution path, quantized model support, causal-language-model training, parameter-efficient fine-tuning, memory reduction, and eventually NPU execution for the training workload.\n\nThe project progressed through two main stages. First, I helped make Qwen3-class fine-tuning practical on the CPU under the memory and compute constraints of an on-device environment. I then extended the execution path to Qualcomm’s mobile NPU, which required changes to how computation was scheduled, transferred, and executed rather than simply moving individual operators to the accelerator.",
         sections: [
           {
-            type: "paragraph",
-            content: "The challenge was making Qwen3-class LoRA fine-tuning feasible under real on-device constraints. I enabled causal-LLM and multi-batch training while keeping the deployed base model in Q4_0 and LoRA weights in FP32. Quantization-aware training made the adaptation learn deployment-time quantization error, while weight and activation checkpointing, selective recomputation, and memory-mapped storage reduced a 3 GB model's resident footprint below 1 GB."
+            type: "heading",
+            content: "1. CPU BACKEND AND QUANTIZED MODEL SUPPORT"
           },
           {
             type: "paragraph",
-            content: "I also introduced Progressive LoRA to adapt training to the device's thermal state. But making on-device training practical on CPU was not enough; I wanted to know whether the NPU could execute the training workload as effectively as it executed inference. I extended NNTrainer to use the mobile NPU while preserving its flexible layer-level execution, unlike existing accelerator paths designed around fixed, operator-level inference graphs."
+            content: "I added optimized implementations for LayerNorm and RMSNorm using SIMD and BLAS intrinsics where appropriate, together with FP16 support across ARM and AVX2 targets. These changes were integrated into NNTrainer rather than implemented as independent kernels."
           },
           {
             type: "paragraph",
-            content: "My initial CPU–NPU design was inefficient because frequent synchronization and data transfers erased the benefit of NPU acceleration. I therefore redesigned the execution path so that successive layers could be submitted asynchronously while keeping intermediate data readily accessible across the CPU and NPU, and adapted existing inference kernels to support the additional operations required for backpropagation."
-          },
-          {
-            type: "paragraph",
-            content: "This enabled the NPU to handle the compute-intensive parts of training, accelerating prefill by roughly 5× while substantially reducing training memory. More importantly, the experience showed me that hardware and ML execution cannot be optimized independently: the way an algorithm schedules and moves computation can determine whether an accelerator helps at all."
+            content: "For quantized matrix multiplication, I added NNTrainer-side support for existing optimized kernels. This included Q4_0 execution through ggml kernels on ARM and AVX2, as well as QINT4 execution through KleidiAI kernels on ARM. The integration required the appropriate model packing, backend dispatch, and selection of the correct GEMM implementation for each supported architecture."
           },
           {
             type: "figure",
-            caption: "PTQ + LoRA + QAT Pipeline",
-            visual: "nntrainer-pipeline"
+            caption: "CPU Backend Dispatch",
+            visual: "nntrainer-cpu-dispatch"
+          },
+          {
+            type: "heading",
+            content: "2. CAUSAL LANGUAGE MODEL TRAINING"
+          },
+          {
+            type: "paragraph",
+            content: "To support Qwen3-class causal language models, I implemented the necessary forward and backward support, including derivative calculation for the required layers. The base model remained frozen while we trained low-rank adapters (LoRA). I enabled multi-batch training and ran extensive learning-rate and hyperparameter experiments to establish stable training behavior, including controlled overfitting experiments to verify correctness."
+          },
+          {
+            type: "figure",
+            caption: "Causal LM Training with Frozen Base",
+            visual: "nntrainer-training-flow"
+          },
+          {
+            type: "heading",
+            content: "3. QUANTIZATION-AWARE LORA TRAINING"
+          },
+          {
+            type: "paragraph",
+            content: "In this setup, the base model remains in its quantized Q4_0 format while the LoRA weights remain in FP32 during optimization. Because Q4_0 uses blockwise quantization with block-specific scales, standard post-training calibration was not appropriate. Instead, we used quantization-aware training (QAT), incorporating an exponential moving average to track and update the blockwise quantization scales during training. The adaptation learns the quantization behavior that will exist at deployment, rather than training in FP32 and quantizing afterward."
+          },
+          {
+            type: "equation",
+            content: "// Q4_0 Blockwise Scale EMA Update\nvoid calc_ema_scale(float* current_scale, const float* batch_scale, float alpha, int size) {\n    for(int i = 0; i < size; i++) {\n        current_scale[i] = alpha * current_scale[i] + (1.0f - alpha) * batch_scale[i];\n    }\n}\n\nS_EMA^(t) = α * S_EMA^(t-1) + (1 - α) * max(|W_Q4_0 + A*B|) / 7.0"
+          },
+          {
+            type: "figure",
+            caption: "Quantization-Aware Training Flow",
+            visual: "nntrainer-qat"
+          },
+          {
+            type: "heading",
+            content: "4. TRAINING MEMORY REDUCTION"
+          },
+          {
+            type: "paragraph",
+            content: "Quantized weights alone did not solve training memory because the backward pass retained intermediate state. To reduce this footprint, I implemented checkpointing, selective recomputation, and memory-mapped storage. These techniques dramatically reduced the resident memory footprint from approximately 3 GB to below 1 GB."
+          },
+          {
+            type: "figure",
+            caption: "Memory Footprint Reduction",
+            visual: "nntrainer-memory"
+          },
+          {
+            type: "heading",
+            content: "5. NPU EXECUTION FOR LLM TRAINING"
+          },
+          {
+            type: "paragraph",
+            content: "Once CPU training became practical, the next question was whether the NPU could execute the same training workload. Mobile NPUs are designed around matrix-heavy ML computation, and while QNN existed for inference, it provided a relatively fixed inference-oriented interface. I wanted direct accelerator integration inside NNTrainer's flexible layer-level training framework. I integrated ggml-hexagon, leveraging HMX for matrix-heavy operations and HVX for lighter vector operations, making the NPU execution participate directly in the training pipeline."
+          },
+          {
+            type: "figure",
+            caption: "Hexagon NPU Integration Architecture",
+            visual: "nntrainer-hexagon-arch"
+          },
+          {
+            type: "heading",
+            content: "6. CPU–NPU SYNCHRONIZATION AND DATA MOVEMENT"
+          },
+          {
+            type: "paragraph",
+            content: "The initial hybrid design placed QKV and fully-connected matrix operations on the NPU, along with FFN projections and FlashAttention, while leaving the remaining operations on the CPU. However, this approach introduced frequent CPU–NPU transfers and synchronization between accelerator calls. The data movement overhead and waiting between operations caused the accelerator compute advantage to be lost. Moving compute to the NPU was not sufficient. The execution model had become the bottleneck."
+          },
+          {
+            type: "figure",
+            caption: "Initial Hybrid Execution Timeline",
+            visual: "nntrainer-hybrid-fail"
+          },
+          {
+            type: "heading",
+            content: "7. ASYNCHRONOUS NPU EXECUTION"
+          },
+          {
+            type: "paragraph",
+            content: "Because NNTrainer is layer-wise and ggml-hexagon is organized around lower-level accelerator operations, blocking accelerator calls caused unnecessary synchronization. I introduced a custom enqueue mechanism using a DMA ring buffer so that layers could be submitted asynchronously. Weights and activations remain in FastRPC-accessible memory, making VTCM transfers substantially more efficient. As a result, the CPU does not need to wait for each accelerator operation to complete before subsequent work is submitted."
+          },
+          {
+            type: "equation",
+            content: "// Asynchronous Layer Enqueue to Hexagon DSP\nint enqueue_hexagon_dma_transfer(void* vtcm_ptr, void* ddr_ptr, size_t size) {\n    return fastrpc_dma_async_copy(vtcm_ptr, ddr_ptr, size);\n}\n\nvoid execute_hmx_kernel(int kernel_id, void* input, void* weight, void* output) {\n    hexagon_nn_execute_async(kernel_id, input, weight, output);\n}"
+          },
+          {
+            type: "figure",
+            caption: "Asynchronous Enqueue and Execution",
+            visual: "nntrainer-async"
+          },
+          {
+            type: "heading",
+            content: "8. NPU SUPPORT FOR BACKPROPAGATION"
+          },
+          {
+            type: "paragraph",
+            content: "Existing accelerator kernels were designed primarily for inference, but training required additional backward operations, transpose operations, and tensor-layout considerations. I adapted the existing kernels and execution pathways—using HMX for matrix-heavy operations and HVX for simpler operations such as activation and normalization where appropriate—to support the backward pass, rather than building an entirely separate framework."
+          },
+          {
+            type: "figure",
+            caption: "Shared Forward and Backward NPU Execution",
+            visual: "nntrainer-fwd-bwd"
+          },
+          {
+            type: "heading",
+            content: "9. TRAINING ACCELERATION WITH CPU-NPU HYBRID"
+          },
+          {
+            type: "paragraph",
+            content: "The optimized asynchronous NPU execution path resulted in approximately 5× training acceleration with the CPU-NPU hybrid versus the CPU baseline."
+          },
+          {
+            type: "figure",
+            caption: "Training Acceleration (CPU vs NPU)",
+            visual: "nntrainer-prefill"
+          },
+          {
+            type: "heading",
+            content: "10. PROGRESSIVE LORA AND DEVICE CONDITIONS"
+          },
+          {
+            type: "paragraph",
+            content: "Mobile devices have changing thermal conditions, so the available compute budget is not necessarily constant. I implemented Progressive LoRA as a separate extension to adapt training to the device's thermal state. This approach extends efficiency from static model and resource optimization toward runtime-aware adaptation."
+          },
+          {
+            type: "figure",
+            caption: "Progressive LoRA Thermal Adaptation",
+            visual: "nntrainer-progressive"
+          },
+          {
+            type: "heading",
+            content: "11. SYSTEM ARCHITECTURE"
+          },
+          {
+            type: "paragraph",
+            content: "The complete system connects quantized causal-LLM training, memory-efficient optimization, and asynchronous heterogeneous execution within a single unified framework."
+          },
+          {
+            type: "figure",
+            caption: "Full NNTrainer System Architecture",
+            visual: "nntrainer-architecture"
+          },
+          {
+            type: "heading",
+            content: "12. RESULTS"
+          },
+          {
+            type: "result-table",
+            content: "~3 GB → <1 GB\nResident training footprint\n\n~5×\nTraining acceleration with CPU-NPU hybrid"
+          },
+          {
+            type: "heading",
+            content: "13. ENGINEERING CONTRIBUTIONS"
+          },
+          {
+            type: "paragraph",
+            content: "My work on NNTrainer covered several parts of the stack rather than a single operator or optimization.\n\nAt the CPU level, I integrated existing optimized kernels and added the backend support required to execute quantized transformer workloads efficiently. At the training level, I extended NNTrainer to support causal language models, LoRA, multi-batch execution, and quantization-aware training. At the memory level, I worked on checkpointing, recomputation, and memory management. At the accelerator level, I integrated Hexagon kernels and redesigned execution around asynchronous layer submission and accelerator-aware data movement.\n\nThe project was collaborative, and several components were developed with other engineers across Samsung Research India and Samsung Research Korea. My primary responsibility was driving the implementation of the training and NPU execution path and making the design decisions required to connect these components into a working system."
+          },
+          {
+            type: "heading",
+            content: "14. CONCLUSION"
+          },
+          {
+            type: "paragraph",
+            content: "The NNTrainer work showed that efficient on-device training is not determined by model compression or accelerator throughput alone.\n\nQuantized representations reduced the model footprint, but training state remained a memory constraint. Checkpointing reduced resident memory, but CPU execution left accelerator capacity unused. Moving compute to the NPU exposed synchronization and data-movement overhead, which required a different execution model rather than a different kernel alone.\n\nThe resulting system connected quantized causal-LLM training, memory-efficient optimization, and asynchronous heterogeneous execution within the same framework.\n\nThe remaining constraint was memory associated with the backward pass itself. That raised the next question in my work: whether fine-tuning could be reformulated to use only forward computation and therefore avoid retaining backward state on the device.\n\nThis led to my work on [ON-DEVICE SUBSPACE-RESTRICTED ZEROTH-ORDER FINE-TUNING](#zo)."
           }
         ]
       }

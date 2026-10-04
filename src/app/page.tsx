@@ -8,6 +8,29 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Icon2T } from "@/components/knockout/icons/Icons2T";
 
 const TOOLTIPS: Record<string, string> = {
+  "EMA": "Exponential Moving Average — used here to track blockwise quantization scales smoothly over training steps.",
+  "DMA": "Direct Memory Access — allows the NPU to fetch tensor data independently of the CPU.",
+
+  "LayerNorm": "A technique to normalize the activations of a neural network layer, stabilizing training.",
+  "RMSNorm": "Root Mean Square Normalization, a computationally cheaper alternative to LayerNorm.",
+  "Qwen3": "A family of foundation models; in this context, referring to causal language models in the Qwen3 class.",
+  "FlashAttention": "An algorithm that speeds up attention computation and reduces its memory footprint.",
+  "QNN": "Qualcomm Neural Network library, an SDK for executing ML workloads on Snapdragon hardware.",
+  "checkpointing": "Saving intermediate activations during the forward pass to save memory, recomputing the rest during the backward pass.",
+  "selective recomputation": "Strategically recomputing only specific operations during the backward pass to balance memory and compute.",
+  "memory-mapped storage": "Mapping files or devices into memory to handle large tensors without loading them entirely into RAM.",
+  "prefill": "The initial phase of LLM generation where the entire input prompt is processed in parallel.",
+  "backpropagation": "The algorithm used to calculate gradients of the loss function with respect to the model's weights.",
+  "Progressive LoRA": "A technique to dynamically adjust the computational budget of LoRA training based on runtime conditions.",
+  "SIMD": "Single Instruction, Multiple Data — hardware instructions that perform the same operation on multiple data points simultaneously.",
+  "BLAS": "Basic Linear Algebra Subprograms — a specification for low-level vector and matrix math routines.",
+  "ARM": "A family of RISC instruction set architectures widely used in mobile processors.",
+  "AVX2": "Advanced Vector Extensions 2 — an extension to the x86 instruction set for SIMD operations.",
+  "ggml": "A tensor library designed for ML inference on commodity hardware.",
+  "KleidiAI": "ARM's suite of AI technology for optimized execution on ARM architecture.",
+  "QINT4": "A 4-bit integer quantization format.",
+
+
   "Q4_0": "Blockwise 4-bit weight quantization format used by the deployment model.",
   "QAT": "Quantization-aware training: training while modeling the quantization behavior used at deployment.",
   "quantization-aware training": "Quantization-aware training: training while modeling the quantization behavior used at deployment.",
@@ -193,6 +216,11 @@ function ProjectCard({ proj, isFeatured, onClick }: { proj: any, isFeatured?: bo
           <div style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
             Read Notes <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(90deg)" }} />
           </div>
+        )}
+        {proj.codeLink && (
+          <a href={proj.codeLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.85rem", color: KO.text, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
+            Source Code <Icon2T name="arrow" size={10} primary={KO.text} secondary="transparent" style={{ transform: "rotate(45deg)" }} />
+          </a>
         )}
         {proj.link && (
           <a href={proj.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
