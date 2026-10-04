@@ -252,21 +252,48 @@ function ProjectCard({ proj, isFeatured, onClick }: { proj: any, isFeatured?: bo
 
         {proj.result && (
           <div style={{ marginBottom: 12 }}>
-            <span style={{ fontSize: "0.75rem", fontWeight: 700, color: KO.accent, background: `${KO.accent}11`, padding: "2px 8px", borderRadius: 4 }}>
-              {proj.result}
-            </span>
+            <Badge>{proj.result}</Badge>
           </div>
         )}
 
-        <p style={{ fontSize: "0.95rem", color: KO.textDim, margin: 0, lineHeight: 1.5, position: "relative", zIndex: 2 }}>
-          {proj.homepageSummary || proj.teaser}
+        {proj.heroQuestion && (
+          <p style={{ fontSize: "0.95rem", fontWeight: 600, color: KO.text, margin: "0 0 12px 0", lineHeight: 1.5 }}>
+            {renderFormattedText(proj.heroQuestion)}
+          </p>
+        )}
+
+        <p style={{ fontSize: "0.9rem", color: KO.textDim, lineHeight: 1.6, margin: hasArticle || proj.metrics || proj.link ? "0 0 16px 0" : 0 }}>
+          {renderFormattedText(proj.homepageSummary || proj.teaser)}
         </p>
 
-        {hasArticle && (
-          <div style={{ marginTop: 16, display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.85rem", fontWeight: 700, color: KO.text }}>
-            Read Note <span style={{ color: KO.accent }}>→</span>
+        {proj.metrics && proj.metrics.length > 0 && (
+          <div style={{ display: "flex", gap: 24, marginBottom: hasArticle || proj.codeLink || proj.link ? 16 : 0, flexWrap: "wrap" }}>
+            {proj.metrics.map((m: any, idx: number) => (
+              <div key={idx}>
+                <div style={{ fontSize: "1.2rem", fontWeight: 700, color: KO.text }}>{m.value}</div>
+                <div style={{ fontSize: "0.7rem", color: KO.textMute, textTransform: "uppercase", letterSpacing: "0.5px" }}>{m.label}</div>
+              </div>
+            ))}
           </div>
         )}
+
+        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+          {hasArticle && (
+            <div style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
+              Read Notes <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(90deg)" }} />
+            </div>
+          )}
+          {proj.codeLink && (
+            <a href={proj.codeLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.85rem", color: KO.text, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
+              Source Code <Icon2T name="arrow" size={10} primary={KO.text} secondary="transparent" style={{ transform: "rotate(45deg)" }} />
+            </a>
+          )}
+          {proj.link && (
+            <a href={proj.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.85rem", color: KO.accent, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
+              Read Paper PDF <Icon2T name="arrow" size={10} primary={KO.accent} secondary="transparent" style={{ transform: "rotate(45deg)" }} />
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );
