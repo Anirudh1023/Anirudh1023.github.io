@@ -266,6 +266,10 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
                       {sec.visual === "hybrid-kv-cache" && <DiagramHybridKVCache />}
                       {sec.visual === "hybrid-speedup" && <DiagramHybridSpeedup />}
                       {sec.visual === "hybrid-domain" && <DiagramHybridDomain />}
+                      {sec.visual === "snaplite-unified" && <DiagramSnapliteUnified />}
+                      {sec.visual === "snaplite-migration" && <DiagramSnapliteMigration />}
+                      {sec.visual === "snaplite-partitioning" && <DiagramSnaplitePartitioning />}
+                      {sec.visual === "snaplite-cache" && <DiagramSnapliteCache />}
                       {sec.visual === "speech-layers" && <DiagramSpeechLayers />}
                       {sec.visual === "nntrainer-cpu-dispatch" && <DiagramCPUPipeline />}
                       {sec.visual === "nntrainer-training-flow" && <DiagramTrainingFlow />}
@@ -1348,6 +1352,207 @@ function DiagramHybridDomain() {
         </div>
 
       </div>
+    </div>
+  );
+}
+
+
+function DiagramSnapliteUnified() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setStep(s => (s + 1) % 4), 2000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
+        
+        {/* BEFORE */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, alignItems: "center", opacity: step === 0 ? 1 : 0.4 }}>
+          <div style={{ ...F.eyebrow(10), color: KO.textDim }}>FRAGMENTED</div>
+          <div style={{ display: "flex", gap: 8 }}>
+             <div style={{ padding: 12, border: `1px solid ${KO.border}`, borderRadius: 8, display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+               <div style={{ ...F.btn(10), color: KO.textGhost }}>TF Lite</div>
+               <div style={{ width: 1, height: 16, background: KO.border }} />
+               <div style={{ ...F.btn(10), color: KO.text }}>CPU</div>
+             </div>
+             <div style={{ padding: 12, border: `1px solid ${KO.border}`, borderRadius: 8, display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+               <div style={{ ...F.btn(10), color: KO.textGhost }}>Custom Runtime</div>
+               <div style={{ width: 1, height: 16, background: KO.border }} />
+               <div style={{ ...F.btn(10), color: KO.text }}>GPU</div>
+             </div>
+             <div style={{ padding: 12, border: `1px solid ${KO.border}`, borderRadius: 8, display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+               <div style={{ ...F.btn(10), color: KO.textGhost }}>Vendor SDK</div>
+               <div style={{ width: 1, height: 16, background: KO.border }} />
+               <div style={{ ...F.btn(10), color: KO.text }}>NPU</div>
+             </div>
+          </div>
+        </div>
+
+        <div style={{ ...F.sub(20), color: KO.textGhost }}>→</div>
+
+        {/* AFTER */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, alignItems: "center", opacity: step > 0 ? 1 : 0.4 }}>
+          <div style={{ ...F.eyebrow(10), color: KO.accent }}>UNIFIED (SNAPLITE)</div>
+          <div style={{ padding: "12px 24px", background: KO.bgSec, border: `1px solid ${KO.accent}`, borderRadius: 8, width: "100%", textAlign: "center" }}>
+             <div style={{ ...F.btn(12), color: KO.accent }}>SnapLite Orchestration</div>
+          </div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+             <motion.div animate={{ height: step >= 1 ? 24 : 0 }} style={{ width: 2, background: KO.accent }} />
+             <motion.div animate={{ height: step >= 2 ? 24 : 0 }} style={{ width: 2, background: KO.accent, margin: "0 40px" }} />
+             <motion.div animate={{ height: step >= 3 ? 24 : 0 }} style={{ width: 2, background: KO.accent }} />
+          </div>
+          <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
+             <motion.div animate={{ opacity: step >= 1 ? 1 : 0.2 }} style={{ ...F.btn(11), color: KO.text, padding: "4px 12px", border: `1px solid ${KO.border}`, borderRadius: 4 }}>CPU</motion.div>
+             <motion.div animate={{ opacity: step >= 2 ? 1 : 0.2 }} style={{ ...F.btn(11), color: KO.text, padding: "4px 12px", border: `1px solid ${KO.border}`, borderRadius: 4 }}>GPU</motion.div>
+             <motion.div animate={{ opacity: step >= 3 ? 1 : 0.2 }} style={{ ...F.btn(11), color: KO.text, padding: "4px 12px", border: `1px solid ${KO.border}`, borderRadius: 4 }}>NPU</motion.div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+function DiagramSnapliteMigration() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setStep(s => (s + 1) % 4), 2000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0", alignItems: "center" }}>
+      
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, width: "100%", maxWidth: 400 }}>
+        <div style={{ width: "100%", padding: 12, background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 8, textAlign: "center" }}>
+           <div style={{ ...F.btn(12), color: KO.text }}>SnapLite API & Caching</div>
+        </div>
+        
+        <div style={{ height: 16, width: 2, background: KO.border }} />
+        
+        <div style={{ width: "100%", position: "relative", height: 60 }}>
+          {/* Old Backend */}
+          <motion.div animate={{ opacity: step === 0 ? 1 : 0, scale: step === 0 ? 1 : 0.9, y: step === 0 ? 0 : 20 }} style={{ position: "absolute", width: "100%", padding: 12, background: KO.bgSec, border: `1px dashed ${KO.textDim}`, borderRadius: 8, textAlign: "center" }}>
+             <div style={{ ...F.btn(12), color: KO.textGhost }}>TensorFlow Lite 2.20</div>
+          </motion.div>
+          
+          {/* New Backend */}
+          <motion.div animate={{ opacity: step > 0 ? 1 : 0, scale: step > 0 ? 1 : 0.9, y: step > 0 ? 0 : -20 }} style={{ position: "absolute", width: "100%", padding: 12, background: KO.surface, border: `1px solid ${KO.accent}`, borderRadius: 8, textAlign: "center", boxShadow: step > 0 ? `0 0 20px ${KO.accent}22` : "none" }}>
+             <div style={{ ...F.btn(12), color: KO.accent }}>Google LiteRT</div>
+          </motion.div>
+        </div>
+
+        <div style={{ height: 16, width: 2, background: KO.border }} />
+
+        <div style={{ display: "flex", gap: 8, width: "100%" }}>
+           <div style={{ flex: 1, padding: 12, background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 8, textAlign: "center" }}>
+             <div style={{ ...F.btn(10), color: KO.textDim }}>Standard<br/>Delegate</div>
+           </div>
+           <motion.div animate={{ borderColor: step >= 2 ? KO.accent : KO.border }} style={{ flex: 1, padding: 12, background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 8, textAlign: "center" }}>
+             <div style={{ ...F.btn(10), color: step >= 2 ? KO.accent : KO.textDim }}>Preserved GPU<br/>Kernels</div>
+           </motion.div>
+           <div style={{ flex: 1, padding: 12, background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 8, textAlign: "center" }}>
+             <div style={{ ...F.btn(10), color: KO.textDim }}>Custom NPU<br/>Delegate</div>
+           </div>
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+function DiagramSnaplitePartitioning() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setStep(s => (s + 1) % 3), 2000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: "20px 0", alignItems: "center" }}>
+      <div style={{ ...F.eyebrow(10), color: KO.textDim }}>GRAPH PARTITIONING & FALLBACK</div>
+      
+      <div style={{ display: "flex", gap: 8 }}>
+         {[...Array(6)].map((_, i) => (
+           <motion.div key={i} animate={{ 
+             background: i === 3 && step > 0 ? KO.textGhost : KO.accent,
+             borderColor: i === 3 && step > 0 ? KO.border : KO.accent,
+             scale: i === 3 && step === 2 ? 1.1 : 1
+           }} style={{ width: 40, height: 40, borderRadius: "50%", border: `2px solid ${KO.accent}`, display: "flex", alignItems: "center", justifyContent: "center", background: KO.surface }}>
+             <span style={{ ...F.sub(12), color: KO.surface }}>Op</span>
+           </motion.div>
+         ))}
+      </div>
+
+      <div style={{ display: "flex", gap: 40, width: "100%", maxWidth: 400 }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <div style={{ ...F.eyebrow(10), color: KO.accent }}>ACCELERATOR (NPU/GPU)</div>
+          <div style={{ width: "100%", height: 60, background: KO.bgSec, borderRadius: 8, border: `1px dashed ${KO.accent}`, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+             <motion.div animate={{ opacity: step === 0 ? 1 : 1 }} style={{ width: 16, height: 16, borderRadius: "50%", background: KO.accent }} />
+             <motion.div animate={{ opacity: step === 0 ? 1 : 1 }} style={{ width: 16, height: 16, borderRadius: "50%", background: KO.accent }} />
+             <motion.div animate={{ opacity: step === 0 ? 1 : 1 }} style={{ width: 16, height: 16, borderRadius: "50%", background: KO.accent }} />
+             {/* Unsupported Op space */}
+             <motion.div animate={{ opacity: step === 0 ? 1 : 0 }} style={{ width: 16, height: 16, borderRadius: "50%", background: KO.accent }} />
+             <motion.div animate={{ opacity: step === 0 ? 1 : 1 }} style={{ width: 16, height: 16, borderRadius: "50%", background: KO.accent }} />
+             <motion.div animate={{ opacity: step === 0 ? 1 : 1 }} style={{ width: 16, height: 16, borderRadius: "50%", background: KO.accent }} />
+          </div>
+        </div>
+
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <div style={{ ...F.eyebrow(10), color: KO.textDim }}>FALLBACK (CPU)</div>
+          <div style={{ width: "100%", height: 60, background: KO.surface, borderRadius: 8, border: `1px dashed ${KO.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+             <motion.div animate={{ opacity: step >= 2 ? 1 : 0, scale: step >= 2 ? 1 : 0 }} style={{ width: 16, height: 16, borderRadius: "50%", background: KO.textGhost }} />
+          </div>
+          <motion.div animate={{ opacity: step >= 2 ? 1 : 0 }} style={{ ...F.btn(10), color: KO.textDim }}>Unsupported Op</motion.div>
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+function DiagramSnapliteCache() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setStep(s => (s + 1) % 4), 1500);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24, padding: "20px 0" }}>
+      
+      {/* NO CACHE */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ width: 80, ...F.eyebrow(10), color: KO.textDim, textAlign: "right" }}>FIRST RUN</div>
+        <div style={{ flex: 1, display: "flex", gap: 4 }}>
+           <div style={{ flex: 1, height: 24, background: KO.bgSec, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ ...F.btn(10), color: KO.textGhost }}>Load</span></div>
+           <div style={{ flex: 4, height: 24, background: KO.textDim, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ ...F.btn(10), color: KO.surface }}>Compilation & Artifact Build (1200ms)</span></div>
+           <div style={{ flex: 1, height: 24, background: KO.bgSec, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ ...F.btn(10), color: KO.textGhost }}>Exec</span></div>
+        </div>
+      </div>
+
+      {/* WITH CACHE */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ width: 80, ...F.eyebrow(10), color: KO.accent, textAlign: "right" }}>CACHED</div>
+        <div style={{ flex: 1, display: "flex", gap: 4 }}>
+           <div style={{ flex: 1, height: 24, background: KO.bgSec, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ ...F.btn(10), color: KO.textGhost }}>Load</span></div>
+           
+           <motion.div animate={{ width: step >= 1 ? "10%" : "80%", opacity: step >= 1 ? 1 : 0 }} style={{ height: 24, background: KO.accent, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+             <span style={{ ...F.btn(10), color: KO.surface, whiteSpace: "nowrap", opacity: step >= 2 ? 1 : 0 }}>Reuse</span>
+           </motion.div>
+           
+           <motion.div animate={{ x: step >= 1 ? 0 : 20, opacity: step >= 1 ? 1 : 0 }} style={{ flex: 1, height: 24, background: KO.bgSec, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
+             <span style={{ ...F.btn(10), color: KO.textGhost }}>Exec</span>
+           </motion.div>
+        </div>
+      </div>
+
+      <motion.div animate={{ opacity: step >= 3 ? 1 : 0 }} style={{ textAlign: "center", ...F.btn(12), color: KO.text, marginTop: 16 }}>
+        10× Reduction in GPU First Inference (1200ms → 120ms)
+      </motion.div>
+
     </div>
   );
 }

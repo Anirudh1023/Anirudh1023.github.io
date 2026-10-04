@@ -525,29 +525,132 @@ export const siteContent = {
       id: "snaplite",
       number: "04",
       title: "SNAPLITE RUNTIME",
-      metadata: "SAMSUNG RESEARCH INDIA · 2024",
+      articleTitle: "SNAPLITE RUNTIME",
+      metadata: [
+        "SAMSUNG RESEARCH INDIA · 2024",
+        "Unified deployment runtime for heterogeneous on-device AI"
+      ],
       teaser: "During my Samsung Research internship, I worked on SnapLite, Samsung’s on-device deployment runtime supporting more than 200 production vision, speech, and text models. I helped unify CPU, GPU, and NPU deployment around a common LiteRT-based path while retaining accelerator-specific optimizations, working across model conversion, runtime dispatch, compiled artifacts, caching, and fallback behavior. The resulting changes reduced representative first-inference latency by 10× on GPU.",
       result: "10× Speedup",
       article: {
-        intro: "During my Samsung Research internship, I worked inside SnapLite, Samsung's on-device AI deployment runtime supporting more than 200 production vision, speech, and text models.",
+        intro: "SnapLite is Samsung's on-device deployment runtime for production vision, speech, and text models. When I joined the project, it used a [TensorFlow Lite](#tflite) 2.20 backend with Samsung-specific changes layered on top, including [accelerator](#accelerator)-specific kernels, [caching](#cache), and deployment APIs.\n\nMy initial work focused on production model enablement: maintaining deployment artifacts for more than 200 models across devices and [SnapLite](#snaplite) versions, working with use-case teams to convert PyTorch and ONNX models to TFLite, and debugging conversion and execution failures when models did not behave correctly on-device.\n\nI then moved deeper into the runtime itself, integrating [CPU](#cpu) optimizations and replacing the TensorFlow Lite backend with Google's [LiteRT](#litert) while preserving the Samsung-specific execution and caching behavior required by the production stack.",
         sections: [
           {
-            type: "paragraph",
-            content: "The work started with unsupported operations and incorrect outputs in converted models: tracing failures through the model graph and runtime, modifying architectures where necessary, and adding optimized CPU matrix-multiplication paths."
+            type: "heading",
+            content: "1. PRODUCTION MODEL ENABLEMENT"
           },
           {
             type: "paragraph",
-            content: "I then reworked the runtime around Google's LiteRT in place of the legacy TensorFlow Lite execution backend, giving CPU, GPU, and NPU deployment a common path while retaining accelerator-specific optimizations. The resulting infrastructure addressed graph partitioning, delegate execution, compiled artifacts, cache lifecycle, driver-aware cache validation, quantization workflows, startup cost, and fallback behavior."
+            content: "SnapLite is responsible for executing over 200 models across diverse on-device workloads, including vision, speech, and text. Model deployment is a systems pipeline, not a single conversion command. I worked directly with use-case teams to convert PyTorch and ONNX models into TFLite format and actively debugged cases where operators were unsupported or where runtime execution produced incorrect outputs."
+          },
+          {
+            type: "paragraph",
+            content: "Because I worked at the boundary between the model, the runtime, and the target hardware, debugging required determining whether to make a model-side architectural change or a runtime/kernel-side modification to fix the failure."
+          },
+          {
+            type: "heading",
+            content: "2. DEPLOYMENT ARCHITECTURE"
+          },
+          {
+            type: "paragraph",
+            content: "SnapLite sat inside Samsung's broader on-device ecosystem and provided the runtime layer used by multiple applications. However, the original execution architecture was fragmented. The CPU path relied on SnapLite wrapping TensorFlow Lite 2.20. The [GPU](#gpu) path involved separate Samsung-specific GPU execution code, and the [NPU](#npu) utilized an entirely distinct vendor-specific deployment path. This fragmentation meant that execution logic, model conversion, and cache management were often duplicated."
+          },
+          {
+            type: "figure",
+            caption: "Fragmented vs Unified Architecture",
+            visual: "snaplite-unified"
+          },
+          {
+            type: "heading",
+            content: "3. RUNTIME AND CACHE ENGINEERING"
+          },
+          {
+            type: "paragraph",
+            content: "A significant part of the deployment system involved managing [compiled artifacts](#compiled-artifact). I developed automated cache maintenance processes for the 200+ models. The cache architecture was designed so that a single binary artifact contained the required cache state—rather than maintaining separate cache files for each individual model where possible."
+          },
+          {
+            type: "paragraph",
+            content: "Caching was not just a performance afterthought; it was deeply integrated into the deployment orchestration, requiring driver-aware and version-aware validation to ensure artifacts remained valid across OS updates and SnapLite versions."
+          },
+          {
+            type: "heading",
+            content: "4. CPU OPTIMIZATION"
+          },
+          {
+            type: "paragraph",
+            content: "I integrated optimized CPU matrix-multiplication kernels (including [NEON](#neon)/SIMD paths) into the runtime. Rather than writing every low-level kernel from scratch, I focused on adding the necessary framework support and dispatch logic within SnapLite to utilize these existing optimized implementations efficiently while preserving the runtime's existing abstractions."
+          },
+          {
+            type: "heading",
+            content: "5. MIGRATION TO LITERT"
+          },
+          {
+            type: "paragraph",
+            content: "I helped migrate SnapLite from the legacy TensorFlow Lite 2.20 backend to Google's newer LiteRT execution infrastructure. This was an architectural migration, not a simple dependency bump. LiteRT exposed a different [delegate](#delegate) and accelerator model, requiring me to map Samsung's custom APIs and deployment orchestration onto the new backend."
+          },
+          {
+            type: "paragraph",
+            content: "A critical requirement was preserving Samsung's existing production behavior. I salvaged useful GPU kernel optimizations from the older TFLite path, integrated new accelerator-oriented APIs, and ensured that caching and artifact management continued to function correctly under the new paradigm."
+          },
+          {
+            type: "figure",
+            caption: "TensorFlow Lite to LiteRT Migration",
+            visual: "snaplite-migration"
+          },
+          {
+            type: "heading",
+            content: "6. HETEROGENEOUS EXECUTION"
+          },
+          {
+            type: "paragraph",
+            content: "A common runtime abstraction is not enough on its own because different accelerators have vastly different constraints. CPUs offer low startup costs and broad operator coverage. GPUs rely heavily on compiled kernels and delegate execution, meaning startup compilation is expensive. NPUs offer massive throughput but have strict operator restrictions and strong driver dependencies."
+          },
+          {
+            type: "paragraph",
+            content: "SnapLite handles these realities through [graph partitioning](#graph-partitioning). When a model targets an NPU but contains unsupported operations, the deployment runtime must partition the graph, execute the supported subgraphs on the NPU, and automatically [fallback](#fallback) to the CPU for the remainder. This requires intelligent orchestration, backend selection, and [quantization](#quantization) handling."
+          },
+          {
+            type: "figure",
+            caption: "Backend-Specific Graph Partitioning",
+            visual: "snaplite-partitioning"
+          },
+          {
+            type: "heading",
+            content: "7. RESULTS"
+          },
+          {
+            type: "paragraph",
+            content: "By unifying the deployment architecture and enforcing strict artifact reuse, the runtime achieved massive improvements in startup and execution latency across representative workloads."
           },
           {
             type: "result-table",
-            content: "GPU first inference: 1200ms → 120ms (10× reduction)\nNPU first inference: 1320ms → 150ms (8.8× reduction)\nMemory: 70% reduction on MobileNetV3 (CPU), 74% reduction on YOLOv8n (NPU)\n\n*Based on representative evaluation workloads."
+            content: "GPU First Inference: 1200 ms → 120 ms (10× reduction)\\nNPU First Inference: 1320 ms → 150 ms (8.8× reduction)\\nMobileNetV3 (CPU) Memory: 920 MB → 280 MB (70% reduction)\\nYOLOv8n (NPU) Memory: 880 MB → 230 MB (74% reduction)\\nYOLOv8n Latency: 24.0 ms → 11.0 ms (2.18×)"
+          },
+          {
+            type: "figure",
+            caption: "Cache-Enabled Startup Timeline",
+            visual: "snaplite-cache"
+          },
+          {
+            type: "heading",
+            content: "8. ENGINEERING SCOPE"
+          },
+          {
+            type: "paragraph",
+            content: "My work on SnapLite ranged from production model enablement to runtime infrastructure. I worked with use-case teams to bring models through conversion and validation, debugged failures across the model and runtime boundary, integrated optimized CPU execution, maintained deployment artifacts and caches, and helped migrate the framework from TensorFlow Lite 2.20 to LiteRT. The migration required preserving Samsung-specific execution behavior while adapting the runtime around LiteRT's accelerator and delegate architecture."
+          },
+          {
+            type: "heading",
+            content: "CONCLUSION"
+          },
+          {
+            type: "paragraph",
+            content: "SnapLite taught me that efficient model execution is not only a property of the model or the accelerator. Production deployment also depends on how graphs are partitioned, how artifacts are compiled and reused, how backends are selected, and how the runtime handles unsupported operations and failures.\n\nThe LiteRT migration brought these concerns under a more unified execution framework while preserving Samsung-specific optimizations and deployment behavior across CPUs, GPUs, and NPUs."
           }
         ]
       }
     }
   ],
-
   researchFoundations: [
     {
       id: "speech-reps",
