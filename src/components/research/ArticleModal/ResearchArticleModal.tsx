@@ -235,7 +235,7 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
               }
               if (sec.type === "paragraph") {
                 return (
-                  <p key={idx} style={{ ...F.body(16), color: KO.textDim, lineHeight: 1.6 }}>
+                  <p key={idx} style={{ ...F.body(14.5), color: KO.textDim, lineHeight: 1.6 }}>
                     {parseFormatting(sec.content || "")}
                   </p>
                 );

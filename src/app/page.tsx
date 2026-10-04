@@ -258,8 +258,8 @@ function ProjectCard({ proj, isFeatured, onClick }: { proj: any, isFeatured?: bo
           </div>
         )}
 
-        <p style={{ fontSize: "0.95rem", color: KO.textDim, margin: 0, lineHeight: 1.5 }}>
-          {proj.teaser}
+        <p style={{ fontSize: "0.95rem", color: KO.textDim, margin: 0, lineHeight: 1.5, position: "relative", zIndex: 2 }}>
+          {proj.homepageSummary || proj.teaser}
         </p>
 
         {hasArticle && (
