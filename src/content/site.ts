@@ -389,105 +389,131 @@ export const siteContent = {
         { value: "2.797×", label: "SERVER-COMPUTE REDUCTION" },
         { value: "0", label: "QUALITY COST (GREEDY)" }
       ],
-      article: {
-        intro: "A small language model running locally and a larger model running in the cloud have complementary economics.",
+            article: {
+        intro: "A small language model can handle many requests locally at low cost, while a larger model can provide additional capability when a request requires it. The difficult case is a mid-conversation handoff: the small model may already have generated part of the response, but a conventional escalation asks the large model to start again from the full conversation context.\n\nThis project uses cross-vocabulary speculative decoding to make the handoff itself part of the acceleration mechanism. The small model's output becomes a draft, the draft is translated into the larger model's token space, and the larger model verifies it in one batched forward pass. Under greedy decoding, rejected tokens are replaced by the large model's own choice, so the final output is identical to ordinary generation by the large model.\n\nThe current system reduces wall-clock decoding time by 1.394× and server compute by 2.797× in the measured cloud-GPU setup.",
         sections: [
           {
-            type: "paragraph",
-            content: "The local model is cheap enough to execute continuously. The larger model is more capable but expensive enough that it should be invoked selectively. The hard problem begins after the decision to escalate."
-          },
-          {
-            type: "paragraph",
-            content: "The small model may already have generated part of the response. If that work is discarded, the large model has to read and generate the same context again. A router reduces how often the large model is called, but does not make an escalated call itself more efficient. This project asks whether the acceleration mechanism used inside speculative decoding can also become the mechanism through which one model hands work to another."
-          },
-          {
-            type: "paragraph",
-            content: "Cross-vocabulary speculative decoding uses the small model's draft as the candidate sequence that the large model verifies. Because the models do not share a vocabulary, the candidate sequence first has to be translated. The large model then verifies the translated sequence in one batched forward pass."
-          },
-          {
             type: "heading",
-            content: "FOUR COMPONENTS"
-          },
-          {
-            type: "status-list",
-            content: "[BUILT] Turn-level router (LinUCB, deployment threshold not fully calibrated)\n[SOLVED] Cross-architecture handoff (through cross-vocab SD token/text round-trip)\n[PROTOTYPED] Cheap context reuse (training-free context methods are default, open research)\n[DESCOPED] Turn-level partial correction"
+            content: "Hybrid Local–Cloud Model Architecture"
           },
           {
             type: "paragraph",
-            content: "The current flagship result is the direct cross-vocabulary SD mechanism. The entire four-component system has not been assembled end-to-end."
-          },
-          {
-            type: "heading",
-            content: "THE HANDOFF"
-          },
-          {
-            type: "paragraph",
-            content: "The flow: The small model handles turns locally. The router decides to escalate. The small model's generated tokens become the draft, translated into the target vocabulary (direct 1:1 mapping when possible, n-gram merge cache otherwise). The large model verifies candidate tokens in one batched forward pass. Under greedy decoding, a token is accepted iff it matches what the target would generate. The first mismatch is replaced by the target token, and subsequent tokens are discarded. This verification is itself the handoff."
+            content: "The system uses a small model on the local device for cheap, always-available generation, and a larger server model for complex turns. A router decides whether to keep the turn local or escalate. The current prototype contains four conceptual components: turn-level routing, cross-vocabulary handoff, context reuse, and partial mid-turn correction. However, the core validated contribution of this work is the cross-vocabulary speculative decoding handoff mechanism itself."
           },
           {
             type: "figure",
-            caption: "Cross-Vocabulary Translation & Handoff",
+            caption: "Local Model to Server Model Handoff",
             visual: "hybrid-handoff"
           },
           {
             type: "heading",
-            content: "CROSS-VOCABULARY TRANSLATION"
+            content: "Cross-Vocabulary Speculative Decoding"
           },
           {
             type: "paragraph",
-            content: "Direct mapping uses a static overlap lookup (zero runtime training). The n-gram merge cache decodes token runs to text and re-encodes using the target tokenizer. In one measured conversation, 98.3% of tokens were resolved by direct mapping. BUT: the broader n-gram-cache mechanism was not universally helpful. In open conversational Q&A, the cache did not create a robust speed advantage because the domain lacked enough repeated token structure."
+            content: "Standard speculative decoding assumes the draft and target model share a compatible tokenization scheme. In this hybrid system, the small model tokenizer and the large model tokenizer are different, so token IDs cannot be compared directly. We solve this using cross-vocabulary translation through two mechanisms:\n\n1. **Direct token mapping**: A static mapping built from vocabulary overlap, which incurs no per-token model inference cost.\n2. **N-gram merge cache**: When a run of draft tokens has no direct 1:1 mapping, the tokens are decoded to text, re-encoded using the target tokenizer, and cached for future reuse.\n\nIn measured conversations, 98.3% of tokens resolved through direct mapping, and the remaining mapped runs achieved 86.6% reuse once the cache was populated."
+          },
+          {
+            type: "figure",
+            caption: "Cross-Vocabulary Token Translation",
+            visual: "hybrid-tokenizers"
           },
           {
             type: "heading",
-            content: "ZERO QUALITY COST IS A PROPERTY OF THE DECODING RULE"
+            content: "Model Handoff Through Verification"
           },
           {
             type: "paragraph",
-            content: "Under greedy verification, the target distribution is effectively a delta at its argmax. We accept only an exact target match, otherwise replace with the target argmax. Therefore the output is forced to match ordinary greedy target generation. This is provable by construction, and empirically confirmed (F1 0.186 vs 0.182 for SD-handoff vs plain-target generation)."
+            content: "The small model generates a draft for the current turn. The translated draft is passed to the large model, which verifies the candidate sequence in one batched forward pass. Under greedy verification, matching tokens are accepted, the first mismatch is replaced with the large model's own token, and subsequent tokens are discarded. The large model then continues from the corrected position.\n\nThis verification operation is simultaneously speculative acceleration and model handoff. There is no separate catch-up pass."
+          },
+          {
+            type: "figure",
+            caption: "Draft, Verify, and Handoff Pipeline",
+            visual: "hybrid-verify"
           },
           {
             type: "heading",
-            content: "THE IMPORTANT LIBRARY DISCOVERY"
+            content: "Greedy Verification and Output Equivalence"
           },
           {
             type: "paragraph",
-            content: "The HuggingFace candidate-generator selection differs depending on `do_sample`. The useful translator path and greedy correctness path were not naturally exposed together. The library abstraction hid an important coupling between token translation and verification behavior, and the intended combination required system-level intervention."
+            content: "Under greedy decoding, the target model's distribution selects one deterministic next token. If the draft token equals the target's argmax, it is accepted; otherwise, it is replaced with the target argmax. This guarantees zero quality cost under greedy verification. The final output is forced to be identical to what the target model would have produced without speculative drafting.\n\nEmpirical validation supports this theoretical guarantee: in testing, the small-model-alone achieved an F1 of 0.051, the target model alone achieved 0.182, and the SD handoff matched it at 0.186."
+          },
+          {
+            type: "figure",
+            caption: "Greedy Verification Logic",
+            visual: "hybrid-greedy"
           },
           {
             type: "heading",
-            content: "THE DEBUGGING STORY"
+            content: "KV-Cache Continuity Across Model Handoff"
           },
           {
             type: "paragraph",
-            content: "Early results showed 0.22×–0.33× relative speed. Timing revealed ~94% of the time was elsewhere. The root cause was cross-GPU model splitting. Moving to single-GPU placement restored outputs to 1.11×, and the final controlled setup produced 1.394×."
+            content: "When the large model verifies the small model's draft, it has already processed the conversation context required for that verification. Therefore, the verification step also builds the large model's KV state. When control moves to the large model, there is no additional full-context re-ingestion step. The current prototype measured realistic long-context behavior and obtained an approximately 1.307× average speedup for warm/cold KV-cache reuse experiments."
+          },
+          {
+            type: "figure",
+            caption: "KV Cache State Continuity",
+            visual: "hybrid-kv-cache"
           },
           {
             type: "heading",
-            content: "FLAGSHIP RESULT"
+            content: "Experimental Results"
           },
           {
             type: "result-table",
-            content: "1.394× WALL-CLOCK SPEEDUP\n2.797× SERVER-COMPUTE REDUCTION (11.2s → 4.0s decode time)\n\nServer compute reduction is independent of network because it is about target-model forward passes. The combined user-latency model includes estimated network conditions."
+            content: "1.394×\\nWall-clock speedup versus greedy target generation\\n\\n2.797×\\nServer compute reduction (11.2 s → 4.0 s decode time)\\n\\n0\\nQuality cost under greedy verification"
+          },
+          {
+            type: "figure",
+            caption: "Sources of Execution Speedup",
+            visual: "hybrid-speedup"
           },
           {
             type: "heading",
-            content: "FAILED / REJECTED DIRECTIONS"
-          },
-          {
-            type: "status-list",
-            content: "[RULED OUT] Quantized Drafter (ruled out for this setup)\n[RULED OUT] Same-GPU Concurrent Drafting (under initial test conditions)\n[NOT HELPFUL] N-gram cache (in open conversation domain)\n[NULL] Online Training (negative in conversational Q&A)\n[RETRACTED] Adaptive Speculation Length (false +53.9% result was a confound)"
+            content: "Current System Status"
           },
           {
             type: "paragraph",
-            content: "The flagship direct-mapping + greedy-verification result is the only mechanism in this project that has robustly improved the target conversational deployment domain so far."
+            content: "The cross-vocabulary speculative decoding mechanism works, greedy verification provides provable output equivalence, and both the 1.394× wall-clock speedup and 2.797× server-compute reduction have been measured. Multi-turn escalation and de-escalation have been tested, and KV-cache reuse has been validated at realistic context lengths.\n\nHowever, real mobile-device validation, deployment router calibration, full context-reuse integration, the complete four-component end-to-end system, and additional domain validation remain in progress."
           },
           {
             type: "heading",
-            content: "LIMITATIONS & NEXT AGENDA"
+            content: "Ongoing Work"
           },
           {
-            type: "status-list",
-            content: "[OPEN] Real mobile hardware validation (tested on cloud GPU)\n[OPEN] Real mobile drafter compute is not measured\n[OPEN] Network latency is simulated/estimated\n[OPEN] Complete four-component system was not assembled\n[OPEN] Calibrate routing threshold"
+            type: "paragraph",
+            content: "The major open directions include:\n\n1. **Context reuse**: The current system uses training-free cache/context mechanisms as the default. More aggressive learned compression remains an escalation path.\n2. **Domain-adaptive drafting**: Online drafter training produced a real improvement (+5.4% tok/call) on structured/repetitive GSM8K-style workloads, but was neutral or negative on open conversational Q&A. The usefulness of reuse mechanisms depends strongly on workload structure.\n3. **Real device deployment**: The most important remaining systems validation is running the entire hybrid inference path with a genuinely mobile drafter and real network conditions."
+          },
+          {
+            type: "figure",
+            caption: "Domain Dependence of Drafting",
+            visual: "hybrid-domain"
+          },
+          {
+            type: "heading",
+            content: "Limitations"
+          },
+          {
+            type: "paragraph",
+            content: "Current timing experiments use cloud GPUs; real phone execution is not yet measured. Network latency is modeled rather than measured on a live deployment. The complete four-component system has not yet been assembled, and the router deployment threshold remains unresolved."
+          },
+          {
+            type: "heading",
+            content: "Selected Engineering Discoveries"
+          },
+          {
+            type: "paragraph",
+            content: "Early measurements were substantially slower because the target model was split across GPUs. Profiling showed approximately 94% of per-call time was outside the expected drafting/translation path. Single-GPU placement restored the intended performance range.\n\nAdditionally, several early improvements disappeared after correcting confounds involving drafting policy and data leakage. The primary engineering lesson was that tok/call is not a substitute for wall-clock measurement."
+          },
+          {
+            type: "heading",
+            content: "Conclusion"
+          },
+          {
+            type: "paragraph",
+            content: "The main result is not only that speculative decoding can accelerate a larger model. In a hybrid system, the same verification operation can also serve as the transfer mechanism between models. This allows computation already performed by the local model to remain useful after escalation, avoiding a separate context catch-up stage. The current results establish the mechanism on cloud GPUs; the remaining question is how much of that benefit survives when the drafter, network, and target model all operate under real deployment constraints."
           }
         ]
       }

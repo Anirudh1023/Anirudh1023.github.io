@@ -69,7 +69,22 @@ const TOOLTIPS: Record<string, string> = {
   "SFCC": "Subband-based cepstral representation used here to retain more acoustic information in whispered/noisy speech.",
   "IIITH-TISA": "10-hour Indian-English stuttered-speech corpus.",
   "NNTrainer": "Samsung's open-source on-device Gen AI runtime.",
-  "SnapLite": "Samsung's unified on-device deployment runtime."
+  "SnapLite": "Samsung's unified on-device deployment runtime.",
+  
+  "tokenizer": "A system that converts raw text into a sequence of discrete token IDs for model processing.",
+  "KV cache": "Key-Value cache — stored intermediate states from past tokens, allowing the model to avoid recomputing previous context.",
+  "KV-cache reuse": "Transferring or retaining KV states to avoid costly prefill computation.",
+  "draft model": "The smaller, faster model that proposes candidate tokens.",
+  "target model": "The larger, more capable model that verifies proposed tokens.",
+  "candidate sequence": "The sequence of tokens proposed by the draft model.",
+  "direct token mapping": "A static 1:1 translation for tokens that exist identically in both vocabularies.",
+  "n-gram merge cache": "A dynamic cache that stores translations for multi-token sequences.",
+  "LinUCB": "A contextual bandit algorithm used to select when to enable speculative drafting.",
+  "contextual bandit": "A learning framework that balances exploration and exploitation based on context features.",
+  "reverse KL": "Reverse Kullback-Leibler divergence — an alignment objective used during drafter training.",
+  "forward KL": "Forward Kullback-Leibler divergence — a loss objective matching draft distributions to the target.",
+  "server compute": "The total amount of GPU execution time required on the server side.",
+  "verification": "The operation where the target model evaluates all draft tokens in a single forward pass."
 };
 
 function renderTextWithTooltips(text: string) {
