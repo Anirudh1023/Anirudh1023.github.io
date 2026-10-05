@@ -1,10 +1,10 @@
 export const KO = {
   // Color 
-  bg:        '#F3FBF6',    // very subtle mint/green-tinted white
-  bgPrimary: '#F3FBF6',    // alias for bg
-  bgSec:     '#E8F6ED',    // slightly deeper mint
-  constr:    '#CDE3D5',    // subtle green-grey construction lines
-  border:    '#CDE3D5',    // alias for constr
+  bg:        '#F7EEE4',    // warm cream background
+  bgPrimary: '#F7EEE4',    // alias for bg
+  bgSec:     '#F5F0E2',    // slightly deeper cream
+  constr:    '#DCD8CD',    // subtle grey construction lines
+  border:    '#DCD8CD',    // alias for constr
   accent:    '#10B981',    // green — active/research intervention
   text:      '#222222',    // charcoal — baseline/context
   textDim:   '#22222299',  // 60% charcoal
@@ -12,8 +12,8 @@ export const KO = {
   textFaint: '#22222233',  // 20%
   textGhost: '#2222220D',  // 5%
   // Functional
-  cream2:    '#E5F2EB',    
-  cream3:    '#EDF7F1',    
+  cream2:    '#EBEBE5',    
+  cream3:    '#F5F5F0',    
   surface:   '#FFFFFF',
 };
 
