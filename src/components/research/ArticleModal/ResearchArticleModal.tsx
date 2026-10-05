@@ -1089,7 +1089,7 @@ function DiagramHybridHandoffCost() {
         <Icon2T name="arrow" size={16} primary={KO.textDim} secondary="transparent" />
         <div style={{ padding: "8px 12px", background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 6, fontSize: "0.8rem", color: KO.textDim }}>Large-Model Prefill</div>
         <Icon2T name="arrow" size={16} primary={KO.textDim} secondary="transparent" />
-        <div style={{ padding: "8px 12px", background: "rgba(250, 179, 135, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 6, fontSize: "0.8rem", color: KO.accent, fontWeight: 700 }}>Repeated Computation</div>
+        <div style={{ padding: "8px 12px", background: "rgba(16, 185, 129, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 6, fontSize: "0.8rem", color: KO.accent, fontWeight: 700 }}>Repeated Computation</div>
       </div>
     </div>
   );
@@ -1113,8 +1113,8 @@ function DiagramHybridTranslation() {
         <div style={{ padding: 16, background: KO.surface, border: `1px solid ${KO.border}`, borderRadius: 8, display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ fontSize: "0.75rem", fontWeight: 700, color: KO.textDim, textTransform: "uppercase" }}>Large Tokenizer</div>
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-            <div style={{ padding: "4px 8px", background: "rgba(250, 179, 135, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 4, fontSize: "0.8rem", color: KO.accent, fontFamily: "monospace" }}>Hell</div>
-            <div style={{ padding: "4px 8px", background: "rgba(250, 179, 135, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 4, fontSize: "0.8rem", color: KO.accent, fontFamily: "monospace" }}>o world!</div>
+            <div style={{ padding: "4px 8px", background: "rgba(16, 185, 129, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 4, fontSize: "0.8rem", color: KO.accent, fontFamily: "monospace" }}>Hell</div>
+            <div style={{ padding: "4px 8px", background: "rgba(16, 185, 129, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 4, fontSize: "0.8rem", color: KO.accent, fontFamily: "monospace" }}>o world!</div>
           </div>
         </div>
       </div>
@@ -1123,7 +1123,7 @@ function DiagramHybridTranslation() {
         <div style={{ fontSize: "0.8rem", fontWeight: 700, color: KO.text }}>CROSS-VOCABULARY RESOLUTION</div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ flex: 1, padding: "8px", background: KO.bgSec, borderRadius: 4, fontSize: "0.8rem", color: KO.textDim, textAlign: "center" }}>1. Direct Token Mapping (98.3%)</div>
-          <div style={{ flex: 1, padding: "8px", background: "rgba(250, 179, 135, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 4, fontSize: "0.8rem", color: KO.accent, textAlign: "center" }}>2. N-gram Merge Cache</div>
+          <div style={{ flex: 1, padding: "8px", background: "rgba(16, 185, 129, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 4, fontSize: "0.8rem", color: KO.accent, textAlign: "center" }}>2. N-gram Merge Cache</div>
         </div>
         <div style={{ fontSize: "0.75rem", color: KO.textDim, textAlign: "center" }}>Unmapped run → decode to text → target tokenize → cache</div>
       </div>
@@ -1168,7 +1168,7 @@ function DiagramHybridDraftHandoff() {
           <div style={{ width: 32, height: 32, background: "rgba(80, 250, 123, 0.1)", border: "1px solid #50fa7b", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: "#50fa7b" }}>A</div>
           <div style={{ width: 32, height: 32, background: "rgba(80, 250, 123, 0.1)", border: "1px solid #50fa7b", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: "#50fa7b" }}>B</div>
           <div style={{ width: 32, height: 32, background: "rgba(80, 250, 123, 0.1)", border: "1px solid #50fa7b", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: "#50fa7b" }}>C</div>
-          <div style={{ width: 32, height: 32, background: "rgba(250, 179, 135, 0.2)", border: `1px solid ${KO.accent}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: KO.accent }}>D'</div>
+          <div style={{ width: 32, height: 32, background: "rgba(16, 185, 129, 0.2)", border: `1px solid ${KO.accent}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: KO.accent }}>D'</div>
           <div style={{ width: 32, height: 32, border: `1px dashed ${KO.border}`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, color: KO.textDim }}>...</div>
         </div>
       </div>
@@ -1203,7 +1203,7 @@ function DiagramHybridKVContinuity() {
           <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
           <div style={{ padding: "6px 12px", background: "rgba(80,250,123,0.1)", border: "1px solid #50fa7b", borderRadius: 4, fontSize: "0.75rem", color: "#50fa7b" }}>Large Verifies</div>
           <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
-          <div style={{ padding: "6px 12px", background: "rgba(250, 179, 135, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 4, fontSize: "0.75rem", color: KO.accent, fontWeight: 700 }}>Large KV State Established</div>
+          <div style={{ padding: "6px 12px", background: "rgba(16, 185, 129, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 4, fontSize: "0.75rem", color: KO.accent, fontWeight: 700 }}>Large KV State Established</div>
           <Icon2T name="arrow" size={14} primary={KO.textDim} secondary="transparent" />
           <div style={{ padding: "6px 12px", background: KO.bgSec, border: `1px solid ${KO.border}`, borderRadius: 4, fontSize: "0.75rem", color: KO.text }}>Continue</div>
         </div>
@@ -1232,7 +1232,7 @@ function DiagramHybridServerSaved() {
             </div>
           </div>
           <Icon2T name="arrow" size={16} primary={KO.textDim} secondary="transparent" />
-          <div style={{ padding: "12px", background: "rgba(250, 179, 135, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 6, fontSize: "0.8rem", color: KO.accent, fontWeight: 700 }}>
+          <div style={{ padding: "12px", background: "rgba(16, 185, 129, 0.1)", border: `1px solid ${KO.accent}`, borderRadius: 6, fontSize: "0.8rem", color: KO.accent, fontWeight: 700 }}>
             Large Model Verifies 4 Tokens
           </div>
         </div>
@@ -1255,7 +1255,7 @@ function DiagramHybridGreedyMath() {
           <div style={{ width: 32, height: "20%", background: KO.bgSec, borderRadius: "4px 4px 0 0" }}></div>
           <div style={{ width: 32, height: "40%", background: KO.bgSec, borderRadius: "4px 4px 0 0" }}></div>
           <div style={{ width: 32, height: "15%", background: KO.bgSec, borderRadius: "4px 4px 0 0" }}></div>
-          <div style={{ position: "relative", width: 40, height: "90%", background: "rgba(250, 179, 135, 0.2)", border: `1px solid ${KO.accent}`, borderBottom: "none", borderRadius: "4px 4px 0 0", display: "flex", justifyContent: "center" }}>
+          <div style={{ position: "relative", width: 40, height: "90%", background: "rgba(16, 185, 129, 0.2)", border: `1px solid ${KO.accent}`, borderBottom: "none", borderRadius: "4px 4px 0 0", display: "flex", justifyContent: "center" }}>
             <div style={{ position: "absolute", top: -20, fontSize: "0.7rem", color: KO.accent, fontWeight: 700 }}>argmax</div>
           </div>
           <div style={{ width: 32, height: "10%", background: KO.bgSec, borderRadius: "4px 4px 0 0" }}></div>
