@@ -5,7 +5,7 @@ export const KO = {
   bgSec:     '#F5F0E2',    // slightly deeper cream
   constr:    '#DCD8CD',    // subtle grey construction lines
   border:    '#DCD8CD',    // alias for constr
-  accent:    '#10B981',    // green — active/research intervention
+  accent:    '#FF8000',    // orange — active/research intervention
   text:      '#222222',    // charcoal — baseline/context
   textDim:   '#22222299',  // 60% charcoal
   textMute:  '#22222266',  // 40%
