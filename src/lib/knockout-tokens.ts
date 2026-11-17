@@ -1,41 +1,44 @@
+// knockout-tokens.ts — qlabs.sh inspired palette
 export const KO = {
-  // Color 
-  bg:        '#F7EEE4',    // warm cream background
-  bgPrimary: '#F7EEE4',    // alias for bg
-  bgSec:     '#F5F0E2',    // slightly deeper cream
-  constr:    '#DCD8CD',    // subtle grey construction lines
-  border:    '#DCD8CD',    // alias for constr
-  accent:    '#FF8000',    // orange — active/research intervention
-  text:      '#222222',    // charcoal — baseline/context
-  textDim:   '#22222299',  // 60% charcoal
-  textMute:  '#22222266',  // 40%
-  textFaint: '#22222233',  // 20%
-  textGhost: '#2222220D',  // 5%
-  // Functional
-  cream2:    '#EBEBE5',    
-  cream3:    '#F5F5F0',    
-  surface:   '#FFFFFF',
+  // qlabs.sh palette
+  bg:        '#ffffff',
+  bgPrimary: '#ffffff',
+  bgSec:     '#fafafa',
+  text:      '#1a1a1a',
+  textDim:   '#5f5f5f',
+  textMute:  '#5f5f5f',
+  textFaint: '#a0a0a0',
+  textGhost: '#e0e0e0',
+  constr:    '#d4d4d4',
+  border:    '#d4d4d4',
+  accent:    '#1a1a1a',    // no color accent — qlabs uses monochrome
+  surface:   '#fafafa',
+  // Retained for backward compat (modal may use)
+  cream2:    '#f5f5f5',
+  cream3:    '#f0f0f0',
 };
 
-// Common type styles — Satoshi Variable
-export const FAM = "'Satoshi-Variable', 'Satoshi', -apple-system, system-ui, sans-serif";
+// Font families — qlabs.sh uses Outfit + Space Grotesk
+export const FAM = "'Outfit', system-ui, sans-serif";
+export const FAM_HEAD = "'Space Grotesk', system-ui, sans-serif";
 
 export const F = {
-  // Identity/Hero statements
-  logo:    (size = 24) => ({ fontFamily: FAM, fontWeight: 900, fontSize: size, letterSpacing: -size * 0.025, lineHeight: 1 }),
-  hero:    (size = 64) => ({ fontFamily: FAM, fontWeight: 900, fontSize: `clamp(${size * 0.6}px, 8vw, ${size}px)`, letterSpacing: -size * 0.04, lineHeight: 0.95 }),
-  // Section titles, research titles
-  head:    (size = 28) => ({ fontFamily: FAM, fontWeight: 700, fontSize: `clamp(${size * 0.75}px, 5vw, ${size}px)`, letterSpacing: -size * 0.025, lineHeight: 1.05 }),
-  // Subheads, project descriptions
-  sub:     (size = 18) => ({ fontFamily: FAM, fontWeight: 500, fontSize: size, letterSpacing: -size * 0.015, lineHeight: 1.2 }),
-  // Body text
-  body:    (size = 14) => ({ fontFamily: FAM, fontWeight: 400, fontSize: size, lineHeight: 1.4 }),
-  // Metadata / technical labels
-  eyebrow: (size = 10) => ({ fontFamily: FAM, fontWeight: 700, fontSize: size, letterSpacing: size * 0.2, lineHeight: 1, textTransform: 'uppercase' as const }),
-  // Buttons
-  btn:     (size = 11) => ({ fontFamily: FAM, fontWeight: 700, fontSize: size, letterSpacing: size * 0.16, lineHeight: 1, textTransform: 'uppercase' as const }),
-  // Tabular numbers for evidence/metrics
-  num:     (size = 14) => ({ fontFamily: FAM, fontWeight: 700, fontSize: size, fontVariantNumeric: 'tabular-nums' }),
-  // Code snippets
-  code:    (size = 13) => ({ fontFamily: FAM, fontWeight: 400, fontSize: size, lineHeight: 1.6 }),
+  // Big identity name — Space Grotesk bold
+  logo:    (size = 56) => ({ fontFamily: FAM_HEAD, fontWeight: 700, fontSize: size, lineHeight: 1 }),
+  // Section titles — Space Grotesk
+  head:    (size = 28) => ({ fontFamily: FAM_HEAD, fontWeight: 700, fontSize: `clamp(${size * 0.75}px, 5vw, ${size}px)`, lineHeight: 1.1 }),
+  // Subheads
+  sub:     (size = 17) => ({ fontFamily: FAM, fontWeight: 500, fontSize: size, lineHeight: 1.4 }),
+  // Body text — Outfit regular
+  body:    (size = 17) => ({ fontFamily: FAM, fontWeight: 400, fontSize: size, lineHeight: 1.6 }),
+  // Small caps metadata labels — qlabs uses 12px/500 uppercase
+  eyebrow: (size = 12) => ({ fontFamily: FAM, fontWeight: 500, fontSize: size, letterSpacing: '0.14em', lineHeight: 2, textTransform: 'uppercase' as const }),
+  // Buttons / small UI text
+  btn:     (size = 13) => ({ fontFamily: FAM, fontWeight: 500, fontSize: size, lineHeight: 1 }),
+  // Tabular numbers
+  num:     (size = 17) => ({ fontFamily: FAM, fontWeight: 500, fontSize: size }),
+  // Code
+  code:    (size = 14) => ({ fontFamily: 'monospace', fontWeight: 400, fontSize: size, lineHeight: 1.6 }),
+  // Hero / name display
+  hero:    (size = 56) => ({ fontFamily: FAM_HEAD, fontWeight: 700, fontSize: `clamp(${size * 0.6}px, 8vw, ${size}px)`, lineHeight: 1 }),
 };

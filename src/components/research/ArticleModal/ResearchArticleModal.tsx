@@ -262,36 +262,7 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
                     <div style={{ background: KO.bgSec, borderRadius: 16, border: `1px solid ${KO.border}`, padding: 32, overflow: "hidden" }}>
                       {sec.visual === "zo-hardware-constraints" && <DiagramZOHardware />}
                       {sec.visual === "zo-subspace-perturb" && <DiagramZOSubspace />}
-                      {sec.visual === "zo-perturb-rep" && <DiagramZOPerturbRep />}
-                      {sec.visual === "zo-crash" && <DiagramZOCrash />}
-                      {sec.visual === "zo-rank" && <DiagramZORank />}
-                      {sec.visual === "zo-refresh" && <DiagramZORefresh />}
-                      {sec.visual === "zo-results" && <DiagramZOResults />}
-                      {sec.visual === "zo-continual" && <DiagramZOContinual />}
-                      {sec.visual === "hybrid-handoff-cost" && <DiagramHybridHandoffCost />}
-                      {sec.visual === "hybrid-translation" && <DiagramHybridTranslation />}
-                      {sec.visual === "hybrid-draft-handoff" && <DiagramHybridDraftHandoff />}
-                      {sec.visual === "hybrid-kv-continuity" && <DiagramHybridKVContinuity />}
-                      {sec.visual === "hybrid-server-saved" && <DiagramHybridServerSaved />}
-                      {sec.visual === "hybrid-greedy-math" && <DiagramHybridGreedyMath />}
-                      {sec.visual === "hybrid-adaptive-depth" && <DiagramHybridAdaptiveDepth />}
-                      {sec.visual === "snaplite-unified" && <DiagramSnapliteUnified />}
-                      {sec.visual === "snaplite-migration" && <DiagramSnapliteMigration />}
-                      {sec.visual === "snaplite-partitioning" && <DiagramSnaplitePartitioning />}
-                      {sec.visual === "snaplite-cache" && <DiagramSnapliteCache />}
-                      {sec.visual === "ww-dashboard" && <DiagramWWDashboard />}
-                      {sec.visual === "speech-layers" && <DiagramSpeechLayers />}
-                      {sec.visual === "nntrainer-cpu-dispatch" && <DiagramCPUPipeline />}
-                      {sec.visual === "nntrainer-training-flow" && <DiagramTrainingFlow />}
-                      {sec.visual === "nntrainer-qat" && <DiagramQAT />}
-                      {sec.visual === "nntrainer-memory" && <DiagramMemory />}
-                      {sec.visual === "nntrainer-hexagon-arch" && <DiagramHexagonArch />}
-                      {sec.visual === "nntrainer-hybrid-fail" && <DiagramHybridFail />}
-                      {sec.visual === "nntrainer-async" && <DiagramAsync />}
-                      {sec.visual === "nntrainer-fwd-bwd" && <DiagramFwdBwd />}
-                      {sec.visual === "nntrainer-prefill" && <DiagramPrefill />}
-                      {sec.visual === "nntrainer-progressive" && <DiagramProgressive />}
-                      {sec.visual === "nntrainer-architecture" && <DiagramArchitecture />}
+                      <ProjectFigure visual={sec.visual} />
                       </div>
                     <span style={{ ...F.btn(12), color: KO.textDim, textAlign: "center" }}>{sec.caption}</span>
                   </div>
@@ -321,6 +292,42 @@ export const ResearchArticleModal = ({ data, onClose }: Props) => {
 // ============================================================================
 // DIAGRAM COMPONENTS
 // ============================================================================
+
+export function ProjectFigure({ visual }: { visual?: string }) {
+  if (visual === "zo-hardware-constraints") return <DiagramZOHardware />;
+  if (visual === "zo-subspace-perturb") return <DiagramZOSubspace />;
+  if (visual === "zo-perturb-rep") return <DiagramZOPerturbRep />;
+  if (visual === "zo-crash") return <DiagramZOCrash />;
+  if (visual === "zo-rank") return <DiagramZORank />;
+  if (visual === "zo-refresh") return <DiagramZORefresh />;
+  if (visual === "zo-results") return <DiagramZOResults />;
+  if (visual === "zo-continual") return <DiagramZOContinual />;
+  if (visual === "hybrid-handoff-cost") return <DiagramHybridHandoffCost />;
+  if (visual === "hybrid-translation") return <DiagramHybridTranslation />;
+  if (visual === "hybrid-draft-handoff") return <DiagramHybridDraftHandoff />;
+  if (visual === "hybrid-kv-continuity") return <DiagramHybridKVContinuity />;
+  if (visual === "hybrid-server-saved") return <DiagramHybridServerSaved />;
+  if (visual === "hybrid-greedy-math") return <DiagramHybridGreedyMath />;
+  if (visual === "hybrid-adaptive-depth") return <DiagramHybridAdaptiveDepth />;
+  if (visual === "snaplite-unified") return <DiagramSnapliteUnified />;
+  if (visual === "snaplite-migration") return <DiagramSnapliteMigration />;
+  if (visual === "snaplite-partitioning") return <DiagramSnaplitePartitioning />;
+  if (visual === "snaplite-cache") return <DiagramSnapliteCache />;
+  if (visual === "ww-dashboard") return <DiagramWWDashboard />;
+  if (visual === "speech-layers") return <DiagramSpeechLayers />;
+  if (visual === "nntrainer-cpu-dispatch") return <DiagramCPUPipeline />;
+  if (visual === "nntrainer-training-flow") return <DiagramTrainingFlow />;
+  if (visual === "nntrainer-qat") return <DiagramQAT />;
+  if (visual === "nntrainer-memory") return <DiagramMemory />;
+  if (visual === "nntrainer-hexagon-arch") return <DiagramHexagonArch />;
+  if (visual === "nntrainer-hybrid-fail") return <DiagramHybridFail />;
+  if (visual === "nntrainer-async") return <DiagramAsync />;
+  if (visual === "nntrainer-fwd-bwd") return <DiagramFwdBwd />;
+  if (visual === "nntrainer-prefill") return <DiagramPrefill />;
+  if (visual === "nntrainer-progressive") return <DiagramProgressive />;
+  if (visual === "nntrainer-architecture") return <DiagramArchitecture />;
+  return null;
+}
 
 function DiagramSpeechLayers() {
   const bars = [40, 60, 100, 80, 50];
