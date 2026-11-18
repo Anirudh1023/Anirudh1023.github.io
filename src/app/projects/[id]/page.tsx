@@ -10,6 +10,7 @@ const ALIASES: Record<string, string> = {
   "zo": "subspace-zo",
   "hybrid": "hybrid-llm-inference",
   "waveform": "waveform-wizard",
+  "nfuse": "n-fuse",
 };
 
 export function generateStaticParams() {
@@ -22,6 +23,7 @@ export function generateStaticParams() {
     { id: "zo" },
     { id: "hybrid" },
     { id: "waveform" },
+    { id: "nfuse" },
   ];
   return [...ids, ...aliases];
 }

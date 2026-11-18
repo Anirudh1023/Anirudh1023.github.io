@@ -15,6 +15,7 @@ const ALIASES: Record<string, string> = {
   "zo": "subspace-zo",
   "hybrid": "hybrid-llm-inference",
   "waveform": "waveform-wizard",
+  "nfuse": "n-fuse",
 };
 
 // ── Distill Technical Terms Registry ──────────────────────────────────────────
@@ -522,7 +523,7 @@ function ProjectContent({ project }: { project: ResearchProject }) {
               gap: "8px 24px",
               fontSize: 14,
               color: "var(--muted)",
-              marginBottom: 36,
+              marginBottom: 20,
               paddingBottom: 20,
               borderBottom: "1px solid var(--line)",
             }}
@@ -531,6 +532,39 @@ function ProjectContent({ project }: { project: ResearchProject }) {
             {Array.isArray(project.metadata) &&
               project.metadata.map((m: string, i: number) => <span key={i}>{m}</span>)}
           </div>
+
+          {/* Part of Research Thread Banner */}
+          {(() => {
+            const primaryThread = siteContent.researchThreads.find((t) => t.id === project.primaryThreadId);
+            if (!primaryThread) return null;
+            return (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 32,
+                  fontSize: 13,
+                  color: "var(--muted)",
+                  fontFamily: FAM,
+                }}
+              >
+                <span>Part of Research Thread:</span>
+                <Link
+                  href={`/research/${primaryThread.id}`}
+                  style={{
+                    color: "var(--text)",
+                    fontWeight: 500,
+                    textDecoration: "underline",
+                    textDecorationColor: "var(--line)",
+                    textUnderlineOffset: 3,
+                  }}
+                >
+                  {primaryThread.title} ↗
+                </Link>
+              </div>
+            );
+          })()}
 
           {/* ── TL;DR / KEY FINDINGS BOX (qlabs style) ── */}
           {project.tldr && project.tldr.length > 0 && (
@@ -809,6 +843,80 @@ function ProjectContent({ project }: { project: ResearchProject }) {
               return null;
             })}
           </div>
+
+          {/* ── CONNECTED RESEARCH THREADS ── */}
+          {(() => {
+            const primaryThread = siteContent.researchThreads.find((t) => t.id === project.primaryThreadId);
+            const relatedThreads = (project.relatedThreadIds || [])
+              .map((tid) => siteContent.researchThreads.find((t) => t.id === tid))
+              .filter(Boolean);
+            if (!primaryThread && relatedThreads.length === 0) return null;
+            return (
+              <div
+                style={{
+                  marginTop: 56,
+                  padding: "20px 24px",
+                  borderRadius: 10,
+                  border: "1px solid var(--line)",
+                  background: "#fafafa",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 12,
+                  fontFamily: FAM,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: "0.14em",
+                    textTransform: "uppercase",
+                    color: "var(--muted)",
+                  }}
+                >
+                  Connected Research Threads
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 24px" }}>
+                  {primaryThread && (
+                    <div>
+                      <span style={{ fontSize: 13, color: "var(--muted)" }}>Primary Thread: </span>
+                      <Link
+                        href={`/research/${primaryThread.id}`}
+                        style={{
+                          fontSize: 14,
+                          fontWeight: 500,
+                          color: "var(--text)",
+                          textDecoration: "underline",
+                          textDecorationColor: "var(--line)",
+                          textUnderlineOffset: 3,
+                        }}
+                      >
+                        {primaryThread.title} ↗
+                      </Link>
+                    </div>
+                  )}
+                  {relatedThreads.map((t) => (
+                    <div key={t!.id}>
+                      <span style={{ fontSize: 13, color: "var(--muted)" }}>Related: </span>
+                      <Link
+                        href={`/research/${t!.id}`}
+                        style={{
+                          fontSize: 14,
+                          fontWeight: 500,
+                          color: "var(--text)",
+                          textDecoration: "underline",
+                          textDecorationColor: "var(--line)",
+                          textUnderlineOffset: 3,
+                        }}
+                      >
+                        {t!.title} ↗
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ── BIBTEX CITATION BOX ── */}
           {project.bibtex && (

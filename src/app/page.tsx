@@ -3,24 +3,24 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { FAM, FAM_HEAD } from "@/lib/knockout-tokens";
-import { siteContent, ResearchProject } from "@/content/site";
+import { siteContent, ResearchProject, ResearchThread } from "@/content/site";
 
 // ─── Filter Categories ────────────────────────────────────────────────────────
 type FilterCategory = "all" | "adaptation-systems" | "optimization" | "representations" | "ongoing";
 
 const FILTERS: { id: FilterCategory; label: string }[] = [
-  { id: "all", label: "All (10)" },
+  { id: "all", label: "All (11)" },
   { id: "adaptation-systems", label: "Adaptation & Systems (4)" },
-  { id: "optimization", label: "Optimization (2)" },
+  { id: "optimization", label: "Optimization (3)" },
   { id: "representations", label: "Representations (2)" },
   { id: "ongoing", label: "Ongoing (2)" },
 ];
 
-type MainTab = "research" | "publications" | "experience";
+type MainTab = "threads" | "contributions" | "publications" | "experience";
 
 export default function Home() {
-  const { identity, projects, publications, experience } = siteContent;
-  const [activeTab, setActiveTab] = useState<MainTab>("research");
+  const { identity, projects, publications, experience, researchThreads } = siteContent;
+  const [activeTab, setActiveTab] = useState<MainTab>("threads");
   const [activeFilter, setActiveFilter] = useState<FilterCategory>("all");
   const [copiedBibtexId, setCopiedBibtexId] = useState<string | null>(null);
 
@@ -34,7 +34,7 @@ export default function Home() {
     if (activeFilter === "representations")
       return p.category === "representations";
     if (activeFilter === "ongoing")
-      return p.category === "ongoing";
+      return p.category === "ongoing" || p.status?.toLowerCase().includes("ongoing");
     return true;
   });
 
@@ -173,22 +173,40 @@ export default function Home() {
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "10px 18px" }}>
               <button
-                onClick={() => setActiveTab("research")}
+                onClick={() => setActiveTab("threads")}
                 style={{
                   background: "none",
                   border: "none",
                   padding: 0,
                   fontFamily: FAM,
                   fontSize: 14,
-                  fontWeight: activeTab === "research" ? 600 : 400,
-                  color: activeTab === "research" ? "var(--text)" : "var(--muted)",
-                  borderBottom: activeTab === "research" ? "2px solid var(--text)" : "2px solid transparent",
+                  fontWeight: activeTab === "threads" ? 600 : 400,
+                  color: activeTab === "threads" ? "var(--text)" : "var(--muted)",
+                  borderBottom: activeTab === "threads" ? "2px solid var(--text)" : "2px solid transparent",
                   paddingBottom: 2,
                   cursor: "pointer",
                   transition: "all 0.15s ease",
                 }}
               >
-                Selected Research ({projects.length})
+                Research Threads ({researchThreads.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("contributions")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  fontFamily: FAM,
+                  fontSize: 14,
+                  fontWeight: activeTab === "contributions" ? 600 : 400,
+                  color: activeTab === "contributions" ? "var(--text)" : "var(--muted)",
+                  borderBottom: activeTab === "contributions" ? "2px solid var(--text)" : "2px solid transparent",
+                  paddingBottom: 2,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                All Contributions ({projects.length})
               </button>
               <button
                 onClick={() => setActiveTab("publications")}
@@ -273,8 +291,74 @@ export default function Home() {
             minWidth: 0,
           }}
         >
-          {/* ════ TAB 1: SELECTED RESEARCH ════ */}
-          {activeTab === "research" && (
+          {/* ════ TAB 0: RESEARCH THREADS ════ */}
+          {activeTab === "threads" && (
+            <div id="threads" style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  flexWrap: "wrap",
+                  gap: 8,
+                  paddingBottom: 16,
+                  borderBottom: "1px solid var(--line)",
+                }}
+              >
+                <div>
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      letterSpacing: "0.14em",
+                      lineHeight: 1.5,
+                      textTransform: "uppercase",
+                      color: "var(--muted)",
+                      fontFamily: FAM,
+                    }}
+                  >
+                    Research Threads
+                  </h2>
+                  <p
+                    style={{
+                      margin: "4px 0 0 0",
+                      fontSize: 13.5,
+                      color: "var(--muted)",
+                    }}
+                  >
+                    Sustained intellectual questions connecting multiple papers, methods, and execution systems.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTab("contributions")}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    fontSize: 12.5,
+                    fontFamily: FAM,
+                    color: "var(--text)",
+                    textDecoration: "underline",
+                    textUnderlineOffset: 3,
+                    cursor: "pointer",
+                  }}
+                >
+                  View All {projects.length} Contributions →
+                </button>
+              </div>
+
+              {/* Research Threads List */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+                {researchThreads.map((thread) => (
+                  <ThreadCard key={thread.id} thread={thread} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ════ TAB 1: ALL CONTRIBUTIONS ════ */}
+          {activeTab === "contributions" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               {/* Header with Topic Filters */}
               <div
@@ -307,7 +391,7 @@ export default function Home() {
                       fontFamily: FAM,
                     }}
                   >
-                    Research Trajectory
+                    All Contributions Index
                   </h2>
                   <span style={{ fontSize: 12, color: "var(--muted)" }}>
                     {filteredProjects.length} contributions
@@ -585,6 +669,151 @@ export default function Home() {
   );
 }
 
+// ─── Research Thread Card Component ───────────────────────────────────────────
+function ThreadCard({ thread }: { thread: ResearchThread }) {
+  const linked = (thread.linkedContributionIds || [])
+    .map((pid) => siteContent.projects.find((p) => p.id === pid))
+    .filter(Boolean) as ResearchProject[];
+
+  return (
+    <article
+      style={{
+        padding: "24px 26px",
+        borderRadius: 10,
+        border: "1px solid var(--line)",
+        background: "#ffffff",
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        transition: "border-color 0.15s ease",
+      }}
+      onMouseOver={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "var(--text)")}
+      onMouseOut={(e) => ((e.currentTarget as HTMLElement).style.borderColor = "var(--line)")}
+    >
+      {/* Title & Status */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          flexWrap: "wrap",
+          gap: 8,
+        }}
+      >
+        <Link
+          href={`/research/${thread.id}`}
+          style={{
+            fontFamily: FAM_HEAD,
+            fontWeight: 700,
+            fontSize: "clamp(18px, 2.4vw, 21px)",
+            color: "var(--text)",
+            textDecoration: "none",
+            letterSpacing: "-0.01em",
+          }}
+          onMouseOver={(e) => ((e.currentTarget as HTMLElement).style.textDecoration = "underline")}
+          onMouseOut={(e) => ((e.currentTarget as HTMLElement).style.textDecoration = "none")}
+        >
+          {thread.title} ↗
+        </Link>
+        {thread.status && (
+          <span
+            style={{
+              fontSize: 10.5,
+              fontWeight: 600,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              padding: "2px 7px",
+              borderRadius: 4,
+              background: "#000000",
+              color: "#ffffff",
+            }}
+          >
+            {thread.status}
+          </span>
+        )}
+      </div>
+
+      {/* Central Question */}
+      <p
+        style={{
+          margin: 0,
+          fontSize: 15,
+          fontStyle: "italic",
+          lineHeight: 1.5,
+          color: "var(--muted)",
+        }}
+      >
+        &ldquo;{thread.question}&rdquo;
+      </p>
+
+      {/* Short Homepage Description */}
+      <p
+        style={{
+          margin: 0,
+          fontSize: 14.5,
+          lineHeight: 1.6,
+          color: "var(--text)",
+        }}
+      >
+        {thread.homepageDesc}
+      </p>
+
+      {/* Linked Contributions */}
+      <div
+        style={{
+          paddingTop: 10,
+          borderTop: "1px solid var(--line)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 12,
+          fontSize: 13,
+        }}
+      >
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 10px" }}>
+          <span style={{ color: "var(--muted)", fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+            Contributions:
+          </span>
+          {linked.map((p, idx) => (
+            <React.Fragment key={p.id}>
+              {idx > 0 && <span style={{ color: "var(--line)" }}>·</span>}
+              <Link
+                href={`/projects/${p.id}`}
+                style={{
+                  color: "var(--text)",
+                  fontWeight: 500,
+                  textDecoration: "underline",
+                  textDecorationColor: "var(--line)",
+                  textUnderlineOffset: 3,
+                }}
+                onMouseOver={(e) => ((e.currentTarget as HTMLElement).style.textDecorationColor = "var(--text)")}
+                onMouseOut={(e) => ((e.currentTarget as HTMLElement).style.textDecorationColor = "var(--line)")}
+              >
+                {p.title.split(":")[0]}
+              </Link>
+            </React.Fragment>
+          ))}
+        </div>
+
+        <Link
+          href={`/research/${thread.id}`}
+          style={{
+            color: "var(--text)",
+            fontWeight: 500,
+            fontSize: 13,
+            textDecoration: "underline",
+            textUnderlineOffset: 3,
+            whiteSpace: "nowrap",
+          }}
+        >
+          Explore thread ↗
+        </Link>
+      </div>
+    </article>
+  );
+}
+
 // ─── Research Project Item Component ──────────────────────────────────────────
 function ProjectCard({ project }: { project: ResearchProject }) {
   const metaStr = `${project.year} · ${project.tags.join(" · ")}`;
@@ -702,6 +931,22 @@ function ProjectCard({ project }: { project: ResearchProject }) {
             )}
           </span>
         ))}
+        {project.primaryThreadId && (
+          <Link
+            href={`/research/${project.primaryThreadId}`}
+            style={{
+              fontSize: 12.5,
+              color: "var(--muted)",
+              textDecoration: "underline",
+              textDecorationColor: "var(--line)",
+              textUnderlineOffset: 3,
+            }}
+            onMouseOver={(e) => ((e.currentTarget as HTMLElement).style.color = "var(--text)")}
+            onMouseOut={(e) => ((e.currentTarget as HTMLElement).style.color = "var(--muted)")}
+          >
+            Part of thread ↗
+          </Link>
+        )}
       </div>
     </article>
   );
