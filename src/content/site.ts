@@ -76,8 +76,8 @@ export const siteContent = {
     name: "Anirudh Bocha",
     affiliation: "Machine Learning Engineer · Samsung Research India",
         heroParagraphs: [
-      "I work on efficient machine learning across model representations, learning algorithms, and computational systems. My projects span speech representation learning, language-model adaptation, forward-only optimization, collaborative generation, and execution across heterogeneous hardware.",
-      "My work has moved from task-specific speech representations at IIIT Hyderabad to LLM adaptation and heterogeneous execution at Samsung Research, and now extends to alternative optimization and active multimodal reasoning."
+      "I work on efficient machine learning across model representations, learning algorithms, and computational systems. My work asks what information a model needs to preserve, what computation a learning or inference task actually requires, and how that computation should be organized for the hardware that must execute it.",
+      "This has led me from speech representation learning and analysis to quantized LLM adaptation, forward-only optimization, heterogeneous execution, collaborative generation, and active multimodal reasoning."
     ],
     links: {
       email: "mailto:anirudhnarayana7@gmail.com",
@@ -106,7 +106,7 @@ export const siteContent = {
         "My Honours research at IIIT Hyderabad investigated how representation targets and layer selection dictate downstream task quality. By systematically probing where task-relevant information resides, this work demonstrated that optimizing the representation a model receives or extracts is often dramatically more effective and compute-efficient than simply scaling up model capacity."
       ],
       synthesis: [
-        "Across both whispered-to-normal speech reconstruction and disfluency classification, the central finding is that representational choice dominates model scale. Replacing MFCC targets with subband SFCC in WESPER yielded a 10–25% quality improvement under noisy, low-SNR conditions with zero added model capacity. Similarly, layer-wise probing of HuBERT's 24 layers showed that layer 5 achieved 0.97 F1 on atypical disfluencies, outperforming the final layer.",
+        "Across speech reconstruction and disfluency classification, the central finding is that representational choice and layer extraction depth dominate raw model scale. In whispered-to-normal reconstruction, experimenting with SPCC-based targets rather than MFCC preserved richer spectral information under whispered and low-SNR conditions, exposing the trade-off between representational richness and training compute. In atypical disfluency classification, layer-wise analysis demonstrated that useful representation depth is classifier-dependent: HuBERT's fifth transformer layer reached peak F1 scores (97.67% prolongation, 97.95% repetition, 97.89% filled pause) with an SVM, whereas layer 4 was optimal with a CNN.",
         "These results demonstrate that downstream performance depends on where information is localized within representations, establishing that targeted representations can substitute for expensive model expansion."
       ],
       openQuestions: [
@@ -201,7 +201,7 @@ export const siteContent = {
         "This research thread investigates how heterogeneous models—differing in size, architecture, and even vocabulary—can collaboratively generate text while sharing intermediate state, reusing draft computations, and maintaining exact mathematical output quality."
       ],
       synthesis: [
-        "In our hybrid speculative handoff framework, an on-device model drafts candidate tokens locally while projecting its hidden representations into a cross-vocabulary representation space. When the server takes over or verifies drafts, it reuses the local context and KV-cache continuity, reducing server decode computation by 2.797× and total end-to-end latency by 1.394× while maintaining zero loss in generation quality under greedy decoding.",
+        "In our hybrid speculative handoff framework, an on-device model drafts candidate tokens locally and translates them into the server model's vocabulary using direct token mapping and an n-gram merge cache. When the server verifies drafts in a batched pass, that verification simultaneously validates the draft and constructs the target model's own KV state, eliminating catch-up prefill. In cloud GPU experiments, this reduced server decode time from 11.2 s to 4.0 s (2.797×) and total latency by 1.394× with zero loss in generation quality under greedy decoding.",
         "The key insight is that generation work should be allocated dynamically according to difficulty, and representation mapping must preserve context continuity across disparate models."
       ],
       openQuestions: [
@@ -269,142 +269,150 @@ export const siteContent = {
       id: "wesper",
       primaryThreadId: "speech-representations",
       relatedThreadIds: [],
-      type: "paper",
-      title: "Richer Spectral Targets Improve Whispered-Speech Reconstruction",
-      articleTitle: "Spectral Representations for Whispered Speech Conversion",
-      year: "2023\u20132024",
+      type: "early_observation",
+      status: "Observation",
+      statusDetail: "IIIT Hyderabad · Early observation",
+      title: "Early Observation: Reconstructing Speech from Incomplete Acoustic Evidence",
+      articleTitle: "Reconstructing Speech from Incomplete Acoustic Evidence",
+      year: "2023–2024",
       tags: ["REPRESENTATIONS", "SPEECH"],
       category: "representations",
-      claim: "Replacing MFCC training targets with subband SFCC in HuBERT-based whispered speech conversion yields 10\u201325% quality gains at low SNR without increasing model capacity.",
-      metricsHighlight: "10\u201325% gain at low SNR",
-      status: "",
-      statusDetail: "IIIT Hyderabad",
+      claim: "Investigating SPCC-based acoustic targets in self-supervised whispered-to-normal speech reconstruction exposed the trade-off between representational richness and computational cost.",
+      metricsHighlight: "Early research observation · HuBERT + FastSpeech",
       metadata: ["IIIT Hyderabad", "Speech Processing Lab"],
-      artifacts: [{"label": "Project notes", "url": "/projects/wesper"}],
-      tldr: ["Whispered speech lacks periodic voicing, causing conventional MFCC features to discard critical spectral detail.", "Subband Frequency Cepstral Coefficients (SFCC) retain richer acoustic information under low signal-to-noise ratios.", "Smoothing and component selection make the higher-dimensional representation stable for downstream synthesis.", "Demonstrates that altering the representation a model receives can outperform expanding model capacity."],
+      artifacts: [{"label": "Observation notes", "url": "/projects/wesper"}],
+      tldr: [
+        "Whispered speech lacks periodic vocal-fold excitation, requiring reconstruction models to infer missing acoustic information rather than simply denoise.",
+        "Explored HuBERT-based encoder with FastSpeech-style acoustic decoder and HiFi-GAN vocoder.",
+        "Experimented with SPCC-based targets in place of MFCCs to preserve richer spectral structure under low-SNR conditions.",
+        "Demonstrated that increasing representational richness improves available information but increases feature dimensionality and training compute."
+      ],
       article: {
-          intro: "I reproduced WESPER, a whispered-to-normal speech conversion system built on HuBERT, and replaced its MFCC training targets with SFCC to retain richer information from whispered and noisy speech. Smoothing and component selection made the higher-dimensional representation practical, improving results by 10–25% at low SNR without increasing model capacity.",
-          sections: [
-            {
-              type: "heading",
-              content: "Research Question"
-            },
-            {
-              type: "paragraph",
-              content: "Can replacing the acoustic representation targets in a whispered-speech conversion system improve low-SNR performance without increasing model capacity?"
-            },
-            {
-              type: "heading",
-              content: "Motivation"
-            },
-            {
-              type: "paragraph",
-              content: "Whispered speech lacks the voiced periodicity that MFCC features are designed to capture. SFCC (subband-based cepstral coefficients) retain more information from whispered and noisy conditions, but their higher dimensionality requires careful treatment to remain practical as training targets."
-            },
-            {
-              type: "heading",
-              content: "Method"
-            },
-            {
-              type: "paragraph",
-              content: "Starting from the WESPER baseline (HuBERT encoder + downstream synthesis), I replaced MFCC targets with SFCC targets and applied smoothing and component selection to control dimensionality. The model architecture was unchanged."
-            },
-            {
-              type: "heading",
-              content: "Results"
-            },
-            {
-              type: "paragraph",
-              content: "SFCC targets improved conversion quality by 10–25% at low SNR relative to MFCC targets, without changing model capacity. The result showed that the choice of representation target can matter more than model size."
-            },
-            {
-              type: "heading",
-              content: "My Contribution"
-            },
-            {
-              type: "paragraph",
-              content: "Independent reproduction and extension. I designed and ran all SFCC experiments and analysis as Honours research at IIIT Hyderabad under Prof. Anil Kumar Vuppala."
-            }
-          ]
-        }
+        intro: "My early speech research began with whispered-to-normal speech reconstruction. Whispered speech lacks the periodic vocal-fold excitation that gives voiced speech its harmonic structure, so reconstruction requires a model to infer information that is absent from the input rather than simply denoise an otherwise complete signal. I explored a HuBERT-based encoder with a FastSpeech-style acoustic decoder and HiFi-GAN vocoder, focusing on the acoustic targets used to shape the learned representation.",
+        sections: [
+          {
+            type: "heading",
+            content: "Research Motivation"
+          },
+          {
+            type: "paragraph",
+            content: "Whispered speech is not simply ordinary speech recorded at low volume. Without regular vocal-fold excitation, it lacks periodic structure and harmonic cues. A reconstruction model must infer missing voiced characteristics from remaining spectral and articulatory information. A target feature that discards fine spectral structure can limit what the reconstruction system learns to recover."
+          },
+          {
+            type: "heading",
+            content: "Architecture and Investigation"
+          },
+          {
+            type: "paragraph",
+            content: "Rather than relying on MFCC targets, I experimented with SPCC-based targets to preserve richer spectral information under whispered and low-SNR conditions. This was not simply a feature concatenation at inference: the aim was to alter the representation-learning signal itself in the HuBERT-related pipeline."
+          },
+          {
+            type: "heading",
+            content: "Dimensionality and System Cost"
+          },
+          {
+            type: "paragraph",
+            content: "The richer target increased feature dimensionality and computational burden. I investigated spectral smoothing and component selection to control that cost while retaining useful information. The broader lesson was that representation design is not independent of system cost: a richer signal can improve what a model can learn, while changing the computation required to use it."
+          },
+          {
+            type: "heading",
+            content: "Role in Research Trajectory"
+          },
+          {
+            type: "paragraph",
+            content: "This work represents the initial exploratory observation that sparked my sustained focus on task-specific representations and their computational trade-offs, motivating the subsequent Interspeech disfluency study."
+          }
+        ]
+      }
     },
     {
       id: "speech-reps",
       primaryThreadId: "speech-representations",
       relatedThreadIds: [],
       type: "paper",
-      title: "HuBERT's Fifth Layer Outperforms Its Final Layer for Disfluency Detection",
+      title: "Towards Classification of Typical and Atypical Disfluencies: A Self-Supervised Representation Approach",
       articleTitle: "Towards Classification of Typical and Atypical Disfluencies: A Self-Supervised Representation Approach",
-      year: "2023\u20132025",
+      year: "2023–2025",
       tags: ["REPRESENTATIONS", "SPEECH"],
       category: "representations",
-      claim: "Evaluating intermediate representations shows that HuBERT's fifth layer reaches 0.97 F1 on disfluency classification, outperforming the model's final representation.",
-      metricsHighlight: "0.97 F1 \u00b7 Interspeech 2025",
+      claim: "Layer-wise probing of self-supervised speech encoders reveals that representation utility is classifier-dependent: HuBERT layer 5 yields 97.67–97.95% F1 with an SVM, while layer 4 performs best with a CNN.",
+      metricsHighlight: "97.95% peak F1 (SVM L5) · 95.84% (CNN L4)",
       status: "Published",
-      statusDetail: "Interspeech 2025",
-      link: "/publications/Interspeech.pdf",
-      metadata: ["IIIT Hyderabad \u00b7 Interspeech 2025", "Co-authored with Prof. Anil Kumar Vuppala"],
-      artifacts: [{"label": "Project notes", "url": "/projects/speech-reps"}, {"label": "Paper", "url": "/publications/Interspeech.pdf", "isExternal": true}],
-      tldr: ["Downstream speech classification does not strictly benefit from deeper encoder layers.", "HuBERT's fifth layer reached a peak F1 of 0.97, outperforming its final layer for typical-vs-atypical disfluency classification.", "Early acoustic representations retain localized disfluency cues that later contextual layers wash out.", "Evaluated on IIITH-TISA, a 10-hour Indian-English stuttered-speech corpus containing 3,251 annotated clips."],
-      bibtex: "@inproceedings{bocha2025disfluency,\n  title={Towards Classification of Typical and Atypical Disfluencies: A Self-Supervised Representation Approach},\n  author={Bocha, Anirudh and Vuppala, Anil Kumar},\n  booktitle={Interspeech},\n  year={2025}\n}",
+      statusDetail: "Interspeech 2025 · Published",
+      link: "https://doi.org/10.21437/Interspeech.2025-964",
+      metadata: ["IIIT Hyderabad · Interspeech 2025", "Co-author with Prof. Anil Kumar Vuppala"],
+      artifacts: [
+        {"label": "Project notes", "url": "/projects/speech-reps"},
+        {"label": "Interspeech DOI", "url": "https://doi.org/10.21437/Interspeech.2025-964", "isExternal": true},
+        {"label": "Paper PDF", "url": "/publications/Interspeech.pdf", "isExternal": true}
+      ],
+      tldr: [
+        "Downstream speech systems often default to the final encoder layer, but early/intermediate layers retain localized temporal and acoustic cues.",
+        "Layer-wise probing of Wav2Vec 2.0, HuBERT, WavLM, and TERA demonstrated classifier-dependent representation utility.",
+        "With an SVM, HuBERT's fifth transformer layer achieved peak F1 scores (97.67% prolongation, 97.95% repetition, 97.89% filled pause); with a CNN, layer 4 was optimal.",
+        "Evaluated on IIITH-TISA (10h stuttered corpus, 30 speakers, 3,251 clips) and the expanded IIITH-IED-E dataset."
+      ],
+      bibtex: `@inproceedings{kommagouni2025towards,
+  title={Towards Classification of Typical and Atypical Disfluencies: A Self Supervised Representation Approach},
+  author={Kommagouni, Priyanka and Khanna, Pragya and Narasinga, Vamshiraghusimha and Bocha, Anirudh and Vuppala, Anil Kumar},
+  booktitle={Interspeech},
+  year={2025},
+  doi={10.21437/Interspeech.2025-964}
+}`,
       article: {
-          intro: "We studied whether the final representation of a self-supervised speech encoder is necessarily the most useful one for a downstream task. Evaluating layer-wise representations from Wav2Vec2.0, HuBERT, WavLM, and TERA, we found that HuBERT's fifth layer reached a peak F1 of 0.97 for typical-vs-atypical disfluency classification — outperforming the model's final representation. Later layers are not automatically more useful for every task.",
-          sections: [
-            {
-              type: "heading",
-              content: "Research Question"
-            },
-            {
-              type: "paragraph",
-              content: "Does a self-supervised speech model's final layer produce the most discriminative representation for downstream classification tasks, or do intermediate layers contain more task-relevant information?"
-            },
-            {
-              type: "heading",
-              content: "Motivation"
-            },
-            {
-              type: "paragraph",
-              content: "Self-supervised speech models are typically used by extracting final-layer representations. For tasks like disfluency detection, which depend on localized acoustic features rather than global semantic content, this assumption may waste computation while discarding useful information."
-            },
-            {
-              type: "heading",
-              content: "Method"
-            },
-            {
-              type: "paragraph",
-              content: "We evaluated layer-wise representations from Wav2Vec2.0, HuBERT, WavLM, and TERA using downstream classifiers including SVMs and CNNs on the IIITH-TISA dataset — a 10-hour Indian-English stuttered-speech corpus containing recordings from 30 persons who stutter and 3,251 annotated clips, which I helped build."
-            },
-            {
-              type: "figure",
-              caption: "Layer-wise performance: Peak at Layer 5",
-              visual: "speech-layers"
-            },
-            {
-              type: "heading",
-              content: "Results"
-            },
-            {
-              type: "paragraph",
-              content: "HuBERT's fifth layer reached an F1 of 0.97, outperforming its final representation. The result showed that useful task information can emerge before the encoder's endpoint, and that selecting the appropriate layer matters more than simply using the deepest one."
-            },
-            {
-              type: "heading",
-              content: "My Contribution"
-            },
-            {
-              type: "paragraph",
-              content: "I ran layer-wise extraction experiments across four model families, contributed to IIITH-TISA dataset construction, and was a co-author on the Interspeech 2025 submission. The work was collaborative with Prof. Anil Kumar Vuppala's Speech Processing Lab."
-            },
-            {
-              type: "heading",
-              content: "Artifacts"
-            },
-            {
-              type: "paragraph",
-              content: "Published at Interspeech 2025. Paper available at the link below."
-            }
-          ]
-        }
+        intro: "I studied how self-supervised speech encoders represent the acoustic and temporal differences between typical conversational disfluencies and atypical disfluencies associated with stuttering. Rather than assuming that the final encoder output is the best feature for classification, I performed a layer-wise analysis of Wav2Vec 2.0, HuBERT, WavLM, and TERA, evaluating their representations with SVM and CNN classifiers. The best-performing representation depended on the classifier: with an SVM, HuBERT's fifth transformer layer achieved F1 scores of 97.67% for prolongation, 97.95% for repetition, and 97.89% for filled pauses; with a CNN, layer 4 performed best.",
+        sections: [
+          {
+            type: "heading",
+            content: "Research Question"
+          },
+          {
+            type: "paragraph",
+            content: "Downstream systems often use the final representation of a pretrained speech encoder by default, but a final layer is optimized for the pretraining objective, not necessarily for every downstream task. Which representation depth best separates typical conversational hesitations from atypical disfluencies associated with stuttering?"
+          },
+          {
+            type: "heading",
+            content: "Starting Observation"
+          },
+          {
+            type: "paragraph",
+            content: "Typical conversational disfluencies (hesitations, filled pauses, repetitions) are part of ordinary speech. Atypical disfluencies associated with stuttering can share surface forms while differing in acoustic realization, timing, and severity. A classifier needs to resolve subtle temporal and spectral cues rather than simply detect whether a pause occurred."
+          },
+          {
+            type: "heading",
+            content: "Method and Experimental Design"
+          },
+          {
+            type: "paragraph",
+            content: "The study compared layer-wise representations from four self-supervised speech models (Wav2Vec 2.0, HuBERT, WavLM, and TERA) evaluated using both SVM and CNN classifiers. The paper also compared learned SSL features with handcrafted acoustic feature sets (eGeMAPS and openSMILE) and examined CCA-based combinations of HuBERT layer-5 features with handcrafted features across speaker-exclusive train/validation/test splits."
+          },
+          {
+            type: "figure",
+            caption: "Layer-wise performance: Peak at Intermediate Layers",
+            visual: "speech-layers"
+          },
+          {
+            type: "heading",
+            content: "Results: Classifier-Dependent Layer Utility"
+          },
+          {
+            type: "paragraph",
+            content: "The best-performing representation depended on the classifier. With an SVM, HuBERT's fifth transformer layer achieved F1 scores of 97.67% for prolongation, 97.95% for repetition, and 97.89% for filled pauses. With the CNN, HuBERT's fourth layer performed best. The paper does not show that layer 5 is universally optimal; it shows that useful representation depth is a design variable that interacts with downstream classifier architecture."
+          },
+          {
+            type: "result-table",
+            content: "97.95% / 97.67% / 97.89%\nSVM + HuBERT Layer 5 (Rep / Prol / FP F1)\n\n95.71% / 94.51% / 95.84%\nCNN + HuBERT Layer 4 (Rep / Prol / FP F1)\n\nIIITH-TISA & IIITH-IED-E\n10h stuttered corpus (30 speakers, 3,251 clips)"
+          },
+          {
+            type: "heading",
+            content: "My Contribution"
+          },
+          {
+            type: "paragraph",
+            content: "I ran layer-wise extraction experiments across the four model families, contributed to Indian-English speech resources through IIITH-TISA and the expanded IIITH-IED-E dataset, and co-authored the Interspeech 2025 publication. The work was collaborative within Prof. Anil Kumar Vuppala's Speech Processing Lab."
+          }
+        ]
+      }
     },
     {
       id: "snaplite",
@@ -416,8 +424,8 @@ export const siteContent = {
       year: "2024",
       tags: ["SYSTEMS", "INFERENCE", "HETEROGENEOUS"],
       category: "systems",
-      claim: "Migrating Samsung's production on-device runtime to LiteRT unified CPU, GPU, and NPU execution while reducing representative GPU time-to-first-inference by 10\u00d7.",
-      metricsHighlight: "10\u00d7 faster first inference \u00b7 LiteRT migration",
+      claim: "Migrating Samsung's production runtime from TFLite 2.20 to LiteRT unified deployment across 200+ models, achieving 10\u00d7 GPU (1,200ms \u2192 120ms) and 8.8\u00d7 NPU (1,320ms \u2192 150ms) first-inference speedups and up to 2.18\u00d7 runtime latency reduction.",
+      metricsHighlight: "10\u00d7 GPU / 8.8\u00d7 NPU first inference \u00b7 Up to 2.18\u00d7 runtime speedup",
       status: "",
       statusDetail: "Samsung Research India \u00b7 Internship 2024",
       metadata: ["Samsung Research India \u00b7 Internship Jun\u2013Aug 2024"],
@@ -561,14 +569,19 @@ export const siteContent = {
       year: "2025\u20132026",
       tags: ["ADAPTATION", "QUANTIZATION", "SYSTEMS"],
       category: "adaptation",
-      claim: "Quantization-aware LoRA training with EMA scale tracking and activation checkpointing reduces resident training memory of Qwen3-class models from ~3 GB to under 1 GB.",
-      metricsHighlight: "~3 GB \u2192 <1 GB memory \u00b7 LoRA + QAT",
+      claim: "Quantization-aware causal LLM adaptation with block-aware scales and Flash Storage-backed weight checkpointing reduces measured on-device training footprint from ~3 GB to below 0.5 GB.",
+      metricsHighlight: "<0.5 GB training footprint · Flash Storage · Block-aware QAT",
       status: "",
-      statusDetail: "Samsung Research India \u00b7 2025",
+      statusDetail: "Samsung Research India · Advanced Research Fund",
       codeLink: "https://github.com/b-saianirud/nntrainer/tree/LoRA",
-      metadata: ["Samsung Research India \u00b7 2025", "Open source: github.com/b-saianirud/nntrainer"],
+      metadata: ["Samsung Research · Advanced Research Fund", "Samsung Special Recognition Award"],
       artifacts: [{"label": "Project notes", "url": "/projects/nntrainer"}, {"label": "Code", "url": "https://github.com/b-saianirud/nntrainer/tree/LoRA", "isExternal": true}, {"label": "NPU Co-execution", "url": "/projects/cpu-npu"}],
-      tldr: ["Causal-LLM training on mobile devices is constrained by memory ceilings rather than pure compute throughput.", "Quantized Q4_0 execution through ggml and QINT4 through KleidiAI kernels keep frozen base weights compact.", "Quantization-aware training (QAT) with exponential moving average tracks blockwise scales during adaptation.", "Activation checkpointing, selective recomputation, and memory-mapping bring resident training footprint below 1 GB."],
+      tldr: [
+        "Causal-LLM training on mobile devices is constrained by memory ceilings rather than pure compute throughput.",
+        "Quantized Q4_0 execution through ggml and QINT4 through KleidiAI kernels keep frozen base weights compact.",
+        "Quantization-aware causal LoRA maintains block-aware Q4_0 scales via EMA updates to eliminate post-training drift.",
+        "Flash Storage-backed weight checkpointing drops measured training footprint from ~3 GB to below 0.5 GB (activation checkpointing was investigated but was not the primary driver in short context)."
+      ],
       article: {
           intro: "NNTrainer is Samsung's open-source framework for on-device training and inference. I extended it toward causal-LLM fine-tuning on mobile devices, covering quantized model support, LoRA and QAT training, training memory reduction, and NPU execution. This page focuses on the adaptation work. The asynchronous CPU–NPU co-execution work that emerged from the same effort is documented separately.",
           sections: [
@@ -633,15 +646,15 @@ export const siteContent = {
             },
             {
               type: "heading",
-              content: "Training Memory Reduction"
+              content: "Training Memory Residency and Flash Storage"
             },
             {
               type: "paragraph",
-              content: "Quantized weights alone did not solve training memory because the backward pass retained intermediate state. I implemented checkpointing, selective recomputation, and memory-mapped storage, reducing the resident training footprint from roughly 3 GB to below 1 GB."
+              content: "The measured training footprint for a roughly 1-GB base model initially reached approximately 3 GB. Using NNTrainer's weight-checkpointing path backed by its Flash Storage feature, we reduced the measured training footprint to below 0.5 GB. Activation checkpointing was explored, but in this short-context setting it was not the mechanism behind the headline reduction. I also introduced Progressive LoRA, which applies temperature-aware scheduling and adaptive pauses to make adaptation sustainable under mobile thermal envelopes."
             },
             {
               type: "figure",
-              caption: "Memory Footprint Reduction",
+              caption: "Memory Footprint Reduction via Flash Storage",
               visual: "nntrainer-memory"
             },
             {
@@ -650,7 +663,7 @@ export const siteContent = {
             },
             {
               type: "result-table",
-              content: "~3 GB → <1 GB\nResident training footprint\n\nLoRA + QAT\nOn-device quantized fine-tuning"
+              content: "~3 GB → <0.5 GB\nMeasured training footprint\n\nFlash Storage\nWeight-checkpointing on device\n\nProgressive LoRA\nTemperature-aware scheduling under thermal limits"
             },
             {
               type: "heading",
@@ -681,8 +694,8 @@ export const siteContent = {
       year: "2025\u20132026",
       tags: ["SYSTEMS", "ADAPTATION", "HARDWARE"],
       category: "systems",
-      claim: "Overcoming CPU\u2013NPU dispatch latency via asynchronous DMA ring-buffer enqueue and accelerator-resident data delivers ~5\u00d7 training acceleration over CPU baselines.",
-      metricsHighlight: "~5\u00d7 acceleration \u00b7 Qualcomm Hexagon NPU",
+      claim: "Overcoming layer-by-layer CPU\u2013NPU synchronization via asynchronous DMA ring-buffer enqueue delivers 8\u00d7 faster training than CPU backpropagation, with ~5\u00d7 prefill acceleration.",
+      metricsHighlight: "8\u00d7 faster training vs CPU backprop \u00b7 ~5\u00d7 prefill",
       status: "",
       statusDetail: "Samsung Research India \u00b7 2025",
       metadata: ["Samsung Research India \u00b7 2025", "Qualcomm Hexagon NPU"],
@@ -768,8 +781,12 @@ export const siteContent = {
               content: "Results"
             },
             {
+              type: "paragraph",
+              content: "The result is an execution path in which the NPU accelerates the training workload as a whole rather than a set of isolated forward operations. The reported result is 8× faster training than CPU backpropagation. An earlier measurement separately reported approximately 5× prefill acceleration; these are distinct benchmark conditions and are kept separate."
+            },
+            {
               type: "result-table",
-              content: "~5×\nTraining acceleration (CPU-NPU hybrid vs. CPU baseline)"
+              content: "8×\nFaster training than CPU backpropagation\n\n~5×\nPrefill acceleration (separate benchmark)\n\nFastRPC & DMA\nAsynchronous ring-buffer submission"
             },
             {
               type: "figure",
@@ -800,16 +817,16 @@ export const siteContent = {
       primaryThreadId: "beyond-backpropagation",
       relatedThreadIds: ["heterogeneous-execution"],
       type: "paper",
-      title: "Subspace-Restricted Zeroth-Order Fine-Tuning on Mobile NPUs",
+      title: "Subspace-Restricted Zeroth-Order Fine-Tuning of Real Weights on Mobile NPUs",
       articleTitle: "Necessity, Not Convenience: Subspace-Restricted Zeroth-Order Fine-Tuning of Real Weights on Mobile NPUs",
       year: "2026",
       tags: ["OPTIMIZATION", "ADAPTATION", "HARDWARE"],
       category: "optimization",
       claim: "Restricting zeroth-order perturbations to a gradient-informed low-rank subspace prevents firmware recovery crashes and reaches 92.0% SST-2 accuracy on Qualcomm Hexagon hardware.",
       metricsHighlight: "92.0% SST-2 (vs 92.7% full LoRA) \u00b7 10.5\u00d7 speedup",
-      status: "Under review",
-      statusDetail: "Lead author \u00b7 MLSys 2027 prep",
-      metadata: ["Qwen3-0.6B \u00b7 Qualcomm Hexagon NPU", "Lead author \u00b7 Preparing for MLSys 2027"],
+      status: "Manuscript in prep",
+      statusDetail: "Active research \u00b7 Manuscript in prep",
+      metadata: ["Qwen3-0.6B \u00b7 Qualcomm Hexagon NPU", "Lead author \u00b7 Real-weight subspace ZO"],
       artifacts: [{"label": "Project notes", "url": "/projects/subspace-zo"}, {"label": "Status notes", "url": "/projects/subspace-zo#status"}],
       tldr: ["Full-rank weight perturbations pushed ~3.2 GB through a single DSP dispatch and triggered device firmware recovery mode.", "Restricting updates to a low-rank subspace of real weights turns an algorithmic approximation into a strict hardware safety requirement.", "Batched block power iteration on NPU reduced subspace refresh time by 50\u00d7 (270s \u2192 5.4s at r=64) over host SVD.", "Adaptive-N method reached 92.0% SST-2 accuracy on Hexagon NPU, closely matching the 92.7% full-LoRA baseline."],
       article: {
@@ -880,11 +897,11 @@ export const siteContent = {
             },
             {
               type: "paragraph",
-              content: "On real Qualcomm Hexagon NPU hardware with Qwen3-0.6B on SST-2 (N=500), the subspace-restricted adaptive-N method reached 92.0% accuracy, close to the 92.7% full-LoRA baseline. The adaptive-N controller used approximately 30% fewer forward evaluations than a fixed-N=8 configuration."
+              content: "On real Qualcomm Hexagon NPU hardware with Qwen3-0.6B on SST-2 (N=500), the subspace-restricted adaptive-N method reached 92.0% accuracy, closely approaching the 92.7% full-LoRA baseline. The adaptive-N controller used approximately 30% fewer forward evaluations than a fixed-N=8 configuration (which reached 86.7%). For subspace refresh, batched block power iteration reduced rank-64 refresh time from 270 s to 5.4 s (50×); at rank 256, NPU refresh took 49.5 s vs 452.4 s on CPU (9.1×), and steady-state step time fell from 28.9 s to 2.75 s (10.5×)."
             },
             {
               type: "result-table",
-              content: "92.0%\nSST-2 accuracy on NPU (N=500)\n\n9.1×\nSubspace-refresh speedup\n\n10.5×\nSteady-state execution speedup"
+              content: "92.0%\nSST-2 accuracy on NPU (vs 92.7% full-LoRA)\n\n50×\nRank-64 refresh speedup (270s → 5.4s)\n\n9.1× / 10.5×\nRank-256 refresh & steady-state step speedup"
             },
             {
               type: "figure",
@@ -1122,7 +1139,7 @@ export const siteContent = {
             },
             {
               type: "paragraph",
-              content: "Results are from cloud GPU experiments. Real mobile-hardware drafter execution is not yet measured. Network latency is estimated. The complete four-component system has not yet been assembled. Ongoing directions include adaptive draft depth, diffusion-based drafting, and adaptive handoff routing."
+              content: "Timing tests used cloud GPUs (T4 and A6000 setups); mobile drafter execution and the integrated mobile-router-network-server path remain open to end-to-end hardware validation. Furthermore, several component experiments produced important negative or nuanced evidence:\n\n• **Escalation Router:** Implemented, but the production threshold across open-domain distributions remains uncalibrated.\n• **N-gram Cache:** Handles non-one-to-one token mappings, but did not improve throughput on the measured open conversational workload.\n• **Online Drafter Training:** Improved tokens-per-call by 5.4% on GSM8K, but showed no benefit on open conversational Q&A, demonstrating domain dependence.\n• **Adaptive Speculation Length:** An initial apparent +53.9% gain was retracted after identifying and correcting a token-selection-policy confound.\n• **Quantized Drafter:** Same-GPU concurrent quantized drafting did not provide net throughput gains in the tested conversational setup."
             },
             {
               type: "heading",
@@ -1178,53 +1195,109 @@ export const siteContent = {
       primaryThreadId: "active-multimodal-reasoning",
       relatedThreadIds: ["speech-representations"],
       type: "ongoing_project",
-      title: "Learning When to Look: Budgeted Active Video Reasoning",
-      articleTitle: "ViGoRL-Video: Active Visual Reasoning and Memory",
+      title: "Active Video Reasoning: Learning What to Inspect and What to Remember",
+      articleTitle: "Active Video Reasoning: Learning What to Inspect and What to Remember",
       year: "Ongoing",
       tags: ["MULTIMODAL", "REASONING", "ONGOING"],
       category: "ongoing",
-      claim: "Investigating reinforcement-learned active frame inspection and dynamic visual memory budgets for long-horizon video question answering.",
+      claim: "Investigating reinforcement-learned budgeted active visual inspection and streaming visual working memory for long-horizon video understanding under explicit compute budgets.",
       status: "Ongoing",
-      statusDetail: "Ongoing collaboration",
-      metadata: ["Ongoing collaboration"],
-      artifacts: [{"label": "Project notes", "url": "/projects/vigorl-video"}],
-      tldr: ["Uniform frame sampling incurs uniform computation regardless of temporal information density.", "Formulating video inspection as an active sequential decision problem with explicit computational budgets.", "Developing memory representations that selectively retain discriminative temporal evidence.", "Ongoing collaborative research; direction cleared with collaborators."],
+      statusDetail: "Ongoing collaboration · Research plan",
+      metadata: ["Collaborative research direction", "Reinforcement learning on visual budgets"],
+      artifacts: [{"label": "Research plan notes", "url": "/projects/vigorl-video"}],
+      tldr: [
+        "A video model operating under a fixed visual-token budget cannot inspect every frame or retain every observation indefinitely.",
+        "Direction A (Where to look): Reinforcement-learned active visual inspection policy with checkable rewards and hard token budgets.",
+        "Direction B (What to keep): Streaming visual working memory under explicit byte/slot budgets evaluated against delayed questions.",
+        "Direction C (On-device co-design): Joint looking-and-remembering policies co-designed for quantized models on edge accelerators."
+      ],
       article: {
-          intro: "An ongoing collaborative project extending reinforcement-learning-based visual grounding to video understanding, with a focus on active reasoning and memory across frames. This is collaborative ongoing work; details are limited to what has been cleared with collaborators.",
-          sections: [
-            {
-              type: "heading",
-              content: "Direction"
-            },
-            {
-              type: "paragraph",
-              content: "The project extends active visual reasoning from single images to video, asking how a model should decide what to attend to and retain across a sequence of frames. My contribution focuses on the representation and memory side of this problem."
-            },
-            {
-              type: "heading",
-              content: "Status"
-            },
-            {
-              type: "paragraph",
-              content: "This is ongoing collaborative research. No results have been established. The project name and direction are described here to the extent cleared with collaborators. I do not claim sole ownership of this direction."
-            }
-          ]
-        }
+        intro: "I am working on active video understanding under explicit compute and memory budgets. Rather than processing a fixed set of frames and treating the resulting visual context as sufficient, the goal is to train a model to decide when it needs more evidence, which temporal segment or spatial region to inspect, and what visual information should remain available for later questions.",
+        sections: [
+          {
+            type: "heading",
+            content: "Central Research Problem"
+          },
+          {
+            type: "paragraph",
+            content: "Fixed frame sampling allocates visual computation without considering whether a frame contains useful evidence, while static memory windows discard information needed for later questions. The research explores whether a model can learn both what to inspect and what to retain while respecting explicit compute and memory budgets."
+          },
+          {
+            type: "heading",
+            content: "Axis A: Where to Look (Budgeted Active Inspection)"
+          },
+          {
+            type: "paragraph",
+            content: "A compact policy receives an initial low-resolution view of the video under a strict visual-token budget. It learns to request additional temporal intervals or zoom into spatial regions over small decision turns. Training uses reinforcement learning with checkable answer rewards and hard environment-enforced budgets, with training-time exploration scaffolding to prevent policy collapse to zero inspection."
+          },
+          {
+            type: "heading",
+            content: "Axis B: What to Keep (Streaming Memory Under Byte Budgets)"
+          },
+          {
+            type: "paragraph",
+            content: "For streaming video where questions arrive after varying delays, a memory controller decides whether to write a new observation, merge with an existing slot, overwrite, or skip under a fixed slot budget. Evaluation measures whether discriminative evidence survives beyond the recent-frame window compared against a last-few-frames baseline."
+          },
+          {
+            type: "heading",
+            content: "Axis C: On-Device Co-Design"
+          },
+          {
+            type: "paragraph",
+            content: "Combines active inspection and memory under a shared edge device envelope, trading off latency, compute, and peak memory when evaluated against quantized models on edge hardware (Jetson Orin platforms and mobile targets)."
+          },
+          {
+            type: "heading",
+            content: "Status and Collaboration Scope"
+          },
+          {
+            type: "paragraph",
+            content: "This is an active collaborative research direction. These axes represent an evolving research plan; no achieved quantitative gains or hardware benchmarks are claimed at this stage. Details will be updated as experiments conclude."
+          }
+        ]
+      }
     },
   ],
 
   // ── PUBLICATIONS ───────────────────────────────────────────────────────────
   publications: [
     {
-      title: "Towards Classification of Typical and Atypical Disfluencies: A Self-Supervised Representation Approach",
+      title: "Towards Classification of Typical and Atypical Disfluencies: A Self Supervised Representation Approach",
       venue: "Interspeech 2025",
       status: "Published",
-      link: "/publications/Interspeech.pdf",
+      link: "https://doi.org/10.21437/Interspeech.2025-964",
       projectId: "speech-reps",
-      bibtex: `@inproceedings{bocha2025disfluency,
-  title={Towards Classification of Typical and Atypical Disfluencies: A Self-Supervised Representation Approach},
-  author={Bocha, Anirudh and Vuppala, Anil Kumar},
+      bibtex: `@inproceedings{kommagouni2025towards,
+  title={Towards Classification of Typical and Atypical Disfluencies: A Self Supervised Representation Approach},
+  author={Kommagouni, Priyanka and Khanna, Pragya and Narasinga, Vamshiraghusimha and Bocha, Anirudh and Vuppala, Anil Kumar},
   booktitle={Interspeech},
+  year={2025},
+  doi={10.21437/Interspeech.2025-964}
+}`
+    },
+    {
+      title: "Waveform-Wizard: A free tool for Spectro-Temporal visualization of Speech",
+      venue: "ICASSP 2025 Show & Tell",
+      status: "Presented",
+      link: "https://spl-btp-2k24.github.io/Waveform-Wizard/",
+      projectId: "waveform-wizard",
+      bibtex: `@inproceedings{vuppala2025waveformwizard,
+  title={Waveform-Wizard: A free tool for Spectro-Temporal visualization of Speech},
+  author={Vuppala, Anil and Bocha, Anirudh and Reddy, Abhinav and Chavali, Sasidhar and Survi, Saikiran and Losetti, Srivatsa and Harsha, Sree and Vuddagiri, Sumanth and Harshwardhan and Bandarupalli, Srihari and Narasinga, Vamshiraghusimha and Barche, Purva},
+  booktitle={ICASSP Show & Tell},
+  year={2025}
+}`
+    },
+    {
+      title: "N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs",
+      venue: "MLSys 2027",
+      status: "Under Review",
+      link: "#",
+      projectId: "n-fuse",
+      bibtex: `@article{bocha2025nfuse,
+  title={N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs},
+  author={Bocha, Anirudh and collaborators},
+  journal={Under Review},
   year={2025}
 }`
     }
@@ -1267,7 +1340,7 @@ export const siteContent = {
       org: "Docturnal",
       role: "Software Engineering Intern",
       dates: "Jan 2023 — Jun 2023",
-      desc: "Built Android app and FastAPI inference backend for voice-based tuberculosis screening."
+      desc: "Built an Android application around a voice/cough-based respiratory screening model, connecting audio input to the inference pipeline and returning screening analysis through a FastAPI backend and cloud data services. Motivated subsequent speech research."
     }
   ],
 

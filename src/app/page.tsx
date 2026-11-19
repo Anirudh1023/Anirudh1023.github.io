@@ -11,7 +11,7 @@ type FilterCategory = "all" | "adaptation-systems" | "optimization" | "represent
 const FILTERS: { id: FilterCategory; label: string }[] = [
   { id: "all", label: "All (11)" },
   { id: "adaptation-systems", label: "Adaptation & Systems (4)" },
-  { id: "optimization", label: "Optimization (3)" },
+  { id: "optimization", label: "Optimization (2)" },
   { id: "representations", label: "Representations (2)" },
   { id: "ongoing", label: "Ongoing (2)" },
 ];
@@ -495,23 +495,26 @@ export default function Home() {
                     >
                       {pub.title}
                     </Link>
-                    <p style={{ margin: 0, fontSize: 14, color: "var(--muted)" }}>
-                      Anirudh Bocha, Anil Kumar Vuppala · Interspeech 2025
-                    </p>
                     <div style={{ display: "flex", gap: 16, alignItems: "center", marginTop: 4 }}>
-                      <a
-                        href={pub.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ fontSize: 13, textDecoration: "underline", textUnderlineOffset: 3 }}
-                      >
-                        Paper PDF ↗
-                      </a>
+                      {pub.link && pub.link !== "#" && (
+                        <a
+                          href={pub.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: 13, textDecoration: "underline", textUnderlineOffset: 3 }}
+                        >
+                          {pub.projectId === "speech-reps"
+                            ? "DOI ↗"
+                            : pub.projectId === "waveform-wizard"
+                            ? "Project / Software ↗"
+                            : "Artifact ↗"}
+                        </a>
+                      )}
                       <Link
                         href={`/projects/${pub.projectId}`}
                         style={{ fontSize: 13, textDecoration: "underline", textUnderlineOffset: 3 }}
                       >
-                        Research notes ↗
+                        Technical record ↗
                       </Link>
                       {pub.bibtex && (
                         <button
@@ -534,47 +537,6 @@ export default function Home() {
                     </div>
                   </div>
                 ))}
-
-                {/* Open source presentation */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingTop: 16, borderTop: "1px solid var(--line)" }}>
-                  <div style={{ fontSize: 12, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                    ICASSP 2025 Show &amp; Tell · Open-Source Software
-                  </div>
-                  <Link
-                    href="/projects/waveform-wizard"
-                    style={{
-                      fontFamily: FAM_HEAD,
-                      fontSize: 19,
-                      fontWeight: 700,
-                      color: "var(--text)",
-                      textDecoration: "underline",
-                      textDecorationColor: "var(--line)",
-                      textUnderlineOffset: 4,
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    Waveform-Wizard: Speech Analysis and Visualization Platform
-                  </Link>
-                  <p style={{ margin: 0, fontSize: 14, color: "var(--muted)", lineHeight: 1.5 }}>
-                    Open-source Python speech analysis replacement for lab MATLAB workflows. Multi-file comparison, pitch/formant tracking, portable installers.
-                  </p>
-                  <div style={{ display: "flex", gap: 16, alignItems: "center", marginTop: 4 }}>
-                    <a
-                      href="/publications/Icassp_Show_and_tell.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ fontSize: 13, textDecoration: "underline", textUnderlineOffset: 3 }}
-                    >
-                      Show &amp; Tell PDF ↗
-                    </a>
-                    <Link
-                      href="/projects/waveform-wizard"
-                      style={{ fontSize: 13, textDecoration: "underline", textUnderlineOffset: 3 }}
-                    >
-                      Project notes ↗
-                    </Link>
-                  </div>
-                </div>
               </div>
             </div>
           )}
