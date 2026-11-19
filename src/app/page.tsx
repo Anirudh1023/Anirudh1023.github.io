@@ -6,15 +6,28 @@ import { FAM, FAM_HEAD } from "@/lib/knockout-tokens";
 import { siteContent, ResearchProject, ResearchThread } from "@/content/site";
 
 // ─── Filter Categories ────────────────────────────────────────────────────────
-type FilterCategory = "all" | "adaptation-systems" | "optimization" | "representations" | "ongoing";
+type FilterCategory = "all" | "adaptation-systems" | "optimization" | "representations" | "open-source" | "ongoing";
 
 const FILTERS: { id: FilterCategory; label: string }[] = [
-  { id: "all", label: "All (11)" },
-  { id: "adaptation-systems", label: "Adaptation & Systems (4)" },
-  { id: "optimization", label: "Optimization (2)" },
-  { id: "representations", label: "Representations (2)" },
-  { id: "ongoing", label: "Ongoing (2)" },
+  { id: "all", label: "All" },
+  { id: "adaptation-systems", label: "Adaptation & Systems" },
+  { id: "optimization", label: "Optimization" },
+  { id: "representations", label: "Representations" },
+  { id: "open-source", label: "Open Source" },
+  { id: "ongoing", label: "Ongoing" },
 ];
+
+const matchesFilter = (project: ResearchProject, filter: FilterCategory) => {
+  if (filter === "all") return true;
+  if (filter === "adaptation-systems")
+    return project.category === "adaptation" || project.category === "systems";
+  if (filter === "optimization") return project.category === "optimization";
+  if (filter === "representations") return project.category === "representations";
+  if (filter === "open-source") return project.category === "open-source";
+  if (filter === "ongoing")
+    return project.category === "ongoing" || project.status?.toLowerCase().includes("ongoing");
+  return false;
+};
 
 type MainTab = "threads" | "contributions" | "publications" | "experience";
 
@@ -25,18 +38,7 @@ export default function Home() {
   const [copiedBibtexId, setCopiedBibtexId] = useState<string | null>(null);
 
   // Filter projects according to selected filter
-  const filteredProjects = projects.filter((p) => {
-    if (activeFilter === "all") return true;
-    if (activeFilter === "adaptation-systems")
-      return p.category === "adaptation" || p.category === "systems";
-    if (activeFilter === "optimization")
-      return p.category === "optimization";
-    if (activeFilter === "representations")
-      return p.category === "representations";
-    if (activeFilter === "ongoing")
-      return p.category === "ongoing" || p.status?.toLowerCase().includes("ongoing");
-    return true;
-  });
+  const filteredProjects = projects.filter((p) => matchesFilter(p, activeFilter));
 
   const handleCopyBibtex = (id: string, bibtex: string) => {
     navigator.clipboard.writeText(bibtex);
@@ -433,7 +435,7 @@ export default function Home() {
                           if (!isSelected) (e.currentTarget as HTMLElement).style.color = "var(--muted)";
                         }}
                       >
-                        {f.label}
+                        {f.label} ({projects.filter((p) => matchesFilter(p, f.id)).length})
                       </button>
                     );
                   })}
