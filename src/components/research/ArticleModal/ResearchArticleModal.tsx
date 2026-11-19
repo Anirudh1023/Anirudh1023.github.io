@@ -375,9 +375,6 @@ function DiagramNFuseFusedBatch() {
   );
 }
 
-  return null;
-}
-
 function DiagramSpeechLayers() {
   const bars = [40, 60, 100, 80, 50];
   return (
