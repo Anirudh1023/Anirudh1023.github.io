@@ -103,16 +103,16 @@ export const siteContent = {
       relatedThreadIds: ["collaborative-inference"],
       overview: [
         "Pretrained speech models are frequently treated as black-box representation extractors, with downstream tasks defaulting to either the final encoder layer or legacy acoustic representations like MFCCs. However, speech tasks depend on vastly different phonetic and spectral cues: whispered speech lacks periodic vocal-fold vibration and demands rich subband spectral detail that standard cepstra discard, while atypical disfluency classification relies on intermediate phonetic transitions best captured well before the final layer.",
-        "My Honours research at IIIT Hyderabad investigated how representation targets and layer selection dictate downstream task quality. By systematically probing where task-relevant information resides, this work demonstrated that optimizing the representation a model receives or extracts is often dramatically more effective and compute-efficient than simply scaling up model capacity."
+        "My Honours research at IIIT Hyderabad examined two related but distinct representation questions: how acoustic target design shapes whispered-speech reconstruction, and where pretrained speech encoders expose useful information for disfluency classification. The experiments show that representation choices affect these speech tasks, without establishing a general advantage over scaling model capacity."
       ],
       synthesis: [
-        "Across speech reconstruction and disfluency classification, the central finding is that representational choice and layer extraction depth dominate raw model scale. In whispered-to-normal reconstruction, experimenting with SPCC-based targets rather than MFCC preserved richer spectral information under whispered and low-SNR conditions, exposing the trade-off between representational richness and training compute. In atypical disfluency classification, layer-wise analysis demonstrated that useful representation depth is classifier-dependent: HuBERT's fifth transformer layer reached peak F1 scores (97.67% prolongation, 97.95% repetition, 97.89% filled pause) with an SVM, whereas layer 4 was optimal with a CNN.",
-        "These results demonstrate that downstream performance depends on where information is localized within representations, establishing that targeted representations can substitute for expensive model expansion."
+        "Across these two speech studies, representation design mattered in different ways. In whispered-to-normal reconstruction, I experimented with SPCC-based targets rather than MFCCs to retain richer spectral structure under whispered and low-SNR conditions, while examining the resulting dimensionality and compute trade-offs. In disfluency classification, useful representation depth was classifier-dependent: HuBERT's fifth transformer layer reached peak F1 scores (97.67% prolongation, 97.95% repetition, 97.89% filled pause) with an SVM, whereas layer 4 was optimal with a CNN.",
+        "Together, the studies show that the representation supplied to a downstream system is an important design choice. They do not establish that changing representations is generally preferable to increasing model capacity."
       ],
       openQuestions: [
         "Can downstream speech models learn task-conditioned dynamic routing to selectively tap intermediate representations rather than relying on fixed layer extraction?",
         "How do spectral representation choices interact with modern diffusion-based and flow-matching speech vocoders?",
-        "What is the optimal trade-off between higher-dimensional target representations (like SFCC) and real-time streaming inference latency?"
+        "How should the dimensionality and spectral detail of richer acoustic targets be balanced against training cost and eventual inference requirements?"
       ]
     },
     {
@@ -122,8 +122,8 @@ export const siteContent = {
       question: "How should pretrained language models be adapted when memory, backward computation, or accelerator capabilities constrain the available learning procedure?",
       homepageDesc: "Exploring quantized adaptation and forward-only optimization, from practical on-device fine-tuning to alternative learning signals and search spaces.",
       timeframe: "2024 – Present",
-      linkedContributionIds: ["nntrainer", "subspace-zo", "n-fuse", "hybrid-optimization"],
-      establishedContributionIds: ["nntrainer", "subspace-zo", "n-fuse"],
+      linkedContributionIds: ["nntrainer", "subspace-zo", "hybrid-optimization"],
+      establishedContributionIds: ["nntrainer", "subspace-zo"],
       ongoingContributionIds: ["hybrid-optimization"],
       relatedThreadIds: ["heterogeneous-execution"],
       overview: [
@@ -160,13 +160,13 @@ export const siteContent = {
           letter: "C",
           title: "Can forward-only learning extend beyond fine-tuning?",
           question: "How do activation-space perturbations and token-level loss signals compare to weight-space zeroth-order optimization?",
-          description: "While weight-space zeroth-order methods (like Subspace-ZO and N-FUSE) focus on downstream fine-tuning of immutable weights, recent work has explored whether forward-only learning can be applied to earlier phases of training. DUST (developed by Akshay Vegesna and Samip Dahal at QLabs) perturbs transformer activations independently across tokens, evaluating a virtual population in parallel within a single forward pass. I have conducted exploratory reproductions to understand how activation-space perturbation dynamics behave compared to weight-space subspace updates under hardware constraints.",
+          description: "Weight-space zeroth-order methods such as Subspace-ZO target downstream adaptation of a model's real weights. A separate line of work explores whether activation-space perturbations and token-level loss feedback can provide useful learning signals. DUST, a method described by Q Labs Research, perturbs transformer activations at token positions and uses the resulting feedback to construct an update signal. I explored an adaptation of this idea in a smaller-context fine-tuning setting; this is an exploratory investigation, not a reproduction of the original pretraining-oriented method.",
           exploratoryItem: {
             title: "Exploratory Investigation of Activation-Space Perturbations (DUST-inspired)",
-            description: "Exploratory experiments evaluating token-level loss feedback and activation perturbations. DUST is an external method developed by Akshay Vegesna & Samip Dahal (QLabs). This investigation focuses on reproducing perturbation variance characteristics and assessing whether virtual population evaluations can be adapted to NPU tensor constraints.",
-            attribution: "Method proposed by Akshay Vegesna & Samip Dahal (QLabs, 2024). Reproduction and analysis conducted independently.",
+            description: "An adapted smaller-context experiment converged, whereas applying the original pretraining-oriented setup directly did not. The main bottleneck is turning token-level activation feedback into a useful weight-update signal without losing the memory and compute savings that motivate forward-only methods.",
+            attribution: "External reference: DUST, Q Labs Research.",
             externalUrl: "https://qlabs.sh/research/dust/",
-            status: "Exploratory reproduction"
+            status: "Exploratory work"
           },
           openQuestions: [
             "Can activation-space perturbations complement low-rank weight-space subspaces in edge fine-tuning?",
@@ -176,8 +176,8 @@ export const siteContent = {
         }
       ],
       synthesis: [
-        "Our work reveals that making forward-only learning practical is an architectural co-design problem: NNTrainer defines the memory ceiling and limits of quantized first-order backpropagation; Subspace-ZO demonstrates that restricting updates to real-weight low-rank subspaces prevents catastrophic hardware crashes and reaches 92.0% SST-2 accuracy; and N-FUSE proves that decoupling estimation from execution allows training to run at inference speeds on mobile NPUs (4.5× faster step time, 4.8× lower host memory).",
-        "Forward-only learning is not a single algorithm: selecting the right parameter subspace, providing informative directional guidance, and packing evaluations into inference-equivalent kernels are the three pillars that make backprop-free training viable."
+        "Making on-device adaptation practical involves several distinct questions. NNTrainer addresses quantized first-order adaptation and model-weight residency under a constrained memory budget. Subspace-ZO explores forward-only adaptation through a learned low-rank search space over the model's real weights, with subspace restriction also serving as a hardware-safety constraint. The ongoing FO/ZO direction asks whether occasional first-order guidance can improve local zeroth-order updates without restoring continuous backward-pass costs.",
+        "These are distinct design choices rather than one algorithm: where to search, what learning signal to use, and how to execute the resulting forward evaluations."
       ],
       openQuestions: [
         "How do we systematically choose the optimal mixture of zeroth-order forward evaluations and periodic first-order guidance across varying network bandwidths?",
@@ -217,8 +217,8 @@ export const siteContent = {
       question: "How should training and inference workloads be decomposed and scheduled across CPUs, GPUs, and NPUs to respect each accelerator's execution model?",
       homepageDesc: "Co-designing runtimes, data movement, and scheduling around heterogeneous accelerators and their memory and dispatch constraints.",
       timeframe: "2024 – Present",
-      linkedContributionIds: ["snaplite", "cpu-npu", "n-fuse", "nntrainer"],
-      establishedContributionIds: ["snaplite", "cpu-npu", "n-fuse", "nntrainer"],
+      linkedContributionIds: ["snaplite", "cpu-npu", "nntrainer"],
+      establishedContributionIds: ["snaplite", "cpu-npu", "nntrainer"],
       ongoingContributionIds: [],
       relatedThreadIds: ["beyond-backpropagation"],
       overview: [
@@ -226,7 +226,7 @@ export const siteContent = {
         "This thread focuses on systems-level co-design: analyzing execution bottlenecks, eliminating cross-bus synchronization stalls, and scheduling workloads across heterogeneous cores according to their natural compute and memory strengths."
       ],
       synthesis: [
-        "Across SnapLite, CPU–NPU co-execution, and N-FUSE, the unifying principle is respecting accelerator execution models. SnapLite provided a unified deployment runtime for over 200 on-device models, using automatic graph partitioning to keep latency-critical operators on specialized cores while preserving backend fidelity. In CPU–NPU LLM training, asynchronous pipeline dispatch overlapped CPU token embedding and loss computation with NPU GEMM execution, hiding dispatch stalls. In N-FUSE, training was redesigned into fused inference batches to work directly within the immutable execution constraints of commercial NPUs.",
+        "Across SnapLite, CPU–NPU co-execution, and NNTrainer, the shared issue is how execution should be organized around each accelerator's constraints. SnapLite brought deployment paths for more than 200 on-device models onto a LiteRT-based runtime while retaining the relevant accelerator-specific optimizations. In CPU–NPU LLM training, asynchronous layer submission and DMA-backed data movement addressed synchronization overhead between the host and Hexagon. NNTrainer's quantized training path separately integrated CPU execution support and managed model-weight residency through checkpointing and Flash Storage.",
         "Runtime performance on heterogeneous systems is dictated primarily by data movement and synchronization boundaries, not raw TOPS."
       ],
       openQuestions: [
@@ -252,7 +252,7 @@ export const siteContent = {
         "This emerging research direction treats visual perception not as a passive, static ingestion stream, but as an active sequential decision problem under explicit token and compute budgets. The goal is to formulate reinforcement-learned policies that decide when to look closer, what spatial regions to crop, and how to condense temporal memory for downstream multi-step reasoning."
       ],
       synthesis: [
-        "This research represents an active collaboration extending reinforcement-learning-based visual grounding into long-horizon temporal domains. My contribution focuses on the dynamic memory and representation interface: designing compact visual state representations that selectively retain discriminative temporal evidence without overflowing memory budgets.",
+        "This is an active collaboration extending reinforcement-learning-based visual grounding into long-horizon temporal domains. The shared research plan explores three connected questions: what visual evidence to inspect, what information to retain, and how to combine both under an on-device compute and memory budget. The work is ongoing, and this page describes the collaboration's research direction rather than presenting completed individual results.",
         "This direction remains ongoing and exploratory. Claims and results will be reported as formal evaluations are completed with collaborators."
       ],
       openQuestions: [
@@ -285,7 +285,7 @@ export const siteContent = {
         "Whispered speech lacks periodic vocal-fold excitation, requiring reconstruction models to infer missing acoustic information rather than simply denoise.",
         "Explored HuBERT-based encoder with FastSpeech-style acoustic decoder and HiFi-GAN vocoder.",
         "Experimented with SPCC-based targets in place of MFCCs to preserve richer spectral structure under low-SNR conditions.",
-        "Demonstrated that increasing representational richness improves available information but increases feature dimensionality and training compute."
+        "Richer acoustic targets preserve more spectral detail, but increase feature dimensionality and training compute."
       ],
       article: {
         intro: "My early speech research began with whispered-to-normal speech reconstruction. Whispered speech lacks the periodic vocal-fold excitation that gives voiced speech its harmonic structure, so reconstruction requires a model to infer information that is absent from the input rather than simply denoise an otherwise complete signal. I explored a HuBERT-based encoder with a FastSpeech-style acoustic decoder and HiFi-GAN vocoder, focusing on the acoustic targets used to shape the learned representation.",
@@ -523,7 +523,12 @@ export const siteContent = {
       metadata: ["ICASSP 2025 Show & Tell", "Open-source speech analysis platform"],
       artifacts: [{"label": "Project notes", "url": "/projects/waveform-wizard"}, {"label": "Show & Tell PDF", "url": "/publications/Icassp_Show_and_tell.pdf", "isExternal": true}],
       tldr: ["Laboratory speech research previously relied on proprietary MATLAB toolboxes with fragmented single-view scripts.", "Rebuilt as a standalone Python suite incorporating zero-time windowing, S-transforms, pitch, and formant tracking.", "Features dynamically linked time-frequency analysis cursors and multi-file comparative overlays.", "Packaged for cross-platform Linux and Windows environments; presented at ICASSP 2025 Show & Tell."],
-      bibtex: "@inproceedings{bocha2025waveform,\n  title={Waveform-Wizard: An Open-Source Speech Analysis and Visualization Platform},\n  author={Bocha, Anirudh and others},\n  booktitle={ICASSP Show & Tell},\n  year={2025}\n}",
+      bibtex: `@inproceedings{vuppala2025waveformwizard,
+  title={Waveform-Wizard: A free tool for Spectro-Temporal visualization of Speech},
+  author={Vuppala, Anil and Bocha, Anirudh and Reddy, Abhinav and Chavali, Sasidhar and Survi, Saikiran and Losetti, Srivatsa and Harsha, Sree and Vuddagiri, Sumanth and Harshwardhan and Bandarupalli, Srihari and Narasinga, Vamshiraghusimha and Barche, Purva},
+  booktitle={ICASSP Show & Tell},
+  year={2025}
+}`
       article: {
         intro: "I led a team of six undergraduates in building Waveform-Wizard, a Python-based replacement for the Speech Processing Lab's MATLAB speech-analysis workflow. The goal was to make the analysis stack easier to use, extend, and distribute without requiring a MATLAB license. We presented the tool at ICASSP 2025 Show & Tell. This is an open-source engineering project, not a primary research contribution.",
         sections: [
@@ -700,7 +705,7 @@ export const siteContent = {
       statusDetail: "Samsung Research India \u00b7 2025",
       metadata: ["Samsung Research India \u00b7 2025", "Qualcomm Hexagon NPU"],
       artifacts: [{"label": "Project notes", "url": "/projects/cpu-npu"}, {"label": "Adaptation notes", "url": "/projects/nntrainer"}],
-      tldr: ["Initial hybrid execution placed matrix operations on the NPU but was bottlenecked by CPU\u2013NPU sync latency.", "Replaced synchronous execution with asynchronous DMA ring-buffer enqueue and FastRPC-accessible memory buffers.", "Adapted Hexagon HMX (matrix) and HVX (vector) kernels to execute the backward pass and gradient accumulation on-accelerator.", "Delivered ~5\u00d7 end-to-end training acceleration over the optimized CPU baseline."],
+      tldr: ["Initial hybrid execution placed matrix operations on the NPU but was bottlenecked by CPU\u2013NPU sync latency.", "Replaced synchronous execution with asynchronous DMA ring-buffer enqueue and FastRPC-accessible memory buffers.", "Adapted Hexagon HMX (matrix) and HVX (vector) kernels to execute the backward pass and gradient accumulation on-accelerator.", "Reported 8\u00d7 faster training than CPU backpropagation; a separate prefill measurement showed ~5\u00d7 acceleration."],
       article: {
           intro: "After making on-device LLM training practical on the CPU, I extended NNTrainer's execution path to Qualcomm's Hexagon NPU. An initial hybrid design was bottlenecked by CPU–NPU synchronization overhead: moving compute to the accelerator was not sufficient. I redesigned execution around asynchronous layer submission and accelerator-resident data, bringing prefill to roughly 5× the CPU baseline. This page focuses on the NPU execution redesign. The on-device adaptation work (LoRA, QAT, memory reduction) is documented separately.",
           sections: [
@@ -824,8 +829,8 @@ export const siteContent = {
       category: "optimization",
       claim: "Restricting zeroth-order perturbations to a gradient-informed low-rank subspace prevents firmware recovery crashes and reaches 92.0% SST-2 accuracy on Qualcomm Hexagon hardware.",
       metricsHighlight: "92.0% SST-2 (vs 92.7% full LoRA) \u00b7 10.5\u00d7 speedup",
-      status: "Manuscript in prep",
-      statusDetail: "Active research \u00b7 Manuscript in prep",
+      status: "Active research",
+      statusDetail: "Active research \u00b7 selected experimental results",
       metadata: ["Qwen3-0.6B \u00b7 Qualcomm Hexagon NPU", "Lead author \u00b7 Real-weight subspace ZO"],
       artifacts: [{"label": "Project notes", "url": "/projects/subspace-zo"}, {"label": "Status notes", "url": "/projects/subspace-zo#status"}],
       tldr: ["Full-rank weight perturbations pushed ~3.2 GB through a single DSP dispatch and triggered device firmware recovery mode.", "Restricting updates to a low-rank subspace of real weights turns an algorithmic approximation into a strict hardware safety requirement.", "Batched block power iteration on NPU reduced subspace refresh time by 50\u00d7 (270s \u2192 5.4s at r=64) over host SVD.", "Adaptive-N method reached 92.0% SST-2 accuracy on Hexagon NPU, closely matching the 92.7% full-LoRA baseline."],
@@ -854,7 +859,7 @@ export const siteContent = {
             },
             {
               type: "paragraph",
-              content: "The adaptation target is the model's real weights, not a persistent LoRA adapter. For a weight matrix W, we learn a rank-r basis and restrict perturbations to the r×r coefficient space of that subspace. We combine P-GAP's subspace identification with FZOO's one-sided Rademacher estimator, whose sign-based perturbation representation aligns with the NPU's efficient integer arithmetic paths."
+              content: "The adaptation target is the model's real weights, not a persistent LoRA adapter. For a target matrix W, I learn low-rank factors U_r and V_r and sample Rademacher directions in the reduced coefficient space. Forward hooks apply the resulting perturbations through activations, avoiding the construction and restoration of full perturbed weight tensors. The estimator is FZOO-compatible, with sign-based directions that suit the NPU's efficient integer arithmetic paths."
             },
             {
               type: "math",
@@ -922,151 +927,12 @@ export const siteContent = {
             },
             {
               type: "paragraph",
-              content: "Preparing for submission to MLSys 2027. Under review; results and claims are from verified experiments."
+              content: "This remains active research. A venue or submission status is not listed here. The page reports selected experiments rather than claiming a complete rank or task sweep."
             }
           ]
         }
     },
 
-    {
-      id: "n-fuse",
-      title: "N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs",
-      articleTitle: "N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs",
-      year: "2025",
-      tags: ["OPTIMIZATION", "NPU", "SYSTEMS"],
-      category: "optimization",
-      primaryThreadId: "beyond-backpropagation",
-      relatedThreadIds: ["heterogeneous-execution"],
-      type: "paper",
-      claim: "Separating gradient estimation, coefficient-space parameterization, and execution enables zeroth-order training on mobile NPUs via fused query slots over an immutable Q4_0 base, achieving 4.5× faster step times and 4.8× lower host memory.",
-      metricsHighlight: "4.5× step-time · 4.8× host memory vs MobiZO",
-      status: "Under review",
-      statusDetail: "Samsung Research · Under review",
-      metadata: ["Samsung Research", "Under review · 5 Samsung devices"],
-      artifacts: [
-        { label: "Project notes", url: "/projects/n-fuse" },
-        { label: "Thread: Beyond Backpropagation", url: "/research/beyond-backpropagation" }
-      ],
-      tldr: [
-        "Mobile NPUs enforce an immutable weight execution model with high kernel dispatch overhead and zero native backward-pass support.",
-        "N-FUSE decomposes zeroth-order training into three decoupled layers: one-sided FZOO loss-difference estimator, low-rank coefficient parameterization, and an NPU execution engine.",
-        "Perturbed queries are packed into fused decode slots over an immutable Q4_0 base model with activation correction and deferred rank-one updates.",
-        "Evaluated across five models (360M–4B) and fourteen tasks, demonstrating 4.5× geometric-mean step-time speedup and 4.8× lower host memory over MobiZO on five Samsung mobile devices."
-      ],
-      bibtex: `@article{bocha2025nfuse,
-  title={N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs},
-  author={Bocha, Anirudh and collaborators},
-  journal={Under Review},
-  year={2025}
-}`,
-      article: {
-        intro: "Zeroth-order optimization avoids backpropagation by estimating gradients from scalar loss differences, making it attractive for resource-constrained edge devices. However, commercial mobile NPUs are fundamentally inference engines: weights are quantized into proprietary block formats (Q4_0), packed into immutable memory segments, and dispatched with high kernel latency without reverse-mode autodiff kernels. N-FUSE addresses these constraints by decoupling gradient estimation, parameterization, and execution, mapping each training step to a fused inference batch over an immutable 4-bit base model.",
-        sections: [
-          {
-            type: "heading",
-            content: "Problem and Motivation"
-          },
-          {
-            type: "paragraph",
-            content: "Conventional zeroth-order implementations (such as MeZO or naive forward-difference passes) assume that weights can be repeatedly perturbed and dispatched in memory. On mobile NPUs, this assumption breaks down completely. Mobile NPUs compile and pack weights into immutable block formats (such as Q4_0) ahead of time. Materializing perturbed weight tensors requires allocating full floating-point copies on the host, executing un-quantization, repacking, and re-dispatching across the host-NPU bus. As a result, host memory explodes and kernel launch overhead dominates runtime."
-          },
-          {
-            type: "heading",
-            content: "Design Principle: Inference-Equivalent Training"
-          },
-          {
-            type: "paragraph",
-            content: "N-FUSE operates on a core design principle: **training on an inference-oriented accelerator must be computationally indistinguishable from a batched inference workload**. Rather than modifying weight matrices in memory or dispatching sequential forward passes, N-FUSE maps $B$ perturbed evaluations into parallel query slots within a single fused decode step, reusing the compiled base model without altering weights in memory."
-          },
-          {
-            type: "heading",
-            content: "Framework Decomposition"
-          },
-          {
-            type: "paragraph",
-            content: "N-FUSE decomposes the training system into three independent layers:\n\n1. **Gradient Estimator:** A one-sided FZOO loss-difference estimator evaluating perturbations $z_b$.\n2. **Parameterization:** A low-rank coefficient space $u \\in \\mathbb{R}^r$ (supporting both N-FUSE-Full and N-FUSE-LoRA parameterizations).\n3. **Execution Engine:** An NPU runtime that packs perturbations into fused query slots over the immutable Q4_0 base weights."
-          },
-          {
-            type: "figure",
-            caption: "N-FUSE Three-Layer Decoupled Architecture",
-            visual: "nfuse-architecture"
-          },
-          {
-            type: "heading",
-            content: "Mathematical Formulation"
-          },
-          {
-            type: "paragraph",
-            content: "The gradient is estimated using the one-sided finite-difference zeroth-order estimator over $B$ random perturbations:"
-          },
-          {
-            type: "math",
-            content: "\\hat{g} = \\frac{1}{\\mu B} \\sum_{b=1}^B \\frac{\\ell(W + \\mu Z_b) - \\ell(W)}{\\mu} Z_b"
-          },
-          {
-            type: "paragraph",
-            content: "Instead of adding $\\mu Z_b$ to $W$ in weight space, N-FUSE applies activation-space corrections during the forward pass: for input activation $x$, $x(W + \\mu Z_b) = x W + \\mu x Z_b$. The immutable quantized base $x W$ is shared across all $B$ slots and only the low-rank projection is computed per slot."
-          },
-          {
-            type: "heading",
-            content: "NPU Execution Engine"
-          },
-          {
-            type: "paragraph",
-            content: "The execution engine implements several key runtime optimizations to achieve high accelerator saturation:\n\n• **Activation Correction:** Computes perturbations as parallel low-rank side-paths rather than materializing modified weight matrices.\n• **Fused Slot Packing:** Packs all $B$ perturbation queries into a single batched inference call, amortizing kernel dispatch overhead.\n• **Batch-Shared Slots:** Shares key-value cache and base-weight memory across perturbation slots.\n• **Precomputed Basis Transpositions:** Maintains pre-transposed projection bases to eliminate host-side data transformation during execution.\n• **Deferred Updates & Restartable Execution:** Accumulates coefficient updates in host memory and only updates effective weights at checkpoint intervals, allowing instant recovery if thermal throttling occurs."
-          },
-          {
-            type: "figure",
-            caption: "Fused NPU Query Slots over Immutable Q4_0 Base",
-            visual: "nfuse-fused-batch"
-          },
-          {
-            type: "heading",
-            content: "Evaluation & Hardware Validation"
-          },
-          {
-            type: "paragraph",
-            content: "N-FUSE was evaluated across five model architectures ranging from 360M to 4B parameters (including Qwen and LLaMA variants) across fourteen downstream tasks. On-device validation was conducted end-to-end on five commercial Samsung mobile devices spanning flagship Snapdragon and Exynos processors."
-          },
-          {
-            type: "heading",
-            content: "Results vs. MobiZO"
-          },
-          {
-            type: "paragraph",
-            content: "In a direct like-for-like on-device comparison against the MobiZO estimator, N-FUSE achieved a **4.5× geometric-mean step-time improvement** and reduced host peak memory by **4.8×**. The inference-equivalent fused batching eliminated the dispatch bottlenecks that crippled previous on-device ZO approaches."
-          },
-          {
-            type: "result-table",
-            content: "4.5×\nGeometric-mean step-time improvement vs MobiZO\n\n4.8×\nHost peak memory reduction vs MobiZO\n\n5 Devices\nValidated end-to-end on Samsung hardware (360M–4B)"
-          },
-          {
-            type: "heading",
-            content: "Technical Distinction: Basis Selection"
-          },
-          {
-            type: "paragraph",
-            content: "Unlike the separate real-weight subspace-ZO project which investigates learned gradient-informed subspaces via block power iteration, N-FUSE employs fixed random orthonormal bases in its reported default configuration. In N-FUSE's empirical ablations, probe-derived and informed bases yielded negligible advantages over random orthonormal bases when fused execution is used. The two projects address distinct aspects of the forward-only training challenge."
-          },
-          {
-            type: "heading",
-            content: "Status & Clearance"
-          },
-          {
-            type: "paragraph",
-            content: "The N-FUSE manuscript is currently under review. The technical descriptions and evaluation metrics presented here reflect cleared experimental findings. The proprietary codebase and full manuscript remain confidential pending review completion."
-          },
-          {
-            type: "heading",
-            content: "My Contribution"
-          },
-          {
-            type: "paragraph",
-            content: "Contributed to the execution engine design and on-device validation across Samsung hardware platforms, analyzing memory access patterns, dispatch overheads, and the integration of fused query slots with immutable quantized runtimes."
-          }
-        ]
-      }
-    },
     {
       id: "hybrid-llm-inference",
       primaryThreadId: "collaborative-inference",
@@ -1131,7 +997,7 @@ export const siteContent = {
             },
             {
               type: "paragraph",
-              content: "The server-compute result corresponds to a reduction from 11.2 s to 4.0 s for measured decode computation. KV-cache reuse across multi-turn escalation and de-escalation was measured at ~1.307× average speedup."
+              content: "The server-compute result corresponds to a reduction from 11.2 s to 4.0 s for measured decode computation. A separate realistic comparison with an approximately 1,800-token context measured a 1.307× speedup with a warm KV cache relative to a cold-cache run; this is distinct from the speculative handoff measurements above."
             },
             {
               type: "heading",
@@ -1147,7 +1013,7 @@ export const siteContent = {
             },
             {
               type: "paragraph",
-              content: "I designed and implemented the cross-vocabulary translation mechanism, the speculative verification handoff logic, and KV-state continuity across model switching. All experiments are my own work."
+              content: "This was a collaborative project. My contribution included the cross-vocabulary translation mechanism and speculative verification handoff. The server model's own KV state is established during target verification rather than transferred from the local model."
             }
           ]
         }
@@ -1212,7 +1078,7 @@ export const siteContent = {
         "Direction C (On-device co-design): Joint looking-and-remembering policies co-designed for quantized models on edge accelerators."
       ],
       article: {
-        intro: "I am working on active video understanding under explicit compute and memory budgets. Rather than processing a fixed set of frames and treating the resulting visual context as sufficient, the goal is to train a model to decide when it needs more evidence, which temporal segment or spatial region to inspect, and what visual information should remain available for later questions.",
+        intro: "This collaborative research direction explores active video understanding under explicit compute and memory budgets. Rather than processing a fixed set of frames and treating the resulting visual context as sufficient, the goal is to train a model to decide when it needs more evidence, which temporal segment or spatial region to inspect, and what visual information should remain available for later questions.",
         sections: [
           {
             type: "heading",
@@ -1288,19 +1154,7 @@ export const siteContent = {
   year={2025}
 }`
     },
-    {
-      title: "N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs",
-      venue: "MLSys 2027",
-      status: "Under Review",
-      link: "#",
-      projectId: "n-fuse",
-      bibtex: `@article{bocha2025nfuse,
-  title={N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs},
-  author={Bocha, Anirudh and collaborators},
-  journal={Under Review},
-  year={2025}
-}`
-    }
+
   ],
 
   // ── OPEN SOURCE & PRESENTATIONS ───────────────────────────────────────────
