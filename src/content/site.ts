@@ -1293,7 +1293,6 @@ export const siteContent = {
   year={2025}
 }`
     },
-,
     {
       title: "N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs",
       venue: "MLSys 2027",
