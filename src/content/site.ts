@@ -528,7 +528,7 @@ export const siteContent = {
   author={Vuppala, Anil and Bocha, Anirudh and Reddy, Abhinav and Chavali, Sasidhar and Survi, Saikiran and Losetti, Srivatsa and Harsha, Sree and Vuddagiri, Sumanth and Harshwardhan and Bandarupalli, Srihari and Narasinga, Vamshiraghusimha and Barche, Purva},
   booktitle={ICASSP Show & Tell},
   year={2025}
-}`
+}`,
       article: {
         intro: "I led a team of six undergraduates in building Waveform-Wizard, a Python-based replacement for the Speech Processing Lab's MATLAB speech-analysis workflow. The goal was to make the analysis stack easier to use, extend, and distribute without requiring a MATLAB license. We presented the tool at ICASSP 2025 Show & Tell. This is an open-source engineering project, not a primary research contribution.",
         sections: [
