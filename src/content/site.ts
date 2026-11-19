@@ -122,8 +122,8 @@ export const siteContent = {
       question: "How should pretrained language models be adapted when memory, backward computation, or accelerator capabilities constrain the available learning procedure?",
       homepageDesc: "Exploring quantized adaptation and forward-only optimization, from practical on-device fine-tuning to alternative learning signals and search spaces.",
       timeframe: "2024 – Present",
-      linkedContributionIds: ["nntrainer", "subspace-zo", "hybrid-optimization"],
-      establishedContributionIds: ["nntrainer", "subspace-zo"],
+      linkedContributionIds: ["nntrainer", "subspace-zo", "n-fuse", "hybrid-optimization"],
+      establishedContributionIds: ["nntrainer", "subspace-zo", "n-fuse"],
       ongoingContributionIds: ["hybrid-optimization"],
       relatedThreadIds: ["heterogeneous-execution"],
       overview: [
@@ -217,8 +217,8 @@ export const siteContent = {
       question: "How should training and inference workloads be decomposed and scheduled across CPUs, GPUs, and NPUs to respect each accelerator's execution model?",
       homepageDesc: "Co-designing runtimes, data movement, and scheduling around heterogeneous accelerators and their memory and dispatch constraints.",
       timeframe: "2024 – Present",
-      linkedContributionIds: ["snaplite", "cpu-npu", "nntrainer"],
-      establishedContributionIds: ["snaplite", "cpu-npu", "nntrainer"],
+      linkedContributionIds: ["snaplite", "cpu-npu", "n-fuse", "nntrainer"],
+      establishedContributionIds: ["snaplite", "cpu-npu", "n-fuse", "nntrainer"],
       ongoingContributionIds: [],
       relatedThreadIds: ["beyond-backpropagation"],
       overview: [
@@ -934,6 +934,145 @@ export const siteContent = {
     },
 
     {
+      id: "n-fuse",
+      title: "N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs",
+      articleTitle: "N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs",
+      year: "2025",
+      tags: ["OPTIMIZATION", "NPU", "SYSTEMS"],
+      category: "optimization",
+      primaryThreadId: "beyond-backpropagation",
+      relatedThreadIds: ["heterogeneous-execution"],
+      type: "paper",
+      claim: "Separating gradient estimation, coefficient-space parameterization, and execution enables zeroth-order training on mobile NPUs via fused query slots over an immutable Q4_0 base, achieving 4.5× faster step times and 4.8× lower host memory.",
+      metricsHighlight: "4.5× step-time · 4.8× host memory vs MobiZO",
+      status: "Under review",
+      statusDetail: "Samsung Research · Under review",
+      metadata: ["Samsung Research", "Under review · 5 Samsung devices"],
+      artifacts: [
+        { label: "Project notes", url: "/projects/n-fuse" },
+        { label: "Thread: Beyond Backpropagation", url: "/research/beyond-backpropagation" }
+      ],
+      tldr: [
+        "Mobile NPUs enforce an immutable weight execution model with high kernel dispatch overhead and zero native backward-pass support.",
+        "N-FUSE decomposes zeroth-order training into three decoupled layers: one-sided FZOO loss-difference estimator, low-rank coefficient parameterization, and an NPU execution engine.",
+        "Perturbed queries are packed into fused decode slots over an immutable Q4_0 base model with activation correction and deferred rank-one updates.",
+        "Evaluated across five models (360M–4B) and fourteen tasks, demonstrating 4.5× geometric-mean step-time speedup and 4.8× lower host memory over MobiZO on five Samsung mobile devices."
+      ],
+      bibtex: `@article{bocha2025nfuse,
+  title={N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs},
+  author={Bocha, Anirudh and collaborators},
+  journal={Under Review},
+  year={2025}
+}`,
+      article: {
+        intro: "Zeroth-order optimization avoids backpropagation by estimating gradients from scalar loss differences, making it attractive for resource-constrained edge devices. However, commercial mobile NPUs are fundamentally inference engines: weights are quantized into proprietary block formats (Q4_0), packed into immutable memory segments, and dispatched with high kernel latency without reverse-mode autodiff kernels. N-FUSE addresses these constraints by decoupling gradient estimation, parameterization, and execution, mapping each training step to a fused inference batch over an immutable 4-bit base model.",
+        sections: [
+          {
+            type: "heading",
+            content: "Problem and Motivation"
+          },
+          {
+            type: "paragraph",
+            content: "Conventional zeroth-order implementations (such as MeZO or naive forward-difference passes) assume that weights can be repeatedly perturbed and dispatched in memory. On mobile NPUs, this assumption breaks down completely. Mobile NPUs compile and pack weights into immutable block formats (such as Q4_0) ahead of time. Materializing perturbed weight tensors requires allocating full floating-point copies on the host, executing un-quantization, repacking, and re-dispatching across the host-NPU bus. As a result, host memory explodes and kernel launch overhead dominates runtime."
+          },
+          {
+            type: "heading",
+            content: "Design Principle: Inference-Equivalent Training"
+          },
+          {
+            type: "paragraph",
+            content: "N-FUSE operates on a core design principle: **training on an inference-oriented accelerator must be computationally indistinguishable from a batched inference workload**. Rather than modifying weight matrices in memory or dispatching sequential forward passes, N-FUSE maps $B$ perturbed evaluations into parallel query slots within a single fused decode step, reusing the compiled base model without altering weights in memory."
+          },
+          {
+            type: "heading",
+            content: "Framework Decomposition"
+          },
+          {
+            type: "paragraph",
+            content: "N-FUSE decomposes the training system into three independent layers:\n\n1. **Gradient Estimator:** A one-sided FZOO loss-difference estimator evaluating perturbations $z_b$.\n2. **Parameterization:** A low-rank coefficient space $u \\in \\mathbb{R}^r$ (supporting both N-FUSE-Full and N-FUSE-LoRA parameterizations).\n3. **Execution Engine:** An NPU runtime that packs perturbations into fused query slots over the immutable Q4_0 base weights."
+          },
+          {
+            type: "figure",
+            caption: "N-FUSE Three-Layer Decoupled Architecture",
+            visual: "nfuse-architecture"
+          },
+          {
+            type: "heading",
+            content: "Mathematical Formulation"
+          },
+          {
+            type: "paragraph",
+            content: "The gradient is estimated using the one-sided finite-difference zeroth-order estimator over $B$ random perturbations:"
+          },
+          {
+            type: "math",
+            content: "\\hat{g} = \\frac{1}{\\mu B} \\sum_{b=1}^B \\frac{\\ell(W + \\mu Z_b) - \\ell(W)}{\\mu} Z_b"
+          },
+          {
+            type: "paragraph",
+            content: "Instead of adding $\\mu Z_b$ to $W$ in weight space, N-FUSE applies activation-space corrections during the forward pass: for input activation $x$, $x(W + \\mu Z_b) = x W + \\mu x Z_b$. The immutable quantized base $x W$ is shared across all $B$ slots and only the low-rank projection is computed per slot."
+          },
+          {
+            type: "heading",
+            content: "NPU Execution Engine"
+          },
+          {
+            type: "paragraph",
+            content: "The execution engine implements several key runtime optimizations to achieve high accelerator saturation:\n\n• **Activation Correction:** Computes perturbations as parallel low-rank side-paths rather than materializing modified weight matrices.\n• **Fused Slot Packing:** Packs all $B$ perturbation queries into a single batched inference call, amortizing kernel dispatch overhead.\n• **Batch-Shared Slots:** Shares key-value cache and base-weight memory across perturbation slots.\n• **Precomputed Basis Transpositions:** Maintains pre-transposed projection bases to eliminate host-side data transformation during execution.\n• **Deferred Updates & Restartable Execution:** Accumulates coefficient updates in host memory and only updates effective weights at checkpoint intervals, allowing instant recovery if thermal throttling occurs."
+          },
+          {
+            type: "figure",
+            caption: "Fused NPU Query Slots over Immutable Q4_0 Base",
+            visual: "nfuse-fused-batch"
+          },
+          {
+            type: "heading",
+            content: "Evaluation & Hardware Validation"
+          },
+          {
+            type: "paragraph",
+            content: "N-FUSE was evaluated across five model architectures ranging from 360M to 4B parameters (including Qwen and LLaMA variants) across fourteen downstream tasks. On-device validation was conducted end-to-end on five commercial Samsung mobile devices spanning flagship Snapdragon and Exynos processors."
+          },
+          {
+            type: "heading",
+            content: "Results vs. MobiZO"
+          },
+          {
+            type: "paragraph",
+            content: "In a direct like-for-like on-device comparison against the MobiZO estimator, N-FUSE achieved a **4.5× geometric-mean step-time improvement** and reduced host peak memory by **4.8×**. The inference-equivalent fused batching eliminated the dispatch bottlenecks that crippled previous on-device ZO approaches."
+          },
+          {
+            type: "result-table",
+            content: "4.5×\nGeometric-mean step-time improvement vs MobiZO\n\n4.8×\nHost peak memory reduction vs MobiZO\n\n5 Devices\nValidated end-to-end on Samsung hardware (360M–4B)"
+          },
+          {
+            type: "heading",
+            content: "Technical Distinction: Basis Selection"
+          },
+          {
+            type: "paragraph",
+            content: "Unlike the separate real-weight subspace-ZO project which investigates learned gradient-informed subspaces via block power iteration, N-FUSE employs fixed random orthonormal bases in its reported default configuration. In N-FUSE's empirical ablations, probe-derived and informed bases yielded negligible advantages over random orthonormal bases when fused execution is used. The two projects address distinct aspects of the forward-only training challenge."
+          },
+          {
+            type: "heading",
+            content: "Status & Clearance"
+          },
+          {
+            type: "paragraph",
+            content: "The N-FUSE manuscript is currently under review. The technical descriptions and evaluation metrics presented here reflect cleared experimental findings. The proprietary codebase and full manuscript remain confidential pending review completion."
+          },
+          {
+            type: "heading",
+            content: "My Contribution"
+          },
+          {
+            type: "paragraph",
+            content: "Contributed to the execution engine design and on-device validation across Samsung hardware platforms, analyzing memory access patterns, dispatch overheads, and the integration of fused query slots with immutable quantized runtimes."
+          }
+        ]
+      }
+    },
+    {
       id: "hybrid-llm-inference",
       primaryThreadId: "collaborative-inference",
       relatedThreadIds: [],
@@ -1154,7 +1293,20 @@ export const siteContent = {
   year={2025}
 }`
     },
-
+,
+    {
+      title: "N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs",
+      venue: "MLSys 2027",
+      status: "Under Review",
+      link: "#",
+      projectId: "n-fuse",
+      bibtex: `@article{bocha2025nfuse,
+  title={N-FUSE: A Fused-Execution Framework for Fast, Backprop-Free LLM Training on Mobile NPUs},
+  author={Bocha, Anirudh and collaborators},
+  journal={Under Review},
+  year={2025}
+}`
+    }
   ],
 
   // ── OPEN SOURCE & PRESENTATIONS ───────────────────────────────────────────
