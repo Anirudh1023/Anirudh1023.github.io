@@ -326,53 +326,7 @@ export function ProjectFigure({ visual }: { visual?: string }) {
   if (visual === "nntrainer-prefill") return <DiagramPrefill />;
   if (visual === "nntrainer-progressive") return <DiagramProgressive />;
   if (visual === "nntrainer-architecture") return <DiagramArchitecture />;
-  if (visual === "nfuse-architecture") return <DiagramNFuseArchitecture />;
-  if (visual === "nfuse-fused-batch") return <DiagramNFuseFusedBatch />;
   return null;
-}
-
-function DiagramNFuseArchitecture() {
-  const layers = [
-    { name: "1. Gradient Estimator", detail: "One-Sided FZOO Loss Differences (Rademacher / Gaussian)", color: KO.accent },
-    { name: "2. Parameterization Layer", detail: "Low-Rank Coefficient Space (N-FUSE-Full & N-FUSE-LoRA)", color: KO.text },
-    { name: "3. Execution Engine", detail: "Fused Query Slots over Immutable Q4_0 Base on NPU", color: KO.accent },
-  ];
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "24px 0", maxWidth: 500, margin: "0 auto" }}>
-      <div style={{ ...F.eyebrow(10), color: KO.textDim, textAlign: "center" }}>N-FUSE THREE-LAYER DECOUPLED ARCHITECTURE</div>
-      {layers.map((l, i) => (
-        <div key={i} style={{ padding: "14px 18px", borderRadius: 8, border: `1px solid ${KO.border}`, background: KO.bgSec, display: "flex", flexDirection: "column", gap: 4 }}>
-          <div style={{ ...F.sub(13), color: l.color, fontWeight: 600 }}>{l.name}</div>
-          <div style={{ ...F.body(12), color: KO.textDim }}>{l.detail}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function DiagramNFuseFusedBatch() {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "24px 0", maxWidth: 520, margin: "0 auto" }}>
-      <div style={{ ...F.eyebrow(10), color: KO.textDim, textAlign: "center" }}>FUSED NPU QUERY SLOTS (B PERTURBATIONS IN 1 PASS)</div>
-      <div style={{ border: `1px solid ${KO.border}`, borderRadius: 8, padding: 16, background: KO.bgSec, display: "flex", flexDirection: "column", gap: 12 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${KO.border}`, paddingBottom: 8 }}>
-          <span style={{ ...F.code(11), color: KO.text }}>Immutable Base Weights (Q4_0 in VTCM)</span>
-          <span style={{ ...F.code(11), color: KO.accent }}>Shared Across Slots</span>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-          {["Query Slot 1 (W + μz₁)", "Query Slot 2 (W + μz₂)", "Query Slot 3 (W + μz₃)", "Query Slot B (W + μz_B)"].map((slot, i) => (
-            <div key={i} style={{ border: `1px dashed ${KO.border}`, borderRadius: 6, padding: "10px 8px", textAlign: "center", background: KO.surface }}>
-              <div style={{ ...F.code(10), color: KO.accent, fontWeight: 600 }}>Slot {i === 3 ? "B" : i + 1}</div>
-              <div style={{ ...F.body(10), color: KO.textDim, marginTop: 4 }}>Activation correction</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ ...F.body(11), color: KO.textDim, textAlign: "center", marginTop: 4 }}>
-          Single batched decode call · 0 weight materialization on host · 4.5× faster step time
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function DiagramSpeechLayers() {

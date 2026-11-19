@@ -1013,7 +1013,7 @@ export const siteContent = {
             },
             {
               type: "paragraph",
-              content: "This was a collaborative project. My contribution included the cross-vocabulary translation mechanism and speculative verification handoff. The server model's own KV state is established during target verification rather than transferred from the local model."
+              content: "This was a collaborative project with Dr. Prateek Kesarwani and colleagues at Samsung Research India. My contribution focused on the cross-vocabulary translation mechanism and speculative verification handoff. The server model's own KV state is established during target verification rather than transferred from the local model."
             }
           ]
         }

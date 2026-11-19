@@ -694,7 +694,7 @@ function ThreadContent({ thread }: { thread: ResearchThread }) {
                           color: "var(--text)",
                         }}
                       >
-                        Activation-Space Zeroth-Order Pretraining (DUST-inspired)
+                        Exploratory Investigation of Activation-Space Perturbations (DUST-inspired)
                       </span>
                       <span
                         style={{
@@ -708,7 +708,7 @@ function ThreadContent({ thread }: { thread: ResearchThread }) {
                           color: "var(--text)",
                         }}
                       >
-                        Exploratory reproduction
+                        Exploratory work
                       </span>
                     </div>
                     <p
@@ -719,17 +719,17 @@ function ThreadContent({ thread }: { thread: ResearchThread }) {
                         color: "var(--text)",
                       }}
                     >
-                      Exploratory reproduction investigating token-level loss signals and parallel virtual population evaluations inside forward execution. External algorithm proposed by Akshay Vegesna & Samip Dahal (QLabs).
+                      DUST-inspired activation-space exploration investigating token-level loss signals. An adapted smaller-context experiment converged, whereas applying the original pretraining-oriented setup directly did not.
                     </p>
                     <div style={{ fontSize: 13, color: "var(--muted)" }}>
-                      <span>Attribution: </span>
+                      <span>External reference: </span>
                       <a
                         href="https://qlabs.sh/research/dust/"
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ textDecoration: "underline", color: "var(--text)" }}
                       >
-                        QLabs Research (qlabs.sh/research/dust) ↗
+                        DUST, Q Labs Research ↗
                       </a>
                     </div>
                   </div>

@@ -15,7 +15,6 @@ const ALIASES: Record<string, string> = {
   "zo": "subspace-zo",
   "hybrid": "hybrid-llm-inference",
   "waveform": "waveform-wizard",
-  "nfuse": "n-fuse",
 };
 
 // ── Distill Technical Terms Registry ──────────────────────────────────────────
