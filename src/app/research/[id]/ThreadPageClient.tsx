@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { siteContent, ResearchThread, ResearchProject, SubDirection } from "@/content/site";
+import { siteContent, ResearchThread, ResearchProject, SubDirection, curatedConnections } from "@/content/site";
 import { FAM, FAM_HEAD } from "@/lib/knockout-tokens";
 
 const THREAD_ALIASES: Record<string, string> = {
@@ -18,6 +18,39 @@ function slugify(text: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
+}
+
+function renderEditorialText(text: string): React.ReactNode[] {
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  while ((match = linkRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    const label = match[1];
+    const url = match[2];
+    parts.push(
+      <Link
+        key={`el-${match.index}`}
+        href={url}
+        style={{
+          textDecoration: "underline",
+          textDecorationColor: "var(--line)",
+          textUnderlineOffset: 4,
+          color: "var(--text)",
+        }}
+      >
+        {label}
+      </Link>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+  return parts;
 }
 
 export default function ThreadPageClient({ id }: { id: string }) {
@@ -57,6 +90,10 @@ function ThreadContent({ thread }: { thread: ResearchThread }) {
   const relatedThreads = (thread.relatedThreadIds || [])
     .map((tid) => siteContent.researchThreads.find((t) => t.id === tid))
     .filter(Boolean) as ResearchThread[];
+
+  const threadConnections = (siteContent.curatedConnections || curatedConnections || []).filter(
+    (c) => c.tier === 2 && c.placement === "thread_synthesis" && c.threadIds?.includes(thread.id)
+  );
 
   // Construct TOC entries
   const tocItems: { id: string; label: string }[] = [
@@ -126,9 +163,11 @@ function ThreadContent({ thread }: { thread: ResearchThread }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexWrap: "wrap",
+          gap: 12,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <Link
             href="/"
             style={{
@@ -770,6 +809,33 @@ function ThreadContent({ thread }: { thread: ResearchThread }) {
                   {paragraph}
                 </p>
               ))}
+
+              {threadConnections.length > 0 && (
+                <div
+                  style={{
+                    marginTop: 20,
+                    paddingTop: 20,
+                    borderTop: "1px solid var(--line)",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 14,
+                  }}
+                >
+                  {threadConnections.map((rel) => (
+                    <p
+                      key={rel.id}
+                      style={{
+                        fontSize: 15.5,
+                        lineHeight: 1.7,
+                        color: "var(--text)",
+                        margin: 0,
+                      }}
+                    >
+                      {renderEditorialText(rel.description)}
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
 
@@ -912,6 +978,20 @@ function ThreadContent({ thread }: { thread: ResearchThread }) {
           </div>
         </main>
       </div>
+
+      {/* ── Responsive styles ── */}
+      <style>{`
+        @media (max-width: 1009px) {
+          .qlabs-article-layout {
+            grid-template-columns: 1fr !important;
+            column-gap: 0 !important;
+            padding-top: 36px !important;
+          }
+          .qlabs-outline {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

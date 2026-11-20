@@ -71,6 +71,32 @@ export interface ResearchProject {
   };
 }
 
+export type EntityType = "project" | "thread";
+
+export type RelationshipType =
+  | "complementary_layer"
+  | "alternative_formulation"
+  | "complementary_investigations"
+  | "enabling_tool"
+  | "motivates_question"
+  | "emerging_relationship";
+
+export interface CuratedConnection {
+  id: string;
+  tier: 1 | 2;
+  sourceId: string;
+  sourceType: EntityType;
+  targetId: string;
+  targetType: EntityType;
+  relationshipType: RelationshipType;
+  isSymmetric: boolean;
+  sourceLabel?: string;
+  targetLabel?: string;
+  description: string;
+  placement: "project_footer" | "thread_synthesis";
+  threadIds?: string[];
+}
+
 export const siteContent = {
   identity: {
     name: "Anirudh Bocha",
@@ -1370,5 +1396,111 @@ export const siteContent = {
       description: "Generation algorithms and execution systems that reuse computation across models and map workloads to heterogeneous hardware.",
       projects: this.projects.filter(p => p.category === "systems")
     };
+  },
+
+  // Curated research relationships
+  get curatedConnections(): CuratedConnection[] {
+    return curatedConnections;
   }
 };
+
+// ── CURATED RELATIONSHIPS REGISTRY ──────────────────────────────────────────
+export const curatedConnections: CuratedConnection[] = [
+  // ── Tier 1: Prominent Project Relationships (Symmetric) ────────────────────
+  {
+    id: "subspace-zo-to-nfuse",
+    tier: 1,
+    sourceId: "subspace-zo",
+    sourceType: "project",
+    targetId: "n-fuse",
+    targetType: "project",
+    relationshipType: "complementary_layer",
+    isSymmetric: true,
+    sourceLabel: "Accelerator execution",
+    targetLabel: "Learned search space",
+    description: "N-FUSE focuses on execution, fusing batched perturbation evaluations around quantized weights. Subspace-ZO changes the optimization search space by learning a low-rank subspace over the original weights. In its reported configuration, N-FUSE uses fixed random orthonormal bases rather than Subspace-ZO's learned subspace.",
+    placement: "project_footer"
+  },
+  {
+    id: "nntrainer-to-cpu-npu",
+    tier: 1,
+    sourceId: "nntrainer",
+    sourceType: "project",
+    targetId: "cpu-npu",
+    targetType: "project",
+    relationshipType: "complementary_layer",
+    isSymmetric: true,
+    sourceLabel: "Heterogeneous runtime execution",
+    targetLabel: "Model adaptation and weight residency",
+    description: "NNTrainer focuses on quantized base weights and trainable low-rank adapters for memory-efficient first-order adaptation. CPU–NPU co-execution addresses the execution of training itself, distributing computation across heterogeneous processors and coordinating asynchronous transfers.",
+    placement: "project_footer"
+  },
+  {
+    id: "nntrainer-to-subspace-zo",
+    tier: 1,
+    sourceId: "nntrainer",
+    sourceType: "project",
+    targetId: "subspace-zo",
+    targetType: "project",
+    relationshipType: "alternative_formulation",
+    isSymmetric: true,
+    sourceLabel: "Forward-only subspace optimization",
+    targetLabel: "First-order quantized adaptation",
+    description: "NNTrainer retains first-order gradient-based optimization while reducing memory demands through quantized base weights and low-rank adapters. Subspace-ZO explores forward-only zeroth-order optimization, restricting updates to a learned low-rank subspace.",
+    placement: "project_footer"
+  },
+
+  // ── Tier 2: Contextual Trajectory Relationships ────────────────────────────
+  {
+    id: "wesper-to-speech-disfluency",
+    tier: 2,
+    sourceId: "wesper",
+    sourceType: "project",
+    targetId: "speech-reps",
+    targetType: "project",
+    relationshipType: "complementary_investigations",
+    isSymmetric: true,
+    description: "These complementary investigations are documented in [Wesper](/projects/wesper) and the [disfluency study](/projects/speech-reps).",
+    placement: "thread_synthesis",
+    threadIds: ["speech-representations"]
+  },
+  {
+    id: "waveform-wizard-to-speech",
+    tier: 2,
+    sourceId: "waveform-wizard",
+    sourceType: "project",
+    targetId: "speech-representations",
+    targetType: "thread",
+    relationshipType: "enabling_tool",
+    isSymmetric: false,
+    description: "[Waveform-Wizard](/projects/waveform-wizard) supports the wider speech research process through analysis and visualization tooling. It is an enabling engineering contribution, not a scientific finding in representation learning.",
+    placement: "thread_synthesis",
+    threadIds: ["speech-representations"]
+  },
+  {
+    id: "subspace-zo-to-hybrid-fo-zo",
+    tier: 2,
+    sourceId: "subspace-zo",
+    sourceType: "project",
+    targetId: "hybrid-optimization",
+    targetType: "project",
+    relationshipType: "motivates_question",
+    isSymmetric: false,
+    description: "The results from [Subspace-ZO](/projects/subspace-zo) motivate the ongoing [Hybrid FO/ZO](/projects/hybrid-optimization) exploration into selective first-order guidance. No results have been established for this direction.",
+    placement: "thread_synthesis",
+    threadIds: ["beyond-backpropagation"]
+  },
+  {
+    id: "active-video-to-heterogeneous-execution",
+    tier: 2,
+    sourceId: "vigorl-video",
+    sourceType: "project",
+    targetId: "heterogeneous-execution",
+    targetType: "thread",
+    relationshipType: "emerging_relationship",
+    isSymmetric: false,
+    description: "[Active Video](/projects/vigorl-video) connects decisions about where to look and what information to retain with the constraints of on-device execution in [Heterogeneous Execution](/research/heterogeneous-execution). This is an evolving collaborative co-design direction, not a demonstrated pipeline or benchmark.",
+    placement: "thread_synthesis",
+    threadIds: ["active-multimodal-reasoning"]
+  }
+];

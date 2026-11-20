@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { siteContent, ResearchProject } from "@/content/site";
+import { siteContent, ResearchProject, curatedConnections } from "@/content/site";
 import katex from "katex";
 import { FAM, FAM_HEAD } from "@/lib/knockout-tokens";
 import { ProjectFigure } from "@/components/research/ArticleModal/ResearchArticleModal";
@@ -843,6 +843,113 @@ function ProjectContent({ project }: { project: ResearchProject }) {
               return null;
             })}
           </div>
+
+          {/* ── RELATED LINES OF WORK (TIER 1 PROMINENT) ── */}
+          {(() => {
+            const relevantConns = (siteContent.curatedConnections || curatedConnections || [])
+              .filter((c) => c.tier === 1 && c.placement === "project_footer")
+              .map((c) => {
+                if (c.sourceId === project.id) {
+                  const targetProj = siteContent.projects.find((p) => p.id === c.targetId);
+                  if (!targetProj) return null;
+                  return {
+                    id: c.id,
+                    roleLabel: c.sourceLabel || "Related Line of Work",
+                    targetProject: targetProj,
+                    description: c.description,
+                  };
+                }
+                if (c.isSymmetric && c.targetId === project.id) {
+                  const targetProj = siteContent.projects.find((p) => p.id === c.sourceId);
+                  if (!targetProj) return null;
+                  return {
+                    id: c.id,
+                    roleLabel: c.targetLabel || "Related Line of Work",
+                    targetProject: targetProj,
+                    description: c.description,
+                  };
+                }
+                return null;
+              })
+              .filter(Boolean)
+              .slice(0, 2);
+
+            if (relevantConns.length === 0) return null;
+
+            return (
+              <div
+                style={{
+                  marginTop: 56,
+                  paddingTop: 32,
+                  borderTop: "1px solid var(--line)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 20,
+                  fontFamily: FAM,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: "0.14em",
+                    textTransform: "uppercase",
+                    color: "var(--muted)",
+                  }}
+                >
+                  Related Lines of Work
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                  {relevantConns.map((item, idx) => (
+                    <div key={item!.id} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {idx > 0 && (
+                        <div style={{ borderTop: "1px solid var(--line)", marginBottom: 18 }} />
+                      )}
+                      <div
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 500,
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                          color: "var(--muted)",
+                        }}
+                      >
+                        {item!.roleLabel}
+                      </div>
+                      <div>
+                        <Link
+                          href={`/projects/${item!.targetProject.id}`}
+                          style={{
+                            fontFamily: FAM_HEAD,
+                            fontSize: 18,
+                            fontWeight: 700,
+                            color: "var(--text)",
+                            textDecoration: "underline",
+                            textDecorationColor: "var(--line)",
+                            textUnderlineOffset: 4,
+                            display: "inline-block",
+                          }}
+                        >
+                          {item!.targetProject.title} ↗
+                        </Link>
+                      </div>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: 15,
+                          lineHeight: 1.65,
+                          color: "var(--text)",
+                        }}
+                      >
+                        {item!.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ── CONNECTED RESEARCH THREADS ── */}
           {(() => {
